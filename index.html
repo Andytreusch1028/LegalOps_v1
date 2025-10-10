@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First HTML Practice Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Welcome to My HTML Practice Page!</h1>
+        
+        <div class="success">
+            <strong>Congratulations!</strong> If you can see this page, VS Code is working correctly! And I just edited it!
+        </div>
+
+        <h2>About This Practice</h2>
+        <p>This is a simple HTML file created as part of the <strong>LegalOps v1</strong> development learning journey. This practice helps verify that:</p>
+        
+        <ul>
+            <li>VS Code can create and edit HTML files</li>
+            <li>Your browser can open local HTML files</li>
+            <li>Basic HTML structure and styling work correctly</li>
+        </ul>
+
+        <h2>What's Next?</h2>
+        <div class="highlight">
+            <p><strong>Next Steps in Your Learning Journey:</strong></p>
+            <ol>
+                <li>Practice editing this HTML file in VS Code</li>
+                <li>Try adding more content or changing the styles</li>
+                <li>Continue with your Month 1 learning plan</li>
+                <li>Move on to JavaScript and other web technologies</li>
+            </ol>
+        </div>
+
+        <h2>LegalOps Project</h2>
+        <p>This practice file is part of your 6-month development plan for the LegalOps v1 legal operations platform. Keep up the great work!</p>
+
+        <footer style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+            <p>Created on: <span id="current-date"></span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple JavaScript to show current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString();
+    </script>
+</body>
+</html>
