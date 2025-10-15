@@ -64,19 +64,21 @@ export default async function DashboardLayout({
             <div className="flex items-center">
               <div className="flex items-center gap-4">
                 {/* User info */}
-                <div className="text-right">
+                <Link href="/dashboard/profile" className="text-right hover:opacity-80 transition">
                   <p className="text-sm font-medium text-gray-900">
                     {session.user?.name || "User"}
                   </p>
                   <p className="text-xs text-gray-500">
                     {session.user?.role || "USER"}
                   </p>
-                </div>
+                </Link>
 
                 {/* User avatar */}
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold">
-                  {session.user?.name?.charAt(0).toUpperCase() || "U"}
-                </div>
+                <Link href="/dashboard/profile">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold hover:shadow-lg transition cursor-pointer">
+                    {session.user?.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                </Link>
 
                 {/* Sign out button */}
                 <Link
