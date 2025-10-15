@@ -43,16 +43,16 @@ export default function Home() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/users"
+              href="/dashboard"
               className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              🚀 View User Dashboard
+              🚀 Go to Dashboard
             </Link>
             <Link
-              href="/api/test-db"
+              href="/auth/signin"
               className="bg-gray-100 text-gray-700 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              🔌 Test API
+              🔐 Sign In
             </Link>
           </div>
 
