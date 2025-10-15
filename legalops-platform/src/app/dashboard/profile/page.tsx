@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -240,7 +241,7 @@ export default function ProfilePage() {
       <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-4">Security</h3>
         <div className="space-y-4">
-          <button className="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition flex items-center justify-between group">
+          <Link href="/dashboard/profile/change-password" className="w-full text-left px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition flex items-center justify-between group">
             <div className="flex items-center gap-3">
               <div className="bg-indigo-100 group-hover:bg-indigo-200 rounded-lg p-2 transition">
                 <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +256,7 @@ export default function ProfilePage() {
             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
