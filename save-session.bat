@@ -4,9 +4,8 @@ echo   LegalOps v1 - End of Session Backup
 echo ========================================
 echo.
 
-REM Get current date and time for commit message
-for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set datetime=%%I
-set TIMESTAMP=%datetime:~0,4%-%datetime:~4,2%-%datetime:~6,2% %datetime:~8,2%:%datetime:~10,2%
+REM Get current date and time for commit message (PowerShell method - works on all Windows)
+for /f "tokens=*" %%i in ('powershell -Command "Get-Date -Format 'yyyy-MM-dd HH:mm'"') do set TIMESTAMP=%%i
 
 echo [1/4] Checking Git status...
 git status
