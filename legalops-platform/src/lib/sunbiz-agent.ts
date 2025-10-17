@@ -145,15 +145,35 @@ export class SunbizFilingAgent {
   async fillLLCFormation(data: LLCFormationData, headless: boolean = false): Promise<FilingResult> {
     const browser = await this.initBrowser(headless);
     const page = await browser.newPage();
-    
+
     const errors: string[] = [];
-    
+
     try {
-      console.log('🤖 AI Agent: Navigating to LLC formation page...');
-      await page.goto('https://efile.sunbiz.org/llc_filing.html', {
+      console.log('🤖 AI Agent: Navigating to Sunbiz e-filing menu...');
+      await page.goto('https://efile.sunbiz.org/onlmenu.html', {
         waitUntil: 'networkidle',
       });
 
+      await this.humanDelay();
+
+      console.log('🤖 AI Agent: Clicking "New Florida Limited Liability Company or LLC" link...');
+      // Click the LLC formation link
+      await page.click('text=New Florida Limited Liability Company or LLC');
+
+      // Wait for the disclaimer page to load
+      await page.waitForLoadState('networkidle');
+      await this.humanDelay();
+
+      console.log('🤖 AI Agent: Accepting disclaimer and starting new filing...');
+      // Check the "I have read and accept" checkbox
+      await page.check('input[type="checkbox"]');
+      await this.humanDelay();
+
+      // Click "Start New Filing" button
+      await page.click('text=Start New Filing');
+
+      // Wait for the actual form page to load
+      await page.waitForLoadState('networkidle');
       await this.humanDelay();
 
       console.log('🤖 AI Agent: Filling business name...');

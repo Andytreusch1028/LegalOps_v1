@@ -11,7 +11,9 @@
     "import-dbas": "tsx scripts/import-fictitious-names.ts",
     "import-partnerships": "tsx scripts/import-general-partnerships.ts",
     "seed-services": "tsx prisma/seed-services.ts",
-    "test-ai-agent": "tsx scripts/test-ai-agent.ts"
+    "seed-test-data": "tsx scripts/seed-test-data.ts",
+    "test-ai-agent": "tsx scripts/test-ai-agent.ts",
+    "create-staff": "tsx scripts/create-staff-user.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",
