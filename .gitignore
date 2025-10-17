@@ -1,0 +1,7 @@
+# Sunbiz data files (large data files - do not commit to Git)
+sunbiz-data/
+*.zip
+cordata*.txt
+ficdata*.txt
+genfile*.txt
+

@@ -41,8 +41,16 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
 # Environment variables (keep secrets safe!)
 .env
 .env.local
 .env.production
 .env.staging
+
+# Sunbiz data files (large data files - do not commit)
+/sunbiz-data/
+*.txt
+cordata*.txt
+ficdata*.txt
+genfile*.txt

@@ -15,45 +15,72 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+    <div
+      className="min-h-screen"
+      style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)' }}
+    >
+      {/* Top Navigation Bar - Professional */}
+      <nav
+        className="bg-white"
+        style={{
+          borderBottom: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+          <div className="flex justify-between" style={{ height: '72px' }}>
             {/* Left side - Logo and Nav */}
-            <div className="flex">
+            <div className="flex" style={{ gap: '48px' }}>
               {/* Logo */}
-              <div className="flex-shrink-0 flex items-center">
-                <Link href="/dashboard" className="flex items-center">
-                  <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              <div className="flex items-center">
+                <Link href="/dashboard" className="flex items-center" style={{ gap: '12px' }}>
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)'
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                  </div>
+                  <span className="font-semibold" style={{ fontSize: '20px', color: '#0f172a' }}>
                     LegalOps
                   </span>
                 </Link>
               </div>
 
               {/* Navigation Links */}
-              <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
+              <div className="hidden sm:flex items-center" style={{ gap: '32px' }}>
                 <Link
                   href="/dashboard"
-                  className="border-transparent text-gray-500 hover:border-indigo-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition"
+                  className="font-medium transition-colors duration-200"
+                  style={{ fontSize: '14px', color: '#64748b' }}
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/dashboard/users"
-                  className="border-transparent text-gray-500 hover:border-indigo-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition"
+                  className="font-medium transition-colors duration-200"
+                  style={{ fontSize: '14px', color: '#64748b' }}
                 >
                   Users
                 </Link>
                 <Link
                   href="/dashboard/orders"
-                  className="border-transparent text-gray-500 hover:border-indigo-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition"
+                  className="font-medium transition-colors duration-200"
+                  style={{ fontSize: '14px', color: '#64748b' }}
                 >
                   Orders
                 </Link>
                 <Link
                   href="/dashboard/documents"
-                  className="border-transparent text-gray-500 hover:border-indigo-500 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition"
+                  className="font-medium transition-colors duration-200"
+                  style={{ fontSize: '14px', color: '#64748b' }}
                 >
                   Documents
                 </Link>
@@ -61,50 +88,71 @@ export default async function DashboardLayout({
             </div>
 
             {/* Right side - User menu */}
-            <div className="flex items-center">
-              <div className="flex items-center gap-4">
-                {/* User info */}
-                <Link href="/dashboard/profile" className="text-right hover:opacity-80 transition">
-                  <p className="text-sm font-medium text-gray-900">
-                    {session.user?.name || "User"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {session.user?.role || "USER"}
-                  </p>
-                </Link>
+            <div className="flex items-center" style={{ gap: '20px' }}>
+              {/* User info */}
+              <Link href="/dashboard/profile" className="text-right transition-opacity duration-200 hover:opacity-70">
+                <p className="font-medium" style={{ fontSize: '14px', color: '#0f172a' }}>
+                  {session.user?.name || "User"}
+                </p>
+                <p style={{ fontSize: '12px', color: '#94a3b8' }}>
+                  {session.user?.role || "SITE_ADMIN"}
+                </p>
+              </Link>
 
-                {/* User avatar */}
-                <Link href="/dashboard/profile">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold hover:shadow-lg transition cursor-pointer">
-                    {session.user?.name?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                </Link>
-
-                {/* Sign out button */}
-                <Link
-                  href="/api/auth/signout"
-                  className="ml-4 px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              {/* User avatar */}
+              <Link href="/dashboard/profile">
+                <div
+                  className="flex items-center justify-center font-bold text-white transition-all duration-200 cursor-pointer"
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                    boxShadow: '0 2px 8px rgba(14, 165, 233, 0.25)'
+                  }}
                 >
-                  Sign Out
-                </Link>
-              </div>
+                  {session.user?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+              </Link>
+
+              {/* Sign out button */}
+              <Link
+                href="/api/auth/signout"
+                className="font-medium transition-all duration-200"
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '14px',
+                  color: '#475569',
+                  background: '#f8fafc',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0'
+                }}
+              >
+                Sign Out
+              </Link>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main style={{ padding: '48px 0' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
           {children}
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-auto">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
-            © 2025 LegalOps v1 - Legal Operations Platform
+      <footer
+        className="bg-white"
+        style={{
+          borderTop: '1px solid #e2e8f0',
+          marginTop: 'auto'
+        }}
+      >
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px' }}>
+          <p className="text-center" style={{ fontSize: '14px', color: '#94a3b8' }}>
+            © 2025 LegalOps. All rights reserved.
           </p>
         </div>
       </footer>

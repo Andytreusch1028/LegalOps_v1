@@ -35,6 +35,7 @@ model User {
   orders           Order[]
   documents        Document[]
   aiConversations  AIConversation[]
+  customerProfile  CustomerProfile?
 
   @@map("users")
 }
@@ -96,6 +97,10 @@ model Order {
   type            OrderType
   status          OrderStatus @default(PENDING)
 
+  // Service Reference (optional - for new service catalog)
+  serviceId       String?
+  service         Service?    @relation(fields: [serviceId], references: [id])
+
   // Business Details
   businessName    String
   entityType      EntityType
@@ -116,6 +121,9 @@ model Order {
   approvedByState  DateTime?
   completedAt      DateTime?
 
+  // Order-specific data (flexible JSON for service-specific fields)
+  orderData       Json?
+
   // Metadata
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -124,22 +132,145 @@ model Order {
   user            User        @relation(fields: [userId], references: [id])
   documents       Document[]
   statusUpdates   StatusUpdate[]
+  filingSubmissions FilingSubmission[]
 
   @@map("orders")
 }
 
 enum OrderType {
+  // FORMATION SERVICES
   LLC_FORMATION
   CORP_FORMATION
-  REGISTERED_AGENT
+  NONPROFIT_FORMATION
+  LP_FORMATION
+  LLP_FORMATION
+  LLLP_FORMATION
+  GP_FORMATION
+  PROFESSIONAL_CORP_FORMATION
+  PROFESSIONAL_LLC_FORMATION
+  FOREIGN_LLC_QUALIFICATION
+  FOREIGN_CORP_QUALIFICATION
+  FOREIGN_NONPROFIT_QUALIFICATION
+  FICTITIOUS_NAME_REGISTRATION
+  TRADEMARK_REGISTRATION
+
+  // ANNUAL COMPLIANCE
+  LLC_ANNUAL_REPORT
+  CORP_ANNUAL_REPORT
+  NONPROFIT_ANNUAL_REPORT
+  LP_ANNUAL_REPORT
+  FICTITIOUS_NAME_RENEWAL
+
+  // REINSTATEMENT
+  LLC_REINSTATEMENT
+  CORP_REINSTATEMENT
+  NONPROFIT_REINSTATEMENT
+  LP_REINSTATEMENT
+
+  // AMENDMENTS
+  LLC_AMENDMENT
+  CORP_AMENDMENT
+  NONPROFIT_AMENDMENT
+  LP_AMENDMENT
+  FICTITIOUS_NAME_AMENDMENT
+  REGISTERED_AGENT_CHANGE
+  OFFICER_DIRECTOR_CHANGE
+  MEMBER_MANAGER_CHANGE
+  AMENDED_ANNUAL_REPORT
+
+  // CONVERSIONS & MERGERS
+  LLC_TO_CORP_CONVERSION
+  CORP_TO_LLC_CONVERSION
+  LLC_TO_OTHER_CONVERSION
+  CORP_TO_OTHER_CONVERSION
+  OTHER_TO_LLC_CONVERSION
+  OTHER_TO_CORP_CONVERSION
+  LLC_MERGER
+  CORP_MERGER
+  NONPROFIT_MERGER
+  CROSS_ENTITY_MERGER
+  DOMESTICATION
+  INTEREST_EXCHANGE
+  SHARE_EXCHANGE
+
+  // DISSOLUTION & WITHDRAWAL
+  LLC_DISSOLUTION
+  CORP_DISSOLUTION
+  NONPROFIT_DISSOLUTION
+  LP_DISSOLUTION
+  LLP_DISSOLUTION
+  GP_DISSOLUTION
+  FOREIGN_ENTITY_WITHDRAWAL
+  FICTITIOUS_NAME_CANCELLATION
+  REVOCATION_OF_DISSOLUTION
+
+  // STATEMENTS & CORRECTIONS
+  STATEMENT_OF_AUTHORITY
+  STATEMENT_OF_DENIAL
+  STATEMENT_OF_WITHDRAWAL
+  STATEMENT_OF_TERMINATION
+  STATEMENT_OF_CORRECTION
+  ARTICLES_OF_CORRECTION
+
+  // REGISTERED AGENT SERVICES
+  REGISTERED_AGENT_SERVICE
+  REGISTERED_AGENT_RESIGNATION
+
+  // CERTIFICATES & VERIFICATIONS
+  CERTIFICATE_OF_STATUS
+  CERTIFIED_COPY
+  CERTIFICATE_OF_FACT
+  NAME_RESERVATION
+  NAME_RENEWAL
+
+  // ABANDONMENT
+  ABANDON_MERGER
+  ABANDON_CONVERSION
+  ABANDON_INTEREST_EXCHANGE
+  ABANDON_DOMESTICATION
+  ABANDON_SHARE_EXCHANGE
+
+  // OTHER SERVICES
+  JUDGMENT_LIEN_FILING
+  JUDGMENT_LIEN_SATISFACTION
+  ALTERNATE_NAME_ADOPTION
+  ALTERNATE_NAME_CHANGE
+  ALTERNATE_NAME_WITHDRAWAL
+  RESTATED_ARTICLES
+  REINCORPORATION
+
+  // LEGACY (keep for backwards compatibility)
   COMPLIANCE_SERVICE
+  ANNUAL_REPORT
+  AMENDMENT
+  DISSOLUTION
 }
 
 enum EntityType {
-  LLC
-  CORPORATION
-  PARTNERSHIP
-  SOLE_PROPRIETORSHIP
+  // Domestic Entities
+  LLC                           // Limited Liability Company
+  CORPORATION                   // For-Profit Corporation (C-Corp or S-Corp)
+  PROFESSIONAL_LLC              // Professional Limited Liability Company (Doctors, Lawyers, etc.)
+  PROFESSIONAL_CORPORATION      // Professional Corporation (PA)
+  NONPROFIT_CORPORATION         // Not-for-Profit Corporation
+
+  // Partnerships
+  LIMITED_PARTNERSHIP           // LP - Limited Partnership
+  LIMITED_LIABILITY_PARTNERSHIP // LLP - Limited Liability Partnership
+  LIMITED_LIABILITY_LIMITED_PARTNERSHIP // LLLP
+  GENERAL_PARTNERSHIP           // GP - General Partnership
+
+  // Foreign Entities (registered in another state, doing business in FL)
+  FOREIGN_LLC
+  FOREIGN_CORPORATION
+  FOREIGN_NONPROFIT
+  FOREIGN_LP
+  FOREIGN_LLP
+
+  // Other
+  SOLE_PROPRIETORSHIP           // DBA/Fictitious Name
+  COOPERATIVE
+  BUSINESS_TRUST
 }
 
 enum OrderStatus {
@@ -159,6 +290,78 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+// ============================================
+// SERVICE CATALOG
+// ============================================
+
+model Service {
+  id                String   @id @default(cuid())
+
+  // Service Identification
+  name              String   // "LLC Formation", "Annual Report - LLC", etc.
+  slug              String   @unique // "llc-formation", "llc-annual-report"
+  orderType         OrderType // Link to OrderType enum
+  category          ServiceCategory
+
+  // Description
+  shortDescription  String?  // Brief description for listings
+  longDescription   String?  @db.Text // Detailed description
+
+  // Pricing
+  serviceFee        Float    // LegalOps service fee
+  stateFee          Float    // Florida state filing fee
+  totalPrice        Float    // serviceFee + stateFee
+  rushFeeAvailable  Boolean  @default(false)
+  rushFee           Float    @default(0)
+
+  // Service Details
+  entityTypes       String[] // ["LLC", "CORPORATION"] - which entities this applies to
+  processingTime    String?  // "1-2 business days", "Instant", "5-7 business days"
+  filingMethod      String   // "online", "mail", "both"
+
+  // Requirements (JSON structure)
+  requirements      Json?    // List of required information/documents
+  formFields        Json?    // Dynamic form fields for this service
+
+  // Display & Organization
+  isActive          Boolean  @default(true)
+  isPopular         Boolean  @default(false)
+  isFeatured        Boolean  @default(false)
+  displayOrder      Int      @default(0)
+  icon              String?  // Icon name or emoji
+
+  // SEO & Marketing
+  metaTitle         String?
+  metaDescription   String?
+  keywords          String[]
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  orders            Order[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([isActive])
+  @@index([orderType])
+  @@map("services")
+}
+
+enum ServiceCategory {
+  FORMATION
+  ANNUAL_COMPLIANCE
+  AMENDMENTS
+  CONVERSIONS_MERGERS
+  DISSOLUTION_WITHDRAWAL
+  STATEMENTS_CORRECTIONS
+  REGISTERED_AGENT
+  CERTIFICATES
+  ABANDONMENT
+  OTHER_SERVICES
 }
 
 // ============================================
@@ -208,6 +411,96 @@ enum DocumentCategory {
   CORRESPONDENCE
   TAX_DOCUMENT
   OTHER
+}
+
+// ============================================
+// AI FILING AUTOMATION
+// ============================================
+
+model FilingSubmission {
+  id                  String   @id @default(cuid())
+  orderId             String
+  order               Order    @relation(fields: [orderId], references: [id])
+
+  // Submission Details
+  filingType          String   // "LLC_FORMATION", "ANNUAL_REPORT", etc.
+  status              FilingStatus @default(PENDING)
+
+  // AI Agent Data
+  agentUsed           Boolean  @default(false)
+  agentConfidence     Float?   // 0.0 to 1.0
+  formScreenshot      String?  // URL to screenshot of filled form
+
+  // Review Data
+  requiresReview      Boolean  @default(true)
+  reviewedBy          String?  // User ID of staff who reviewed
+  reviewedAt          DateTime?
+  reviewNotes         String?
+
+  // Submission Data
+  submittedAt         DateTime?
+  confirmationNumber  String?
+  confirmationScreenshot String?
+
+  // Sunbiz Response
+  sunbizResponse      Json?    // Raw response data
+
+  // Error Handling
+  errorMessage        String?
+  retryCount          Int      @default(0)
+  lastRetryAt         DateTime?
+
+  // Metadata
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([requiresReview])
+  @@map("filing_submissions")
+}
+
+enum FilingStatus {
+  PENDING           // Waiting to be processed
+  FORM_FILLED       // AI filled the form, waiting for review
+  REVIEWED          // Staff reviewed, ready to submit
+  SUBMITTING        // Currently submitting to Sunbiz
+  SUBMITTED         // Successfully submitted
+  CONFIRMED         // Confirmation received from Sunbiz
+  FAILED            // Submission failed
+  CANCELLED         // Cancelled by staff
+}
+
+// Customer Profile - Reusable data across orders
+model CustomerProfile {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+
+  // Personal Information
+  fullLegalName       String?
+  dateOfBirth         DateTime?
+  ssn                 String?  // Encrypted
+  ein                 String?  // Encrypted
+
+  // Contact Information
+  phoneNumber         String?
+  alternateEmail      String?
+
+  // Addresses
+  physicalAddress     Json?    // { street, city, state, zip, country }
+  mailingAddress      Json?    // Same structure
+
+  // Business Information (for repeat customers)
+  defaultRegisteredAgent Json? // { name, address }
+
+  // Metadata
+  dataCompleteness    Float    @default(0) // 0.0 to 1.0
+  lastVerified        DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("customer_profiles")
 }
 
 // ============================================
@@ -277,5 +570,91 @@ model SystemConfig {
   value String
 
   @@map("system_config")
+}
+
+// ============================================
+// FLORIDA BUSINESS ENTITY DATABASE
+// ============================================
+
+model FloridaEntity {
+  id                String   @id @default(cuid())
+  documentNumber    String   @unique // Sunbiz document number (e.g., L12000012345)
+  name              String   // Legal business name
+  normalizedName    String   // Normalized name for comparison (lowercase, no suffixes, etc.)
+  status            String   // ACTIVE, ACT, INACTIVE, INACT, INACTIVE/UA, INACT/UA
+  entityType        String?  // LLC, Corporation, LP, etc.
+  filingDate        DateTime?
+  state             String   @default("FL")
+  principalAddress  String?
+  mailingAddress    String?
+  registeredAgent   String?
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("florida_entities")
+}
+
+model EntityDataSync {
+  id              String   @id @default(cuid())
+  syncType        String   // "full" or "incremental"
+  dataType        String   // "corporate", "fictitious", "partnership"
+  status          String   // "in_progress", "completed", "failed"
+  recordsProcessed Int     @default(0)
+  recordsAdded    Int      @default(0)
+  recordsUpdated  Int      @default(0)
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  errorMessage    String?
+
+  @@map("entity_data_syncs")
+}
+
+// Fictitious Names (DBAs) - "Doing Business As" registrations
+model FictitiousName {
+  id                String   @id @default(cuid())
+  documentNumber    String   @unique // Sunbiz document number
+  fictitiousName    String   // The DBA name
+  normalizedName    String   // Normalized name for comparison
+  county            String?  // County of registration
+  status            String   // ACTIVE (A), EXPIRED (E), CANCELLED (C)
+  filingDate        DateTime?
+  expirationDate    DateTime?
+  cancellationDate  DateTime?
+  principalAddress  String?
+  mailingAddress    String?
+  numberOfOwners    Int      @default(0)
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("fictitious_names")
+}
+
+// General Partnerships
+model GeneralPartnership {
+  id                String   @id @default(cuid())
+  documentNumber    String   @unique // Sunbiz document number
+  name              String   // Partnership name
+  normalizedName    String   // Normalized name for comparison
+  status            String   // Status code
+  filingDate        DateTime?
+  effectiveDate     DateTime?
+  cancellationDate  DateTime?
+  expirationDate    DateTime?
+  principalAddress  String?
+  mailingAddress    String?
+  numberOfPartners  Int      @default(0)
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("general_partnerships")
 }
 

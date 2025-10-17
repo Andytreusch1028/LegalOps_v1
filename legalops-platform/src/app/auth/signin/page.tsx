@@ -5,6 +5,11 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+/**
+ * Sign In Page - Jony Ive Design Philosophy
+ * Principles: Clarity, Simplicity, Functionality First
+ */
+
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -38,29 +43,80 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-8">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-600">Sign in to your LegalOps account</p>
-          </div>
+    <div
+      className="min-h-screen flex items-center justify-center page-enter"
+      style={{
+        padding: '96px 24px',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)'
+      }}
+    >
+      <div className="w-full" style={{ maxWidth: '480px' }}>
 
-          {/* Error Message */}
+        {/* Logo/Brand - Professional Legal Tech */}
+        <div className="text-center" style={{ marginBottom: '48px' }}>
+          <div
+            className="inline-flex items-center justify-center"
+            style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+              boxShadow: '0 8px 24px rgba(14, 165, 233, 0.25)',
+              marginBottom: '24px'
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <h1 className="font-semibold tracking-tight" style={{ fontSize: '32px', marginBottom: '12px', color: '#0f172a' }}>
+            Welcome back
+          </h1>
+          <p style={{ fontSize: '16px', color: '#64748b' }}>
+            Sign in to your LegalOps account
+          </p>
+        </div>
+
+        {/* Main Card - Professional with subtle shadow */}
+        <div
+          className="bg-white rounded-xl"
+          style={{
+            padding: '48px 40px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 20px 40px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(226, 232, 240, 0.8)'
+          }}
+        >
+          {/* Error Message - Subtle */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              <p className="text-sm font-medium">{error}</p>
+            <div
+              className="rounded-lg text-center"
+              style={{
+                marginBottom: '32px',
+                padding: '14px 18px',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                color: '#dc2626'
+              }}
+            >
+              <p style={{ fontSize: '14px', fontWeight: '500' }}>{error}</p>
             </div>
           )}
 
-          {/* Sign In Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Sign In Form - Apple/Notion Style: Minimal, HUGE Spacing */}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label
+                htmlFor="email"
+                className="block font-medium"
+                style={{ fontSize: '14px', marginBottom: '10px', color: '#334155' }}
+              >
+                Email address
               </label>
               <input
                 id="email"
@@ -68,13 +124,27 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="you@example.com"
+                className="w-full bg-white transition-all duration-200"
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  fontSize: '15px',
+                  border: '1.5px solid #e2e8f0',
+                  color: '#0f172a'
+                }}
+                placeholder="you@company.com"
+                onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block font-medium"
+                style={{ fontSize: '14px', marginBottom: '10px', color: '#334155' }}
+              >
                 Password
               </label>
               <input
@@ -83,56 +153,107 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                placeholder="••••••••"
+                className="w-full bg-white transition-all duration-200"
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '10px',
+                  fontSize: '15px',
+                  border: '1.5px solid #e2e8f0',
+                  color: '#0f172a'
+                }}
+                placeholder="Enter your password"
+                onFocus={(e) => e.target.style.borderColor = '#0ea5e9'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
               />
             </div>
 
+            {/* Submit Button - Professional gradient */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                padding: '15px',
+                borderRadius: '10px',
+                fontSize: '15px',
+                marginTop: '12px',
+                background: loading ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                boxShadow: loading ? 'none' : '0 4px 12px rgba(14, 165, 233, 0.3)',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(14, 165, 233, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.3)';
+                }
+              }}
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                <span className="flex items-center justify-center" style={{ gap: '10px' }}>
+                  <div className="animate-spin rounded-full border-2 border-white border-t-transparent" style={{ width: '18px', height: '18px' }}></div>
                   Signing in...
                 </span>
               ) : (
-                "Sign In"
+                "Sign in"
               )}
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-4 text-sm text-gray-500">or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+          {/* Security Badge - Trust indicator */}
+          <div className="flex items-center justify-center" style={{ marginTop: '32px', gap: '8px' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span style={{ fontSize: '13px', color: '#64748b' }}>
+              256-bit SSL encrypted
+            </span>
           </div>
+        </div>
 
-          {/* Sign Up Link */}
-          <div className="text-center">
-            <p className="text-gray-600">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="text-indigo-600 font-semibold hover:text-indigo-700 transition"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
+        {/* Divider - Subtle */}
+        <div className="flex items-center" style={{ margin: '40px 0' }}>
+          <div className="flex-1" style={{ borderTop: '1px solid #e2e8f0' }}></div>
+          <span style={{ padding: '0 16px', fontSize: '13px', color: '#94a3b8', fontWeight: '500' }}>OR</span>
+          <div className="flex-1" style={{ borderTop: '1px solid #e2e8f0' }}></div>
+        </div>
 
-          {/* Back to Home */}
-          <div className="mt-6 text-center">
+        {/* Sign Up Link - Professional */}
+        <div className="text-center" style={{ marginBottom: '32px' }}>
+          <p style={{ fontSize: '15px', color: '#64748b' }}>
+            Don't have an account?{" "}
             <Link
-              href="/"
-              className="text-sm text-gray-500 hover:text-gray-700 transition"
+              href="/auth/signup"
+              className="font-medium transition-colors duration-200"
+              style={{ color: '#0ea5e9' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#0284c7'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#0ea5e9'}
             >
-              ← Back to home
+              Create account →
             </Link>
-          </div>
+          </p>
+        </div>
+
+        {/* Back to Home - Subtle */}
+        <div className="text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center transition-colors duration-200"
+            style={{ gap: '6px', fontSize: '14px', color: '#94a3b8' }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#64748b'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+          >
+            <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to home
+          </Link>
         </div>
       </div>
     </div>
