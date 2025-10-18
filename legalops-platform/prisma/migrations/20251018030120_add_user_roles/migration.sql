@@ -1,0 +1,12 @@
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('INDIVIDUAL_CUSTOMER', 'PROFESSIONAL_CUSTOMER', 'FULFILLMENT_STAFF', 'MANAGER', 'EXECUTIVE', 'ADMIN');
+
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN     "companyName" TEXT,
+ADD COLUMN     "department" TEXT,
+ADD COLUMN     "isWhiteLabel" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "managerId" TEXT,
+ADD COLUMN     "role" "UserRole" NOT NULL DEFAULT 'INDIVIDUAL_CUSTOMER';
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "users"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;

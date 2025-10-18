@@ -27,8 +27,19 @@ model User {
   
   // User type and permissions
   userType      UserType @default(CUSTOMER)
+  role          UserRole @default(INDIVIDUAL_CUSTOMER)
   isActive      Boolean  @default(true)
-  
+
+  // For Professional Customers (lawyers, accountants managing client businesses)
+  companyName   String?  // "Smith & Associates Law Firm"
+  isWhiteLabel  Boolean  @default(false)
+
+  // For Internal Staff
+  department    String?  // "Fulfillment", "Operations", "Executive"
+  managerId     String?  // Reports to this manager
+  manager       User?    @relation("ManagerSubordinates", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subordinates  User[]   @relation("ManagerSubordinates")
+
   // Relationships
   clients       Client[]
   orders        Order[]
@@ -43,6 +54,21 @@ enum UserType {
   EMPLOYEE
   ADMIN
   SITE_ADMIN
+}
+
+// User Role - Determines dashboard and permissions
+enum UserRole {
+  // External Customers
+  INDIVIDUAL_CUSTOMER      // Individual managing their own businesses (default)
+  PROFESSIONAL_CUSTOMER    // Law firm/accountant managing client businesses
+
+  // Internal Staff
+  FULFILLMENT_STAFF       // Daily order processing and AI form review
+  MANAGER                 // Mid-level operations manager
+  EXECUTIVE               // C-suite, high-level metrics
+
+  // Special
+  ADMIN                   // Full system access
 }
 
 // Client represents a business owner/customer
@@ -138,7 +164,8 @@ model BusinessEntity {
   stateOfFormation  String   @default("FL")
   documentNumber    String?  // Sunbiz document number
   filingDate        DateTime?
-  
+  feiNumber         String?  // Federal Employer Identification Number (EIN)
+
   // Status
   status            EntityStatus @default(PENDING)
   

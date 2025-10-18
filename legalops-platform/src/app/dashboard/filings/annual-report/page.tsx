@@ -16,6 +16,7 @@ interface BusinessEntity {
   id: string;
   legalName: string;
   documentNumber: string | null;
+  feiNumber: string | null;
   entityType: string;
   addresses: Array<{
     id: string;
@@ -83,6 +84,9 @@ export default function AnnualReportPage() {
     firstName: string; lastName: string; title: string; roleType: string; address: string;
   }>>([]);
 
+  const [feiNumberChanged, setFeiNumberChanged] = useState(false);
+  const [newFeiNumber, setNewFeiNumber] = useState('');
+
   // Load user's business entities
   useEffect(() => {
     async function loadEntities() {
@@ -131,6 +135,11 @@ export default function AnnualReportPage() {
       };
 
       // Include changes if any were made
+      if (feiNumberChanged) {
+        formData.feiNumberChanged = true;
+        formData.newFeiNumber = newFeiNumber;
+      }
+
       if (principalAddressChanged) {
         formData.principalAddressChanged = true;
         formData.newPrincipalAddress = newPrincipalAddress;
@@ -415,6 +424,88 @@ export default function AnnualReportPage() {
                   </div>
                 </div>
               )}
+
+              {/* FEI/EIN Number */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ fontWeight: '500', color: '#374151' }}>
+                    Federal Employer ID Number (FEI/EIN) {!feiNumberChanged && '✅'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFeiNumberChanged(!feiNumberChanged);
+                      if (!feiNumberChanged) {
+                        setNewFeiNumber(selectedEntity.feiNumber || '');
+                      }
+                    }}
+                    style={{
+                      background: feiNumberChanged ? '#ef4444' : '#0ea5e9',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {feiNumberChanged ? 'Cancel Edit' : 'Edit FEI/EIN'}
+                  </button>
+                </div>
+
+                {!feiNumberChanged ? (
+                  <div style={{
+                    padding: '0.75rem',
+                    background: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    color: '#111827'
+                  }}>
+                    {selectedEntity.feiNumber || 'Not provided'}
+                  </div>
+                ) : (
+                  <div style={{
+                    padding: '1rem',
+                    background: '#fef3c7',
+                    border: '2px solid #fbbf24',
+                    borderRadius: '8px'
+                  }}>
+                    <p style={{ marginBottom: '0.75rem', color: '#92400e', fontSize: '0.875rem' }}>
+                      📝 <strong>Editing FEI/EIN Number</strong>
+                    </p>
+                    <div style={{ marginBottom: '0.75rem' }}>
+                      <label style={{ display: 'block', fontWeight: '500', marginBottom: '0.25rem', color: '#374151', fontSize: '0.875rem' }}>
+                        FEI/EIN Number (Format: XX-XXXXXXX)
+                      </label>
+                      <input
+                        type="text"
+                        value={newFeiNumber}
+                        onChange={(e) => {
+                          // Format as XX-XXXXXXX
+                          let value = e.target.value.replace(/[^0-9]/g, '');
+                          if (value.length > 2) {
+                            value = value.slice(0, 2) + '-' + value.slice(2, 9);
+                          }
+                          setNewFeiNumber(value);
+                        }}
+                        placeholder="12-3456789"
+                        maxLength={10}
+                        style={{
+                          width: '100%',
+                          padding: '0.5rem',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          fontSize: '0.875rem'
+                        }}
+                      />
+                    </div>
+                    <p style={{ color: '#92400e', fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                      💡 Enter your 9-digit Federal Employer Identification Number. Leave blank if not applicable.
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Principal Address */}
               {principalAddr && (
@@ -1192,7 +1283,7 @@ export default function AnnualReportPage() {
                 padding: '1rem',
                 marginTop: '1.5rem'
               }}>
-                {(principalAddressChanged || mailingAddressChanged || registeredAgentChanged || managersOfficersChanged) && (
+                {(feiNumberChanged || principalAddressChanged || mailingAddressChanged || registeredAgentChanged || managersOfficersChanged) && (
                   <div style={{
                     background: '#dbeafe',
                     border: '1px solid #60a5fa',
@@ -1204,6 +1295,7 @@ export default function AnnualReportPage() {
                       📝 Changes Detected:
                     </p>
                     <ul style={{ color: '#1e40af', fontSize: '0.875rem', marginLeft: '1.5rem' }}>
+                      {feiNumberChanged && <li>FEI/EIN Number</li>}
                       {principalAddressChanged && <li>Principal Address</li>}
                       {mailingAddressChanged && <li>Mailing Address</li>}
                       {registeredAgentChanged && <li>Registered Agent</li>}
@@ -1221,7 +1313,7 @@ export default function AnnualReportPage() {
                     style={{ marginRight: '0.75rem', width: '20px', height: '20px', cursor: 'pointer' }}
                   />
                   <span style={{ color: '#92400e', fontWeight: '500' }}>
-                    {(principalAddressChanged || mailingAddressChanged || registeredAgentChanged || managersOfficersChanged)
+                    {(feiNumberChanged || principalAddressChanged || mailingAddressChanged || registeredAgentChanged || managersOfficersChanged)
                       ? 'I confirm that all information above (including changes) is current and accurate'
                       : 'I confirm that all information above is current and accurate'}
                   </span>

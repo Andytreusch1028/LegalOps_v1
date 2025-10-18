@@ -33,6 +33,7 @@ async function main() {
       lastName: 'Doe',
       phone: '(305) 555-1234',
       userType: 'CUSTOMER',
+      role: 'INDIVIDUAL_CUSTOMER', // Individual managing own businesses
     },
   });
   console.log('✅ User created:', user.email);
@@ -76,6 +77,7 @@ async function main() {
       clientId: client.id,
       legalName: 'Sunshine Consulting LLC',
       documentNumber: 'L23000123456',
+      feiNumber: '12-3456789',
       entityType: 'LLC',
       status: 'ACTIVE',
       filingDate: new Date('2023-01-15'),
@@ -183,6 +185,7 @@ async function main() {
       clientId: client.id,
       legalName: 'Tech Innovations LLC',
       documentNumber: 'L22000987654',
+      feiNumber: '98-7654321',
       entityType: 'LLC',
       status: 'ACTIVE',
       filingDate: new Date('2022-06-01'),

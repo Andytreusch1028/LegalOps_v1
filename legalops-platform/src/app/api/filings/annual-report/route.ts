@@ -36,12 +36,22 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Update business entity if FEI/EIN changed
+    if (formData.feiNumberChanged && formData.newFeiNumber !== undefined) {
+      await prisma.businessEntity.update({
+        where: { id: formData.businessEntityId },
+        data: {
+          feiNumber: formData.newFeiNumber || null,
+        },
+      });
+    }
+
     // Map form data to database format
     const filingData = mapAnnualReportToDatabase(
       formData,
       formData.businessEntityId
     );
-    
+
     // Create the filing record
     const filing = await prisma.filing.create({
       data: filingData,
