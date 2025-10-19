@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
+import NoticesBadge from "@/components/NoticesBadge";
+import UserInfo from "@/components/UserInfo";
 
 export default async function DashboardLayout({
   children,
@@ -63,6 +65,7 @@ export default async function DashboardLayout({
                 >
                   Dashboard
                 </Link>
+                <NoticesBadge />
                 <Link
                   href="/dashboard/users"
                   className="font-medium transition-colors duration-200"
@@ -84,20 +87,20 @@ export default async function DashboardLayout({
                 >
                   Documents
                 </Link>
+                <Link
+                  href="/dashboard/settings"
+                  className="font-medium transition-colors duration-200"
+                  style={{ fontSize: '14px', color: '#64748b' }}
+                >
+                  Settings
+                </Link>
               </div>
             </div>
 
             {/* Right side - User menu */}
             <div className="flex items-center" style={{ gap: '20px' }}>
               {/* User info */}
-              <Link href="/dashboard/profile" className="text-right transition-opacity duration-200 hover:opacity-70">
-                <p className="font-medium" style={{ fontSize: '14px', color: '#0f172a' }}>
-                  {session.user?.name || "User"}
-                </p>
-                <p style={{ fontSize: '12px', color: '#94a3b8' }}>
-                  {session.user?.role || "SITE_ADMIN"}
-                </p>
-              </Link>
+              <UserInfo userName={session.user?.name || "User"} />
 
               {/* User avatar */}
               <Link href="/dashboard/profile">

@@ -40,11 +40,17 @@ model User {
   manager       User?    @relation("ManagerSubordinates", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subordinates  User[]   @relation("ManagerSubordinates")
 
+  // Filing Preferences
+  autoApproveMinorChanges Boolean @default(false)  // Pre-approve staff to make minor corrections without delay
+  autoApproveGrantedAt    DateTime?                // When customer granted this permission
+  autoApproveAcknowledged Boolean @default(false)  // Customer acknowledged risks
+
   // Relationships
   clients       Client[]
   orders        Order[]
   notifications Notification[]
-  
+  notices       Notice[]
+
   @@map("users")
 }
 
@@ -311,12 +317,22 @@ model Filing {
   
   // Documents
   documents         FilingDocument[]
-  
+
+  // Staff Changes & Approval Tracking
+  staffChanges      Json?        // Log of changes made by staff
+  staffChangeReason String?      // Overall reason for changes
+  requiresApproval  Boolean @default(false)  // Does this need customer approval?
+  customerApprovedAt DateTime?   // When customer approved changes
+  customerApprovedBy String?     // Which customer user approved
+
+  // Notices
+  notices           Notice[]
+
   // Timestamps
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   submittedAt       DateTime?
-  
+
   @@map("filings")
 }
 
@@ -336,14 +352,17 @@ enum FilingType {
 }
 
 enum FilingStatus {
-  DRAFT          // Being prepared
-  READY          // Ready to submit
-  SUBMITTED      // Submitted to state
-  PENDING        // Pending state review
-  APPROVED       // Approved by state
-  REJECTED       // Rejected by state
-  COMPLETED      // Fully completed
-  CANCELLED      // Cancelled
+  DRAFT                      // Customer creating/editing
+  PENDING_PAYMENT           // Submitted, awaiting payment
+  PAID                      // Payment received, queued for review
+  IN_REVIEW                 // Staff reviewing
+  PENDING_CUSTOMER_APPROVAL // Staff made substantive changes, needs customer OK
+  APPROVED_BY_CUSTOMER      // Customer approved staff changes
+  READY_TO_FILE            // Ready to submit to Sunbiz
+  SUBMITTED                // Filed with Sunbiz
+  COMPLETED                // Confirmed by Sunbiz, PDF stored
+  REJECTED                 // Rejected by Sunbiz
+  CANCELLED                // Cancelled by customer/staff
 }
 
 model FilingDocument {
@@ -383,30 +402,43 @@ model Order {
   id              String   @id @default(cuid())
   userId          String
   user            User     @relation(fields: [userId], references: [id])
-  
+
   // Order Information
   orderNumber     String   @unique
   orderStatus     OrderStatus @default(PENDING)
-  
+
   // Pricing
   subtotal        Decimal  @db.Decimal(10, 2)
   tax             Decimal  @db.Decimal(10, 2)
   total           Decimal  @db.Decimal(10, 2)
-  
+
   // Payment
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMethod   String?
   stripePaymentId String?
-  
+
+  // Risk Assessment
+  riskScore       Int?     // 0-100 risk score from AI
+  riskLevel       RiskLevel?
+  requiresReview  Boolean  @default(false)
+  reviewedAt      DateTime?
+  reviewedBy      String?  // Admin who reviewed
+
+  // Fraud Detection Metadata
+  ipAddress       String?
+  userAgent       String?
+  isRushOrder     Boolean  @default(false)
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   paidAt          DateTime?
   completedAt     DateTime?
-  
+
   // Relationships
   orderItems      OrderItem[]
-  
+  riskAssessment  RiskAssessment?
+
   @@map("orders")
 }
 
@@ -423,6 +455,13 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 model OrderItem {
@@ -485,5 +524,126 @@ enum NotificationType {
   PAYMENT_DUE
   COMPLIANCE_ALERT
   SYSTEM_UPDATE
+}
+
+// ============================================================================
+// IMPORTANT NOTICES (Dashboard Alerts)
+// ============================================================================
+
+model Notice {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+
+  // Notice Details
+  type            NoticeType
+  priority        NoticePriority
+  title           String
+  message         String
+
+  // Related Filing (if applicable)
+  filingId        String?
+  filing          Filing?  @relation(fields: [filingId], references: [id])
+
+  // Action
+  actionUrl       String?  // Where to go when clicked
+  actionLabel     String?  // Button text (e.g., "Review & Approve")
+
+  // Status
+  isRead          Boolean  @default(false)
+  isDismissed     Boolean  @default(false)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+
+  @@map("notices")
+}
+
+enum NoticeType {
+  APPROVAL_REQUIRED
+  PAYMENT_REQUIRED
+  DOCUMENT_READY
+  FILING_SUBMITTED
+  FILING_COMPLETED
+  FILING_REJECTED
+  DEADLINE_APPROACHING
+  GENERAL_ALERT
+}
+
+enum NoticePriority {
+  URGENT      // Red/Orange - Action required
+  ATTENTION   // Yellow - Information
+  SUCCESS     // Green - Completed
+}
+
+// ============================================================================
+// AI RISK SCORING & FRAUD DETECTION
+// ============================================================================
+
+model RiskAssessment {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  order           Order    @relation(fields: [orderId], references: [id])
+
+  // Risk Score
+  riskScore       Int      // 0-100
+  riskLevel       RiskLevel
+  recommendation  RiskRecommendation
+
+  // AI Analysis
+  aiReasoning     String   @db.Text  // Why this risk score?
+  aiModel         String   @default("gpt-4-turbo")  // Which AI model was used
+
+  // Risk Factors (stored as JSON)
+  riskFactors     Json     // Array of RiskFactor objects
+
+  // Customer Data at Time of Assessment
+  customerEmail   String
+  customerName    String?
+  customerPhone   String?
+  accountAge      Int?     // Days since account created
+  previousOrders  Int      @default(0)
+  previousChargebacks Int  @default(0)
+
+  // Order Data at Time of Assessment
+  orderAmount     Decimal  @db.Decimal(10, 2)
+  paymentMethod   String
+  isRushOrder     Boolean  @default(false)
+
+  // Technical Data
+  ipAddress       String?
+  userAgent       String?
+  billingAddress  Json?    // Stored as JSON
+
+  // Review Status
+  requiresReview  Boolean  @default(false)
+  reviewedAt      DateTime?
+  reviewedBy      String?  // Admin user ID
+  reviewNotes     String?  @db.Text
+  reviewDecision  ReviewDecision?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("risk_assessments")
+  @@index([riskLevel])
+  @@index([createdAt])
+  @@index([requiresReview])
+}
+
+enum RiskRecommendation {
+  APPROVE         // Low risk - process normally
+  REVIEW          // Medium risk - manual review recommended
+  VERIFY          // High risk - require ID verification
+  DECLINE         // Critical risk - decline order
+}
+
+enum ReviewDecision {
+  APPROVED        // Admin approved despite risk
+  DECLINED        // Admin declined order
+  VERIFIED        // Customer verified identity
+  MONITORING      // Approved but monitoring
 }
 

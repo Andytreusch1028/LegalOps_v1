@@ -25,6 +25,7 @@
     "bcryptjs": "^3.0.2",
     "next": "15.5.5",
     "next-auth": "^4.24.11",
+    "openai": "^6.5.0",
     "playwright": "^1.56.0",
     "prisma": "^6.17.1",
     "react": "19.1.0",

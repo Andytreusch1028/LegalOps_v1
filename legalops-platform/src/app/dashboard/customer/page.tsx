@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import ImportantNotices from '@/components/ImportantNotices';
 
 interface BusinessEntity {
   id: string;
@@ -67,6 +68,9 @@ export default function CustomerDashboard() {
           Here's what's happening with your legal operations today.
         </p>
       </div>
+
+      {/* IMPORTANT NOTICES */}
+      <ImportantNotices />
 
       {/* MY BUSINESSES - Primary Section */}
       <div style={{ marginBottom: '48px' }}>
