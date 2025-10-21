@@ -11,10 +11,13 @@ const prisma = new PrismaClient();
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  context: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+
+    // Next.js may type params as a Promise in the route handler context; await to get actual params
+    const resolvedParams = await context.params;
 
     if (!session) {
       return NextResponse.json(
@@ -29,7 +32,7 @@ export async function POST(
     // Fetch the order
     const order = await prisma.order.findUnique({
       where: {
-        id: params.orderId,
+        id: resolvedParams.orderId,
       },
     });
 
@@ -60,7 +63,7 @@ export async function POST(
     // For now, we'll just mark the order as paid
     const updatedOrder = await prisma.order.update({
       where: {
-        id: params.orderId,
+        id: resolvedParams.orderId,
       },
       data: {
         paymentStatus: 'PAID',

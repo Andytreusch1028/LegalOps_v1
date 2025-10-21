@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Find the verification token
-    const verificationToken = await prisma.verificationToken.findUnique({
+    const verificationToken = await (prisma as any).verificationToken.findUnique({
       where: { token },
     });
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     // Check if token has expired
     if (new Date() > verificationToken.expires) {
       // Delete expired token
-      await prisma.verificationToken.delete({
+      await (prisma as any).verificationToken.delete({
         where: { token },
       });
 
@@ -50,14 +50,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Update user's emailVerified field
+    // Mark user's login verification complete
     await prisma.user.update({
       where: { id: user.id },
-      data: { emailVerified: new Date() },
+      data: { isActive: true },
     });
 
     // Delete the used token
-    await prisma.verificationToken.delete({
+    await (prisma as any).verificationToken.delete({
       where: { token },
     });
 

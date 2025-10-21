@@ -54,17 +54,15 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
-        token.emailVerified = user.emailVerified;
       }
 
       // Refresh user data on update trigger
       if (trigger === "update") {
         const updatedUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { emailVerified: true, role: true },
+          select: { role: true },
         });
         if (updatedUser) {
-          token.emailVerified = updatedUser.emailVerified;
           token.role = updatedUser.role;
         }
       }
@@ -75,7 +73,6 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     }

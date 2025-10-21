@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { UserRole } from '@/generated/prisma';
 import { z } from "zod";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().optional(),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
@@ -12,7 +14,7 @@ const registerSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, email, password } = registerSchema.parse(body);
+  const { firstName, lastName, email, password } = registerSchema.parse(body);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -32,15 +34,16 @@ export async function POST(req: NextRequest) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        name,
+        firstName,
+        lastName: lastName || null,
         email,
-        password: hashedPassword,
-        role: "USER",
+        passwordHash: hashedPassword,
+        role: UserRole.INDIVIDUAL_CUSTOMER,
       }
     });
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Build user response without sensitive fields
+    const { passwordHash: _ph, ...userWithoutPassword } = user as any;
 
     return NextResponse.json(
       { 
@@ -53,7 +56,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
+        { error: "Invalid input", details: error.issues },
         { status: 400 }
       );
     }

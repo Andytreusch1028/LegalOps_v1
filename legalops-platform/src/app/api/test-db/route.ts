@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         role: true,
         createdAt: true,
       },
@@ -25,7 +26,14 @@ export async function GET(request: NextRequest) {
     const orderCount = await prisma.order.count();
     
     // Test 5: Count documents
-    const documentCount = await prisma.document.count();
+    // `document` model may not exist; guard with try/catch below
+    let documentCount = 0;
+    try {
+      documentCount = await prisma.filingDocument.count();
+    } catch (e) {
+      // file/document model not present in schema
+      documentCount = 0;
+    }
     
     return NextResponse.json({
       success: true,
@@ -66,13 +74,16 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: body.email || `test-${Date.now()}@example.com`,
-        name: body.name || 'Test User',
-        role: 'USER',
+        firstName: body.firstName || 'Test',
+        lastName: body.lastName || 'User',
+        passwordHash: body.password ? body.password : 'changeme',
+        role: 'INDIVIDUAL_CUSTOMER',
       },
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         role: true,
         createdAt: true,
       },

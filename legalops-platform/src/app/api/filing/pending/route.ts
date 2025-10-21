@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       where: { email: session.user.email! },
     });
 
-    if (!user || (user.role !== 'EMPLOYEE' && user.role !== 'SITE_ADMIN')) {
+    if (!user || (user.userType !== 'EMPLOYEE' && user.userType !== 'SITE_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

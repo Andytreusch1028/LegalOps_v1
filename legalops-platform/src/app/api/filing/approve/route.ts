@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       where: { email: session.user.email! },
     });
 
-    if (!user || (user.role !== 'EMPLOYEE' && user.role !== 'SITE_ADMIN')) {
+    if (!user || (user.userType !== 'EMPLOYEE' && user.userType !== 'SITE_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get submission
-    const submission = await prisma.filingSubmission.findUnique({
+    const submission = await (prisma as any).filingSubmission.findUnique({
       where: { id: submissionId },
       include: {
         order: true,

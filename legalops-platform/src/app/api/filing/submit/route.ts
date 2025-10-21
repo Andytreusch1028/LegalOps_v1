@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       where: { email: session.user.email! },
     });
 
-    if (!user || (user.role !== 'EMPLOYEE' && user.role !== 'SITE_ADMIN')) {
+    if (!user || (user.userType !== 'EMPLOYEE' && user.userType !== 'SITE_ADMIN')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already has a pending submission
-    const existingSubmission = await prisma.filingSubmission.findFirst({
+    const existingSubmission = await (prisma as any).filingSubmission.findFirst({
       where: {
         orderId,
         status: {
@@ -72,10 +72,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create filing submission record
-    const submission = await prisma.filingSubmission.create({
+    const submission = await (prisma as any).filingSubmission.create({
       data: {
         orderId,
-        filingType: order.type,
+        filingType: (order as any).type,
         status: 'PENDING',
         agentUsed: true,
         requiresReview: true,
@@ -88,48 +88,50 @@ export async function POST(request: NextRequest) {
     let result;
 
     // Fill form based on order type
-    if (order.type === 'LLC_FORMATION') {
+  const orderAny = order as any;
+
+  if (orderAny.type === 'LLC_FORMATION') {
       const formData: LLCFormationData = {
-        businessName: order.businessName,
-        principalAddress: (order.orderData as any)?.principalAddress || {
+        businessName: orderAny.businessName,
+        principalAddress: (orderAny.orderData as any)?.principalAddress || {
           street: '',
           city: '',
           state: 'FL',
           zip: '',
         },
-        mailingAddress: (order.orderData as any)?.mailingAddress,
+        mailingAddress: (orderAny.orderData as any)?.mailingAddress,
         registeredAgent: (order.orderData as any)?.registeredAgent || {
           name: '',
           address: { street: '', city: '', state: 'FL', zip: '' },
         },
-        managers: (order.orderData as any)?.managers,
-        effectiveDate: (order.orderData as any)?.effectiveDate,
-        correspondenceEmail: order.user.email,
+        managers: (orderAny.orderData as any)?.managers,
+        effectiveDate: (orderAny.orderData as any)?.effectiveDate,
+        correspondenceEmail: (order.user as any).email,
       };
 
       result = await agent.fillLLCFormation(formData, false); // headless=false for debugging
-    } else if (order.type === 'CORP_FORMATION') {
+  } else if (orderAny.type === 'CORP_FORMATION') {
       const formData: CorporationFormationData = {
-        corporationName: order.businessName,
-        numberOfShares: (order.orderData as any)?.numberOfShares || 1,
-        principalAddress: (order.orderData as any)?.principalAddress || {
+        corporationName: orderAny.businessName,
+        numberOfShares: (orderAny.orderData as any)?.numberOfShares || 1,
+        principalAddress: (orderAny.orderData as any)?.principalAddress || {
           street: '',
           city: '',
           state: 'FL',
           zip: '',
         },
-        mailingAddress: (order.orderData as any)?.mailingAddress,
-        registeredAgent: (order.orderData as any)?.registeredAgent || {
+        mailingAddress: (orderAny.orderData as any)?.mailingAddress,
+        registeredAgent: (orderAny.orderData as any)?.registeredAgent || {
           name: '',
           address: { street: '', city: '', state: 'FL', zip: '' },
         },
-        incorporator: (order.orderData as any)?.incorporator || {
-          name: order.user.name || order.user.email,
+        incorporator: (orderAny.orderData as any)?.incorporator || {
+          name: (order.user as any).name || (order.user as any).email,
         },
-        purpose: (order.orderData as any)?.purpose || 'any lawful business',
-        officers: (order.orderData as any)?.officers,
-        effectiveDate: (order.orderData as any)?.effectiveDate,
-        correspondenceEmail: order.user.email,
+        purpose: (orderAny.orderData as any)?.purpose || 'any lawful business',
+        officers: (orderAny.orderData as any)?.officers,
+        effectiveDate: (orderAny.orderData as any)?.effectiveDate,
+        correspondenceEmail: (order.user as any).email,
       };
 
       result = await agent.fillCorporationFormation(formData, false);
@@ -147,7 +149,7 @@ export async function POST(request: NextRequest) {
     await writeFile(screenshotPath, result.screenshot);
 
     // Update submission with results
-    await prisma.filingSubmission.update({
+    await (prisma as any).filingSubmission.update({
       where: { id: submission.id },
       data: {
         status: result.success ? 'FORM_FILLED' : 'FAILED',

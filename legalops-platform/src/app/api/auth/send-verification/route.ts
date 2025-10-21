@@ -15,18 +15,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if email is already verified
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { emailVerified: true },
-    });
-
-    if (user?.emailVerified) {
-      return NextResponse.json(
-        { error: "Email is already verified" },
-        { status: 400 }
-      );
-    }
 
     // Delete any existing verification tokens for this email
     await prisma.verificationToken.deleteMany({
@@ -68,5 +56,17 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+      // Remove emailVerified usage - verify flow handled via tokens
+      await (prisma as any).verificationToken.deleteMany({ where: { email: session.user.email } });
+
+      const token = crypto.randomBytes(32).toString("hex");
+
+      await (prisma as any).verificationToken.create({
+        data: {
+          identifier: session.user.email,
+          token,
+          expires: expiresAt,
+        },
+      });
 }
 

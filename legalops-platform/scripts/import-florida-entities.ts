@@ -147,7 +147,7 @@ async function importFromFile(filePath: string): Promise<void> {
   }
 
   // Create sync record
-  const sync = await prisma.entityDataSync.create({
+  const sync = await prisma.dataSync.create({
     data: {
       syncType: 'full',
       dataType: 'corporate',

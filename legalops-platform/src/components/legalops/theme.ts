@@ -80,7 +80,7 @@ export const cardHover = 'hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(0,
 /**
  * Input base classes
  */
-export const inputBase = 'w-full px-4 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all';
+export const inputBase = 'w-full px-5 py-3 border border-slate-300 rounded-lg bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all';
 
 /**
  * Button base classes

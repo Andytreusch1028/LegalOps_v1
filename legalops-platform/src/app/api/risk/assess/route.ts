@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         recommendation: assessment.recommendation,
         aiReasoning: assessment.reasoning,
         aiModel: 'gpt-4-turbo',
-        riskFactors: assessment.riskFactors,
+        riskFactors: assessment.riskFactors as any,
         
         // Customer data snapshot
         customerEmail: user.email,

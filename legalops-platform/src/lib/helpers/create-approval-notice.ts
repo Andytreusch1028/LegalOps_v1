@@ -72,7 +72,7 @@ export async function createApprovalNotice({
           where: { id: filingId },
           data: {
             filingStatus: 'READY_TO_FILE',
-            staffChanges: changes,
+            staffChanges: changes as any,
             staffChangeReason: overallReason,
             requiresApproval: false,
           }
@@ -115,7 +115,7 @@ export async function createApprovalNotice({
           where: { id: filingId },
           data: {
             filingStatus: 'READY_TO_FILE',
-            staffChanges: changes,
+            staffChanges: changes as any,
             staffChangeReason: overallReason,
             requiresApproval: false,
           }
@@ -135,9 +135,9 @@ export async function createApprovalNotice({
       where: { id: filingId },
       data: {
         filingStatus: 'PENDING_CUSTOMER_APPROVAL',
-        staffChanges: changes,
-        staffChangeReason: overallReason,
-        requiresApproval: true,
+          staffChanges: changes as any,
+          staffChangeReason: overallReason,
+          requiresApproval: false,
       },
       include: {
         businessEntity: {

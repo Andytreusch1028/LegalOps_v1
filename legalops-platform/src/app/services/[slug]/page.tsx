@@ -86,96 +86,149 @@ export default function ServiceDetailPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px' }}>
-        {/* Single Floating Card */}
-        <div className={cn(cardBase, 'p-8 md:p-12 shadow-lg')}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Left Column - Service Details */}
-            <div className="lg:col-span-2 space-y-10">
-              {/* About This Service */}
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-900 mb-4">About This Service</h2>
-                <p className="text-base text-slate-600 leading-relaxed">{service.longDescription}</p>
+      {/* Combined Section - Service Info + Form */}
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px 64px' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Sidebar - Service Info Cards */}
+          <div className="lg:col-span-4">
+            <div className="space-y-8 sticky top-6">
+              {/* About Card */}
+              <div
+                className="bg-white rounded-xl"
+                style={{
+                  borderTop: '1px solid #e2e8f0',
+                  borderRight: '1px solid #e2e8f0',
+                  borderBottom: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #0ea5e9',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  padding: '24px',
+                  marginBottom: '24px',
+                }}
+              >
+                <h3 className="font-semibold text-slate-900 mb-3" style={{ fontSize: '18px', lineHeight: '1.4' }}>
+                  About This Service
+                </h3>
+                <p className="text-slate-600" style={{ fontSize: '15px', lineHeight: '1.6' }}>
+                  {service.longDescription}
+                </p>
               </div>
 
-              {/* What's Included */}
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-900 mb-6">What's Included</h2>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-base text-slate-700">Professional preparation of all required documents</span>
+              {/* What's Included Card */}
+              <div
+                className="bg-white rounded-xl"
+                style={{
+                  borderTop: '1px solid #e2e8f0',
+                  borderRight: '1px solid #e2e8f0',
+                  borderBottom: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #10b981',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  padding: '24px',
+                  marginBottom: '24px',
+                }}
+              >
+                <h3 className="font-semibold text-slate-900 mb-4" style={{ fontSize: '18px', lineHeight: '1.4' }}>
+                  What's Included
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                      Professional document preparation
+                    </span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-base text-slate-700">Filing with Florida Department of State</span>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                      State filing & confirmation
+                    </span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-base text-slate-700">Email confirmation and filing receipt</span>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                      Free registered agent service (first year)
+                    </span>
                   </li>
-                  <li className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-base text-slate-700">Customer support throughout the process</span>
+                  <li className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                      Email receipt & support
+                    </span>
                   </li>
                 </ul>
               </div>
-            </div>
 
-            {/* Right Column - Pricing & Details */}
-            <div className="lg:col-span-1">
-              <div className="space-y-8">
-                {/* Pricing Section */}
-                <div className="p-6 bg-slate-50 rounded-xl border-2 border-slate-200">
-                  <h3 className="text-xl font-semibold text-slate-900 mb-6">Pricing</h3>
-                  <div className="space-y-4 mb-6">
+              {/* Pricing Card */}
+              <div
+                className="bg-white rounded-xl"
+                style={{
+                  borderTop: '1px solid #e2e8f0',
+                  borderRight: '1px solid #e2e8f0',
+                  borderBottom: '1px solid #e2e8f0',
+                  borderLeft: '4px solid #8b5cf6',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+                  padding: '24px',
+                }}
+              >
+                {/* Pricing */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-slate-900 mb-4" style={{ fontSize: '18px', lineHeight: '1.4' }}>
+                    Pricing
+                  </h3>
+                  <div className="space-y-3 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-base text-slate-600">Service Fee</span>
-                      <span className="text-lg font-semibold text-slate-900">{formatCurrency(service.serviceFee)}</span>
+                      <span className="text-slate-600" style={{ fontSize: '15px' }}>Service Fee</span>
+                      <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
+                        {formatCurrency(service.serviceFee)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-base text-slate-600">State Fee</span>
-                      <span className="text-lg font-semibold text-slate-900">{formatCurrency(service.stateFee)}</span>
+                      <span className="text-slate-600" style={{ fontSize: '15px' }}>State Fee</span>
+                      <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
+                        {formatCurrency(service.stateFee)}
+                      </span>
                     </div>
-                    <div className="pt-4 border-t-2 border-slate-300">
+                    <div className="pt-3" style={{ borderTop: '2px solid #e2e8f0' }}>
                       <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold text-slate-900">Total</span>
-                        <span className="text-3xl font-bold text-sky-600">{formatCurrency(service.totalPrice)}</span>
+                        <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>Total</span>
+                        <span className="font-bold text-sky-600" style={{ fontSize: '28px' }}>
+                          {formatCurrency(service.totalPrice)}
+                        </span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Service Details Section */}
-                <div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-6">Service Details</h3>
-                  <div className="space-y-5">
-                    <div className="flex items-start gap-3">
-                      <Clock className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
+                {/* Quick Details */}
+                <div className="mb-6 pb-6" style={{ borderBottom: '2px solid #e2e8f0' }}>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-sky-600 flex-shrink-0" />
                       <div>
-                        <p className="text-base font-medium text-slate-900">Processing Time</p>
-                        <p className="text-base text-slate-600">{service.processingTime}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Tag className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-base font-medium text-slate-900">Category</p>
-                        <p className="text-base text-slate-600">{service.category.replace(/_/g, ' ')}</p>
+                        <p className="font-medium text-slate-900" style={{ fontSize: '14px' }}>
+                          {service.processingTime}
+                        </p>
+                        <p className="text-slate-600" style={{ fontSize: '13px' }}>Processing time</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Satisfaction Guarantee */}
-                <div className="p-5 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+                {/* Guarantee Badge */}
+                <div
+                  className="bg-emerald-50 rounded-lg"
+                  style={{
+                    border: '1px solid #a7f3d0',
+                    padding: '16px',
+                  }}
+                >
                   <div className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-base font-semibold text-emerald-900 mb-2">100% Satisfaction Guarantee</p>
-                      <p className="text-sm text-emerald-700 leading-relaxed">
-                        If we can't complete your filing, we'll refund your service fee.
+                      <p className="font-semibold text-emerald-900 mb-1" style={{ fontSize: '14px' }}>
+                        100% Satisfaction Guarantee
+                      </p>
+                      <p className="text-emerald-700" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                        Full refund if we can't complete your filing
                       </p>
                     </div>
                   </div>
@@ -183,21 +236,26 @@ export default function ServiceDetailPage() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Form Section */}
-      <div className="bg-white" style={{ borderTop: '1px solid #e2e8f0', padding: '64px 0' }}>
-        <div style={{ maxWidth: '1024px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h2 className="font-semibold" style={{ fontSize: '36px', color: '#0f172a', marginBottom: '12px' }}>
-              Complete Your Order
-            </h2>
-            <p style={{ fontSize: '16px', color: '#64748b' }}>
-              Fill out the form below to get started with your {service.name.toLowerCase()}
-            </p>
+          {/* Right Column - Complete Your Order Form */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-xl" style={{
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+            }}>
+              <div style={{ padding: '32px 32px 24px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                  <h2 className="font-semibold" style={{ fontSize: '32px', color: '#0f172a', marginBottom: '8px', lineHeight: '1.2' }}>
+                    Complete Your Order
+                  </h2>
+                  <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>
+                    Fill out the form below to get started with your {service.name.toLowerCase()}
+                  </p>
+                </div>
+                <LLCFormationWizard serviceId={service.id} />
+              </div>
+            </div>
           </div>
-          <LLCFormationWizard serviceId={service.id} />
         </div>
       </div>
     </div>

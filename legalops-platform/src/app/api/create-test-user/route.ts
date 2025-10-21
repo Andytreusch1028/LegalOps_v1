@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
+import { UserRole } from '@/generated/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user already exists
+    // Check authentication
     const existingUser = await prisma.user.findUnique({
       where: { email: 'admin@legalops.com' }
     });
@@ -27,15 +28,19 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         email: 'admin@legalops.com',
-        name: 'Admin User',
-        password: hashedPassword,
-        role: 'SITE_ADMIN',
+        firstName: 'Admin',
+        lastName: 'User',
+        passwordHash: hashedPassword,
+        userType: 'SITE_ADMIN',
+        role: UserRole.ADMIN,
       },
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         role: true,
+        userType: true,
         createdAt: true,
       },
     });
