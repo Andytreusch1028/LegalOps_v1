@@ -416,6 +416,7 @@ model Order {
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMethod   String?
   stripePaymentId String?
+  stripePaymentIntentId String?
 
   // Risk Assessment
   riskScore       Int?     // 0-100 risk score from AI
@@ -444,10 +445,12 @@ model Order {
 
 enum OrderStatus {
   PENDING
+  PAID
   PROCESSING
   COMPLETED
   CANCELLED
   REFUNDED
+  PAYMENT_FAILED
 }
 
 enum PaymentStatus {
@@ -645,5 +648,60 @@ enum ReviewDecision {
   DECLINED        // Admin declined order
   VERIFIED        // Customer verified identity
   MONITORING      // Approved but monitoring
+}
+
+// ============================================================================
+// SERVICE CATALOG
+// ============================================================================
+
+model Service {
+  id                String   @id @default(cuid())
+
+  // Service Identification
+  name              String   // "LLC Formation", "Annual Report - LLC", etc.
+  slug              String   @unique // "llc-formation", "llc-annual-report"
+  orderType         String   // Link to OrderType enum
+  category          String   // FORMATION, ANNUAL_COMPLIANCE, AMENDMENTS, DISSOLUTION, CERTIFICATES
+
+  // Description
+  shortDescription  String?  // Brief description for listings
+  longDescription   String?  @db.Text // Detailed description
+
+  // Pricing
+  serviceFee        Decimal  @db.Decimal(10, 2) // LegalOps service fee
+  stateFee          Decimal  @db.Decimal(10, 2) // Florida state filing fee
+  totalPrice        Decimal  @db.Decimal(10, 2) // serviceFee + stateFee
+  rushFeeAvailable  Boolean  @default(false)
+  rushFee           Decimal  @db.Decimal(10, 2) @default(0)
+
+  // Service Details
+  entityTypes       String[] // ["LLC", "CORPORATION"] - which entities this applies to
+  processingTime    String?  // "1-2 business days", "Instant", "5-7 business days"
+  filingMethod      String   @default("online") // "online", "mail", "both"
+
+  // Requirements (JSON structure)
+  requirements      Json?    // List of required information/documents
+  formFields        Json?    // Dynamic form fields for this service
+
+  // Display & Organization
+  isActive          Boolean  @default(true)
+  isPopular         Boolean  @default(false)
+  isFeatured        Boolean  @default(false)
+  displayOrder      Int      @default(0)
+  icon              String?  // Icon name or emoji
+
+  // SEO & Marketing
+  metaTitle         String?
+  metaDescription   String?
+  keywords          String[]
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([category])
+  @@index([slug])
+  @@index([isActive])
+  @@map("services")
 }
 

@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/orders - Create a new order
+ * Supports both old and new order creation patterns
  */
 export async function POST(request: NextRequest) {
   try {
@@ -113,9 +114,56 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { businessName, entityType, orderType, state } = body;
+    const { serviceId, orderType, orderData, subtotal, tax, total } = body;
 
-    // Validate required fields
+    // Generate unique order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    // Handle new service-based orders (with serviceId)
+    if (serviceId && orderData) {
+      // Fetch service to get pricing
+      const service = await prisma.service.findUnique({
+        where: { id: serviceId },
+      });
+
+      if (!service) {
+        return NextResponse.json(
+          { error: "Service not found" },
+          { status: 404 }
+        );
+      }
+
+      // Calculate total with rush fee if applicable
+      let orderTotal = service.totalPrice;
+      if (orderData.rushProcessing && service.rushFeeAvailable) {
+        orderTotal += service.rushFee || 0;
+      }
+
+      // Create order with new schema
+      const order = await prisma.order.create({
+        data: {
+          userId: user.id,
+          orderNumber,
+          orderStatus: "PENDING",
+          subtotal: service.serviceFee,
+          tax: 0,
+          total: orderTotal,
+          paymentStatus: "PENDING",
+        },
+      });
+
+      return NextResponse.json(
+        {
+          message: "Order created successfully",
+          order,
+          orderId: order.id,
+        },
+        { status: 201 }
+      );
+    }
+
+    // Fallback for old pattern (if needed for backward compatibility)
+    const { businessName, entityType, state } = body;
     if (!businessName || !entityType || !orderType || !state) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -123,12 +171,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique order number
-    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
     // Calculate pricing based on entity type
-    let basePrice = 299.00; // Default price
-
+    let basePrice = 299.00;
     if (entityType === 'NONPROFIT_CORPORATION') {
       basePrice = 399.00;
     } else if (entityType === 'PROFESSIONAL_LLC' || entityType === 'PROFESSIONAL_CORPORATION') {
@@ -144,47 +188,24 @@ export async function POST(request: NextRequest) {
       basePrice = 149.00;
     }
 
-    const totalAmount = basePrice;
-
-    // Create order
+    // Create order with old schema (for backward compatibility)
     const order = await prisma.order.create({
       data: {
         userId: user.id,
         orderNumber,
-        type: orderType,
-        status: "PENDING",
-        businessName,
-        entityType,
-        state,
-        basePrice,
-        totalAmount,
+        orderStatus: "PENDING",
+        subtotal: basePrice,
+        tax: 0,
+        total: basePrice,
         paymentStatus: "PENDING",
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    // Create initial status update
-    await prisma.statusUpdate.create({
-      data: {
-        orderId: order.id,
-        status: "PENDING",
-        message: "Order created and awaiting payment",
-        isPublic: true,
       },
     });
 
     return NextResponse.json(
-      { 
+      {
         message: "Order created successfully",
-        order 
+        order,
+        orderId: order.id,
       },
       { status: 201 }
     );
