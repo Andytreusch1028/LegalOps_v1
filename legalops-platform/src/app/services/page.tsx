@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, FileText, RefreshCw, XCircle, Award } from 'lucide-react';
+import { Building2, FileText, RefreshCw, XCircle, Award, Grid3x3 } from 'lucide-react';
 import { ServiceCard } from '@/components/legalops/cards/ServiceCard';
 import { EmptyState } from '@/components/legalops/layout/EmptyState';
+import { LiquidGlassIcon, IconCategory } from '@/components/legalops/icons/LiquidGlassIcon';
 import { cn } from '@/components/legalops/theme';
 
 interface Service {
@@ -63,12 +64,12 @@ export default function ServicesPage() {
   }, []);
 
   const categories = [
-    { value: 'all', label: 'All Services', icon: Building2 },
-    { value: 'FORMATION', label: 'Formation', icon: Building2 },
-    { value: 'ANNUAL_COMPLIANCE', label: 'Annual Compliance', icon: RefreshCw },
-    { value: 'AMENDMENTS', label: 'Amendments', icon: FileText },
-    { value: 'DISSOLUTION', label: 'Dissolution', icon: XCircle },
-    { value: 'CERTIFICATES', label: 'Certificates', icon: Award },
+    { value: 'all', label: 'All Services', icon: Grid3x3, category: 'info' as IconCategory },
+    { value: 'FORMATION', label: 'Formation', icon: Building2, category: 'business' as IconCategory },
+    { value: 'ANNUAL_COMPLIANCE', label: 'Annual Compliance', icon: RefreshCw, category: 'documents' as IconCategory },
+    { value: 'AMENDMENTS', label: 'Amendments', icon: FileText, category: 'documents' as IconCategory },
+    { value: 'DISSOLUTION', label: 'Dissolution', icon: XCircle, category: 'error' as IconCategory },
+    { value: 'CERTIFICATES', label: 'Certificates', icon: Award, category: 'success' as IconCategory },
   ];
 
   const filteredServices = Array.isArray(services)
@@ -119,23 +120,33 @@ export default function ServicesPage() {
       {/* Main Content */}
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px' }}>
 
-        {/* Category Filter */}
+        {/* Category Filter - Liquid Glass Style */}
         <div style={{ marginBottom: '64px' }}>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             {categories.map(cat => (
               <button
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
-                style={{ padding: '12px 24px' }}
                 className={cn(
-                  'inline-flex items-center gap-3 rounded-lg font-medium transition-all duration-200 border',
+                  'inline-flex items-center gap-3 rounded-xl font-medium transition-all duration-200 px-5 py-3',
                   selectedCategory === cat.value
-                    ? 'bg-sky-500 text-white shadow-md border-sky-600'
-                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400'
+                    ? 'bg-white shadow-lg border-2 border-sky-200 scale-105'
+                    : 'bg-white/60 border border-slate-200 hover:bg-white hover:shadow-md hover:scale-102'
                 )}
               >
-                <cat.icon className="w-5 h-5" />
-                <span>{cat.label}</span>
+                <LiquidGlassIcon
+                  icon={cat.icon}
+                  category={cat.category}
+                  size="sm"
+                />
+                <span className={cn(
+                  'text-sm',
+                  selectedCategory === cat.value
+                    ? 'text-slate-900 font-semibold'
+                    : 'text-slate-600'
+                )}>
+                  {cat.label}
+                </span>
               </button>
             ))}
           </div>

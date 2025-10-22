@@ -1,8 +1,9 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Check, Shield, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Shield, Clock, Info, AlertCircle } from 'lucide-react';
 import { cn } from '@/components/legalops/theme';
+import { LiquidGlassIcon } from '@/components/legalops/icons/LiquidGlassIcon';
 
 /**
  * FormWizard - Reusable Multi-Step Form Component
@@ -41,7 +42,7 @@ export interface FormWizardProps {
   estimatedTime?: string;
 }
 
-export function FormWizard({
+export const FormWizard = ({
   steps,
   currentStep,
   onNext,
@@ -52,7 +53,40 @@ export function FormWizard({
   children,
   showTrustSignals = true,
   estimatedTime = '5-10 Minutes',
-}: FormWizardProps) {
+}: FormWizardProps) => {
+  // Helper function for liquid glass step numbers
+  const renderStepNumber = (number: number, isActive: boolean) => (
+    <div 
+      className={cn(
+        'w-12 h-12 rounded-full flex items-center justify-center font-semibold relative overflow-hidden',
+        isActive ? 'text-white' : 'text-slate-600'
+      )}
+      style={{
+        background: isActive 
+          ? 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)'
+          : 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        boxShadow: isActive
+          ? '0 6px 16px -2px rgba(14, 165, 233, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4)'
+          : '0 4px 12px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.7)',
+        border: '1px solid rgba(255, 255, 255, 0.4)'
+      }}
+    >
+      {/* Glass highlight effect */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%)',
+          transform: 'translateY(-20%)',
+        }}
+      />
+      <span className="relative" style={{ 
+        textShadow: '0 2px 3px rgba(0,0,0,0.2)',
+        fontSize: '16px'
+      }}>
+        {number}
+      </span>
+    </div>
+  );
   const progress = (currentStep / steps.length) * 100;
   const isLastStep = currentStep === steps.length;
 
@@ -60,29 +94,29 @@ export function FormWizard({
     <div className="w-full">
       {/* Progress Bar - Dashboard Style with Enhanced Visual Hierarchy */}
       <div
-        className="mb-12 bg-white rounded-xl"
+        className="mb-8 bg-white rounded-xl"
         style={{
           border: '1px solid #e2e8f0',
           borderLeft: '4px solid #0ea5e9',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
-          padding: '32px',
+          padding: '20px 24px',
         }}
       >
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-semibold text-slate-900" style={{ fontSize: '24px', marginBottom: '12px' }}>
+            <h3 className="font-semibold text-slate-900" style={{ fontSize: '18px', marginBottom: '6px' }}>
               Step {currentStep} of {steps.length}
             </h3>
-            <p className="text-slate-600" style={{ fontSize: '16px', lineHeight: '1.6' }}>
+            <p className="text-slate-600" style={{ fontSize: '14px', lineHeight: '1.5' }}>
               {steps[currentStep - 1].name} - {steps[currentStep - 1].description}
             </p>
           </div>
           <div
-            className="font-semibold text-sky-600 bg-sky-50 rounded-full"
+            className="font-semibold text-sky-600 bg-sky-50 rounded-full flex-shrink-0"
             style={{
-              fontSize: '16px',
+              fontSize: '14px',
               border: '2px solid #e0f2fe',
-              padding: '12px 24px',
+              padding: '8px 16px',
             }}
           >
             {Math.round(progress)}% Complete
@@ -104,18 +138,31 @@ export function FormWizard({
         <div className="flex justify-between mt-8 gap-2">
           {steps.map((step) => (
             <div key={step.id} className="flex flex-col items-center flex-1">
-              <div className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-300",
-                currentStep > step.id
-                  ? "bg-sky-500 text-white shadow-md"
-                  : currentStep === step.id
-                  ? "bg-sky-500 text-white ring-4 ring-sky-100 shadow-lg"
-                  : "bg-slate-200 text-slate-500"
+              {currentStep > step.id ? (
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-300 text-white relative overflow-hidden"
+                  style={{
+                    fontSize: '16px',
+                    background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                    boxShadow: '0 6px 16px -2px rgba(14, 165, 233, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                  }}
+                >
+                  {/* Glass highlight effect */}
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%)',
+                      transform: 'translateY(-20%)',
+                    }}
+                  />
+                  <Check className="w-5 h-5 relative" style={{
+                    filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.2))'
+                  }} />
+                </div>
+              ) : (
+                renderStepNumber(step.id, currentStep === step.id)
               )}
-              style={{ fontSize: '16px' }}
-              >
-                {currentStep > step.id ? <Check className="w-6 h-6" /> : step.id}
-              </div>
               <span className={cn(
                 "mt-3 text-center hidden sm:block",
                 currentStep >= step.id ? "text-slate-900 font-semibold" : "text-slate-500"
@@ -129,7 +176,7 @@ export function FormWizard({
         </div>
       </div>
 
-      {/* Trust Signals - Enhanced Dashboard style */}
+      {/* Trust Signals - Liquid Glass Style */}
       {showTrustSignals && (
         <div
           className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 bg-white rounded-xl"
@@ -140,9 +187,11 @@ export function FormWizard({
           }}
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-sky-50 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-6 h-6 text-sky-600" />
-            </div>
+            <LiquidGlassIcon
+              icon={Shield}
+              category="info"
+              size="lg"
+            />
             <div>
               <p className="font-semibold text-slate-900" style={{ fontSize: '16px', marginBottom: '4px', lineHeight: '1.5' }}>
                 100% Secure
@@ -153,9 +202,11 @@ export function FormWizard({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
-              <Check className="w-6 h-6 text-emerald-600" />
-            </div>
+            <LiquidGlassIcon
+              icon={Check}
+              category="success"
+              size="lg"
+            />
             <div>
               <p className="font-semibold text-slate-900" style={{ fontSize: '16px', marginBottom: '4px', lineHeight: '1.5' }}>
                 Accuracy Guaranteed
@@ -166,9 +217,11 @@ export function FormWizard({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-6 h-6 text-amber-600" />
-            </div>
+            <LiquidGlassIcon
+              icon={Clock}
+              category="warning"
+              size="lg"
+            />
             <div>
               <p className="font-semibold text-slate-900" style={{ fontSize: '16px', marginBottom: '4px', lineHeight: '1.5' }}>
                 {estimatedTime}
@@ -222,14 +275,25 @@ export function FormWizard({
             <button
               type="button"
               onClick={onBack}
-              className="flex items-center gap-3 border-2 border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-white hover:border-slate-400 hover:shadow-md transition-all duration-200"
+              className="flex items-center gap-3 text-slate-700 rounded-lg font-semibold transition-all duration-200 relative overflow-hidden"
               style={{
                 fontSize: '16px',
                 padding: '16px 32px',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(255, 255, 255, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.7)'
               }}
             >
-              <ChevronLeft className="w-5 h-5" />
-              Back
+              {/* Glass highlight effect */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%)',
+                  transform: 'translateY(-30%)',
+                }}
+              />
+              <ChevronLeft className="w-5 h-5 relative" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }} />
+              <span className="relative">Back</span>
             </button>
           )}
 
@@ -237,14 +301,25 @@ export function FormWizard({
             <button
               type="button"
               onClick={onNext}
-              className="flex-1 flex items-center justify-center gap-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="flex-1 flex items-center justify-center gap-3 text-white rounded-lg font-semibold transition-all duration-200 relative overflow-hidden"
               style={{
                 fontSize: '16px',
                 padding: '16px 32px',
+                background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                boxShadow: '0 6px 16px -2px rgba(14, 165, 233, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.4)',
+                border: '1px solid rgba(255, 255, 255, 0.4)'
               }}
             >
-              Continue
-              <ChevronRight className="w-5 h-5" />
+              {/* Glass highlight effect */}
+              <div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 50%)',
+                  transform: 'translateY(-30%)',
+                }}
+              />
+              <span className="relative">Continue</span>
+              <ChevronRight className="w-5 h-5 relative" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }} />
             </button>
           )}
 
@@ -266,7 +341,7 @@ export function FormWizard({
       </div>
     </div>
   );
-}
+};
 
 /**
  * FormInput - Standardized input following design guidelines
@@ -290,7 +365,9 @@ export function FormInput({ label, error, tooltip, required, className, ...props
         {label} {required && <span className="text-red-500">*</span>}
         {tooltip && (
           <div className="group relative">
-            <span className="w-4 h-4 text-slate-400 cursor-help">ⓘ</span>
+            <div className="cursor-help">
+              <Info className="w-4 h-4 text-slate-400" />
+            </div>
             <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-4 bg-slate-900 text-white text-sm rounded-lg shadow-lg z-10">
               {tooltip}
             </div>
@@ -308,7 +385,7 @@ export function FormInput({ label, error, tooltip, required, className, ...props
       />
       {error && (
         <p className="mt-3 text-sm text-red-600 flex items-center gap-2">
-          <span>⚠️</span>
+          <AlertCircle className="w-4 h-4" />
           {error}
         </p>
       )}
@@ -332,7 +409,9 @@ export function FormTextArea({ label, error, tooltip, required, className, ...pr
         {label} {required && <span className="text-red-500">*</span>}
         {tooltip && (
           <div className="group relative">
-            <span className="w-4 h-4 text-slate-400 cursor-help">ⓘ</span>
+            <div className="cursor-help">
+              <Info className="w-4 h-4 text-slate-400" />
+            </div>
             <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-4 bg-slate-900 text-white text-sm rounded-lg shadow-lg z-10">
               {tooltip}
             </div>
@@ -350,7 +429,7 @@ export function FormTextArea({ label, error, tooltip, required, className, ...pr
       />
       {error && (
         <p className="mt-3 text-sm text-red-600 flex items-center gap-2">
-          <span>⚠️</span>
+          <AlertCircle className="w-4 h-4" />
           {error}
         </p>
       )}

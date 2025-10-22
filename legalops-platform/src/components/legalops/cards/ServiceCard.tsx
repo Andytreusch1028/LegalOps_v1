@@ -1,13 +1,18 @@
 import React from 'react';
-import { Building2, ChevronRight } from 'lucide-react';
+import { Building2, ChevronRight, LucideIcon } from 'lucide-react';
 import { cn, cardBase, cardHover } from '../theme';
 import { formatCurrency } from '../utils';
+import { LiquidGlassIcon, IconCategory } from '../icons/LiquidGlassIcon';
 
 export interface ServiceCardProps {
   title: string;
   description: string;
   price: number;
-  icon?: React.ReactNode;
+  /** Lucide icon component (preferred) or ReactNode for backwards compatibility */
+  icon?: LucideIcon | React.ReactNode;
+  /** Category determines the Liquid Glass gradient color */
+  category?: IconCategory;
+  /** Legacy accentColor prop (maps to category) - deprecated, use category instead */
   accentColor?: 'sky' | 'green' | 'amber' | 'purple';
   badge?: string;
   onClick?: () => void;
@@ -19,11 +24,21 @@ export function ServiceCard({
   description,
   price,
   icon,
+  category,
   accentColor = 'sky',
   badge,
   onClick,
   loading = false,
 }: ServiceCardProps) {
+  // Map legacy accentColor to category for backwards compatibility
+  const resolvedCategory: IconCategory = category || (
+    accentColor === 'sky' ? 'business' :
+    accentColor === 'green' ? 'documents' :
+    accentColor === 'amber' ? 'user' :
+    accentColor === 'purple' ? 'payment' :
+    'business'
+  );
+
   const accentClasses = {
     sky: 'border-l-sky-500',
     green: 'border-l-emerald-500',
@@ -37,6 +52,9 @@ export function ServiceCard({
     amber: 'bg-amber-100 text-amber-700 border-amber-200',
     purple: 'bg-violet-100 text-violet-700 border-violet-200',
   };
+
+  // Check if icon is a Lucide component (function) or ReactNode
+  const isLucideIcon = typeof icon === 'function';
 
   if (loading) {
     return (
@@ -73,9 +91,23 @@ export function ServiceCard({
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4 flex-1">
-          <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 flex-shrink-0">
-            {icon || <Building2 className="w-6 h-6" />}
-          </div>
+          {/* Liquid Glass Icon */}
+          {isLucideIcon ? (
+            <LiquidGlassIcon
+              icon={icon as LucideIcon}
+              category={resolvedCategory}
+              size="lg"
+            />
+          ) : (
+            <LiquidGlassIcon
+              icon={Building2}
+              category={resolvedCategory}
+              size="lg"
+            >
+              {icon}
+            </LiquidGlassIcon>
+          )}
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
