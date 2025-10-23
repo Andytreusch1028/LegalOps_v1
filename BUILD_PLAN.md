@@ -187,6 +187,7 @@ model Package {
   // Included Services
   includesRA      Boolean  @default(false)
   raYears         Int      @default(0)
+  raAnnualPrice   Decimal? @db.Decimal(10, 2) // 🆕 GAP #4: RA pricing ($199/yr, emphasize AI value)
   includesEIN     Boolean  @default(false)
   includesAI      Boolean  @default(false)
   includesOperatingAgreement Boolean @default(false)
@@ -198,6 +199,12 @@ model Package {
   @@map("packages")
 }
 ```
+
+**🆕 GAP #4: RA Service Pricing Decision:**
+- **Decision:** Keep $199/year (vs Northwest RA's $125/year)
+- **Justification:** AI features (junk detection, summaries, auto-categorization) justify premium pricing
+- **Marketing:** Emphasize AI value-add in RA service marketing materials
+- **Implementation:** Add raAnnualPrice field to Package model to support future pricing tiers
 
 ### Week 3: Basic Customer Dashboard + Package Selection UI (ENHANCED)
 **Objectives:**
@@ -544,27 +551,44 @@ model RAMail {
 
 **Goal:** Add business formation services with compliance tracking and AI-powered document features
 
-### Week 1: Business Entity Management
+### Week 1: Business Entity Management + Nonprofit Formation (ENHANCED)
 **Objectives:**
 - [ ] Create business entity data models
 - [ ] Implement entity formation workflows
 - [ ] Build state-specific compliance tracking
 - [ ] Add deadline management system
+- [ ] **🆕 GAP #2: Add Nonprofit Formation service**
 
 **Activities:**
-- [ ] Design business entity data models (LLC, Corp, etc.)
+- [ ] Design business entity data models (LLC, Corp, Nonprofit)
 - [ ] Create entity formation workflow interface
 - [ ] Implement state-specific requirements (Florida focus)
 - [ ] Build compliance deadline tracking system
 - [ ] Add automated reminder system
 - [ ] Create entity status management
+- [ ] **🆕 Add Nonprofit entity type to BusinessEntity model**
+- [ ] **🆕 Create Nonprofit formation service ($299 + state fees)**
+- [ ] **🆕 Build Nonprofit-specific formation form (501(c)(3) focus)**
+- [ ] **🆕 Add Nonprofit Articles of Incorporation template**
+- [ ] **🆕 Add Nonprofit Bylaws template**
+- [ ] **🆕 Implement IRS Form 1023-EZ guidance (tax-exempt status)**
 
 **Deliverables:**
-- [ ] Business entity data models
+- [ ] Business entity data models (LLC, Corp, Nonprofit)
 - [ ] Entity formation workflow
 - [ ] State compliance tracking system
 - [ ] Deadline management interface
 - [ ] Automated reminder system
+- [ ] **🆕 Nonprofit formation service ($299 + state fees)**
+- [ ] **🆕 Nonprofit formation form and templates**
+- [ ] **🆕 IRS tax-exempt status guidance**
+
+**🆕 GAP #2: Nonprofit Formation Details:**
+- **Service:** Florida Nonprofit Corporation Formation
+- **Pricing:** $299 service fee + state filing fees
+- **Market:** 10-15% of formation market
+- **Includes:** Articles of Incorporation, Bylaws, IRS Form 1023-EZ guidance
+- **Competitive:** Matches LegalZoom ($299) and ZenBusiness ($299)
 
 ### Week 2: Business Detail Pages (NEW)
 **Objectives:**
@@ -663,6 +687,8 @@ model RAMail {
 - [ ] **AI document summarization works on uploaded PDFs**
 - [ ] **Full-text OCR search finds content in documents**
 - [ ] **AI auto-categorizes uploaded documents**
+- [ ] **🆕 GAP #2: Nonprofit formation service is functional ($299 + state fees)**
+- [ ] **🆕 GAP #2: Nonprofit formation form and templates work correctly**
 - [ ] Compliance tracking prevents legal issues
 - [ ] All workflows are tested and optimized
 - [ ] System handles complex business formation scenarios
@@ -672,12 +698,13 @@ model RAMail {
 
 **Goal:** Security hardening, performance optimization, and AI-powered dashboard enhancements
 
-### Week 1: Security Hardening
+### Week 1: Security Hardening + Foreign Qualification (ENHANCED)
 **Objectives:**
 - [ ] Comprehensive security audit
 - [ ] Penetration testing
 - [ ] Data encryption implementation
 - [ ] Security monitoring setup
+- [ ] **🆕 GAP #3: Add Foreign Qualification service**
 
 **Activities:**
 - [ ] Conduct security audit of all components
@@ -686,6 +713,11 @@ model RAMail {
 - [ ] Set up security monitoring and alerting
 - [ ] Add input validation and sanitization
 - [ ] Implement rate limiting and DDoS protection
+- [ ] **🆕 Create Foreign Qualification service ($249 + state fees)**
+- [ ] **🆕 Build Foreign Qualification form (out-of-state entities registering in FL)**
+- [ ] **🆕 Add Application for Authority to Transact Business template**
+- [ ] **🆕 Implement state-of-origin verification**
+- [ ] **🆕 Add Certificate of Good Standing requirement**
 
 **Deliverables:**
 - [ ] Security audit report
@@ -693,6 +725,16 @@ model RAMail {
 - [ ] Data encryption implementation
 - [ ] Security monitoring system
 - [ ] Input validation framework
+- [ ] **🆕 Foreign Qualification service ($249 + state fees)**
+- [ ] **🆕 Foreign Qualification form and templates**
+- [ ] **🆕 State-of-origin verification workflow**
+
+**🆕 GAP #3: Foreign Qualification Details:**
+- **Service:** Foreign Entity Qualification (out-of-state businesses registering in Florida)
+- **Pricing:** $249 service fee + state filing fees
+- **Market:** 5-10% of formation market
+- **Includes:** Application for Authority, Certificate of Good Standing verification
+- **Competitive:** Matches LegalZoom ($199-$299)
 
 ### Week 2: Business Health Score (NEW)
 **Objectives:**
@@ -741,12 +783,14 @@ model BusinessHealthScore {
 }
 ```
 
-### Week 3: AI Action Center + RA Mail Intelligence (NEW)
+### Week 3: AI Action Center + RA Mail Intelligence + Mail Forwarding + SMS (ENHANCED)
 **Objectives:**
 - [ ] Create AI-powered action center
 - [ ] Implement junk mail detection for RA mail
 - [ ] Add AI summaries to RA mail
 - [ ] Build compliance task generation
+- [ ] **🆕 GAP #5: Add physical mail forwarding option**
+- [ ] **🆕 GAP #6: Add SMS notifications for RA mail**
 
 **Activities:**
 - [ ] Create ComplianceTask model in database
@@ -759,6 +803,13 @@ model BusinessHealthScore {
 - [ ] Add junk warning badges to RA mail
 - [ ] Create plain English explanations for each task
 - [ ] Add one-click filing buttons
+- [ ] **🆕 Integrate Twilio for SMS notifications ($0.01/SMS)**
+- [ ] **🆕 Add SMS notification preferences to user settings**
+- [ ] **🆕 Send SMS alerts when new RA mail arrives**
+- [ ] **🆕 Add "Forward Physical Mail" button to RA mail viewer**
+- [ ] **🆕 Create mail forwarding request workflow**
+- [ ] **🆕 Integrate with mail forwarding service (USPS or third-party)**
+- [ ] **🆕 Add mail forwarding tracking**
 
 **Deliverables:**
 - [ ] ComplianceTask database model
@@ -768,6 +819,23 @@ model BusinessHealthScore {
 - [ ] AI summaries on RA mail
 - [ ] Plain English explanations
 - [ ] One-click action buttons
+- [ ] **🆕 SMS notifications for RA mail (Twilio integration)**
+- [ ] **🆕 SMS notification preferences in user settings**
+- [ ] **🆕 Physical mail forwarding option**
+- [ ] **🆕 Mail forwarding request workflow**
+- [ ] **🆕 Mail forwarding tracking system**
+
+**🆕 GAP #5: Physical Mail Forwarding Details:**
+- **Feature:** Option to forward physical RA mail to customer's address
+- **Pricing:** $5/item or $25/month unlimited (to be determined)
+- **Integration:** USPS or third-party mail forwarding service
+- **Use Case:** Customers who want original documents (not just scans)
+
+**🆕 GAP #6: SMS Notifications Details:**
+- **Feature:** SMS alerts when new RA mail arrives
+- **Integration:** Twilio ($0.01/SMS)
+- **User Control:** Opt-in/opt-out in user settings
+- **Messages:** "New RA mail from [Sender] - View in dashboard: [link]"
 
 **Database Schema:**
 ```prisma
@@ -832,6 +900,10 @@ model ComplianceTask {
 - [ ] **AI action center shows urgent and recommended tasks**
 - [ ] **RA mail has AI summaries and junk detection**
 - [ ] **Live chat and help center functional**
+- [ ] **🆕 GAP #3: Foreign Qualification service is functional ($249 + state fees)**
+- [ ] **🆕 GAP #5: Physical mail forwarding option works**
+- [ ] **🆕 GAP #6: SMS notifications send when new RA mail arrives**
+- [ ] **🆕 GAP #6: SMS notification preferences work in user settings**
 - [ ] Performance meets or exceeds requirements
 - [ ] Comprehensive monitoring and alerting in place
 - [ ] Production infrastructure is ready and tested
