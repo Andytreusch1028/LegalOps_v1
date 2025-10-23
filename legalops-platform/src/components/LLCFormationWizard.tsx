@@ -359,9 +359,9 @@ export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormation
                     id="sameAsBusinessAddress"
                     checked={sameAsBusinessAddress}
                     onChange={handleSameAsBusinessAddress}
-                    className="w-5 h-5 text-sky-600 rounded border-gray-300 focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                    className="w-5 h-5 text-sky-600 rounded border-gray-300 focus:ring-2 focus:ring-sky-500 cursor-pointer flex-shrink-0"
                   />
-                  <label htmlFor="sameAsBusinessAddress" className="ml-4 font-medium text-gray-900 cursor-pointer" style={{ fontSize: '16px', lineHeight: '1.5' }}>
+                  <label htmlFor="sameAsBusinessAddress" className="font-medium text-gray-900 cursor-pointer" style={{ fontSize: '16px', lineHeight: '1.5', marginLeft: '12px' }}>
                     Same as principal address
                   </label>
                 </div>
@@ -752,6 +752,51 @@ export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormation
                       <p className="text-slate-600">{manager.email} • {manager.phone}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing Summary */}
+            <div className="mt-12">
+              <div
+                className="rounded-xl bg-gradient-to-br from-sky-50 to-blue-50"
+                style={{
+                  border: '2px solid #0ea5e9',
+                  boxShadow: '0 4px 12px rgba(14, 165, 233, 0.15)',
+                  padding: '32px',
+                }}
+              >
+                <h3 className="font-semibold text-slate-900 mb-8" style={{ fontSize: '24px', lineHeight: '1.4' }}>
+                  Pricing Summary
+                </h3>
+                <div className="space-y-4" style={{ fontSize: '18px', lineHeight: '1.6' }}>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-700 font-medium">LLC Formation Service</span>
+                    <span className="text-slate-900 font-semibold">$125.00</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-700 font-medium">State Filing Fee</span>
+                    <span className="text-slate-900 font-semibold">$125.00</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-700 font-medium">Registered Agent Fee (1st Year)</span>
+                    <span className="text-emerald-600 font-semibold">$0.00</span>
+                  </div>
+                  {formData.rushProcessing && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-700 font-medium">Rush Processing</span>
+                      <span className="text-slate-900 font-semibold">$50.00</span>
+                    </div>
+                  )}
+                  <div
+                    className="pt-4 mt-4 flex justify-between items-center"
+                    style={{ borderTop: '2px solid #0ea5e9' }}
+                  >
+                    <span className="text-slate-900 font-bold" style={{ fontSize: '20px' }}>Total</span>
+                    <span className="text-sky-600 font-bold" style={{ fontSize: '24px' }}>
+                      ${formData.rushProcessing ? '300.00' : '250.00'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

@@ -85,11 +85,13 @@ export function ServiceCard({
         cardHover,
         'border-l-4',
         accentClasses[accentColor],
-        'p-6 cursor-pointer group'
+        'pl-8 pr-6 pb-6 cursor-pointer group'
       )}
+      style={{ paddingTop: '32px' }}
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-4">
+        <span className="w-3" />
         <div className="flex items-start gap-4 flex-1">
           {/* Liquid Glass Icon */}
           {isLucideIcon ? (
@@ -128,8 +130,11 @@ export function ServiceCard({
       </div>
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-        <div className="text-2xl font-semibold text-slate-900">
-          {formatCurrency(price)}
+        <div className="flex items-center">
+          <span className="w-3" />
+          <div className="text-2xl font-semibold text-slate-900">
+            {formatCurrency(price)}
+          </div>
         </div>
         <div
           className="flex items-center gap-2 text-sky-600 font-medium text-sm group-hover:gap-3 transition-all"

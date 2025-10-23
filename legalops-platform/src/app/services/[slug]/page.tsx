@@ -73,16 +73,23 @@ export default function ServiceDetailPage() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)' }}>
       {/* Hero Header */}
       <div className="bg-white" style={{ borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 24px', textAlign: 'center' }}>
-          <div style={{ marginBottom: '24px' }}>
-            <span className="text-6xl">{service.icon}</span>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-4"></div>
+            <div className="lg:col-span-8">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <span className="text-5xl">{service.icon}</span>
+                <div style={{ textAlign: 'left' }}>
+                  <h1 className="font-semibold tracking-tight" style={{ fontSize: '48px', color: '#0f172a', marginBottom: '8px' }}>
+                    {service.name}
+                  </h1>
+                  <p style={{ fontSize: '18px', color: '#64748b' }}>
+                    {service.shortDescription}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="font-semibold tracking-tight" style={{ fontSize: '48px', color: '#0f172a', marginBottom: '16px' }}>
-            {service.name}
-          </h1>
-          <p style={{ fontSize: '18px', color: '#64748b', maxWidth: '768px', margin: '0 auto' }}>
-            {service.shortDescription}
-          </p>
         </div>
       </div>
 
@@ -187,6 +194,14 @@ export default function ServiceDetailPage() {
                         {formatCurrency(service.stateFee)}
                       </span>
                     </div>
+                    {service.registeredAgentFee !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600" style={{ fontSize: '15px' }}>Registered Agent Fee (1st year)</span>
+                        <span className="font-semibold text-emerald-600" style={{ fontSize: '16px' }}>
+                          {service.registeredAgentFee === 0 ? 'FREE' : formatCurrency(service.registeredAgentFee)}
+                        </span>
+                      </div>
+                    )}
                     <div className="pt-3" style={{ borderTop: '2px solid #e2e8f0' }}>
                       <div className="flex justify-between items-center">
                         <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>Total</span>

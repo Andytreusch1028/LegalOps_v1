@@ -670,7 +670,8 @@ model Service {
   // Pricing
   serviceFee        Decimal  @db.Decimal(10, 2) // LegalOps service fee
   stateFee          Decimal  @db.Decimal(10, 2) // Florida state filing fee
-  totalPrice        Decimal  @db.Decimal(10, 2) // serviceFee + stateFee
+  registeredAgentFee Decimal @db.Decimal(10, 2) @default(0) // Registered agent fee (free first year for formations)
+  totalPrice        Decimal  @db.Decimal(10, 2) // serviceFee + stateFee + registeredAgentFee
   rushFeeAvailable  Boolean  @default(false)
   rushFee           Decimal  @db.Decimal(10, 2) @default(0)
 

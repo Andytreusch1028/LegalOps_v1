@@ -30,7 +30,7 @@ async function main() {
   // Un-dismiss it
   const updated = await prisma.notice.update({
     where: { id: approvalNotice.id },
-    data: {
+        data: {
       isDismissed: false,
       isRead: false,
     }

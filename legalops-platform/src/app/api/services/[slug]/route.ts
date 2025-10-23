@@ -25,6 +25,7 @@ export async function GET(
         totalPrice: true,
         serviceFee: true,
         stateFee: true,
+        registeredAgentFee: true,
         icon: true,
         processingTime: true,
         category: true,

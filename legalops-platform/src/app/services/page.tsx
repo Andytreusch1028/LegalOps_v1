@@ -64,12 +64,12 @@ export default function ServicesPage() {
   }, []);
 
   const categories = [
-    { value: 'all', label: 'All Services', icon: Grid3x3, category: 'info' as IconCategory },
+    { value: 'all', label: 'All Services', icon: Grid3x3, category: 'estate' as IconCategory },
     { value: 'FORMATION', label: 'Formation', icon: Building2, category: 'business' as IconCategory },
-    { value: 'ANNUAL_COMPLIANCE', label: 'Annual Compliance', icon: RefreshCw, category: 'documents' as IconCategory },
-    { value: 'AMENDMENTS', label: 'Amendments', icon: FileText, category: 'documents' as IconCategory },
-    { value: 'DISSOLUTION', label: 'Dissolution', icon: XCircle, category: 'error' as IconCategory },
-    { value: 'CERTIFICATES', label: 'Certificates', icon: Award, category: 'success' as IconCategory },
+    { value: 'ANNUAL_COMPLIANCE', label: 'Annual Compliance', icon: RefreshCw, category: 'success' as IconCategory },
+    { value: 'AMENDMENTS', label: 'Amendments', icon: FileText, category: 'warning' as IconCategory },
+    { value: 'DISSOLUTION', label: 'Dissolution', icon: XCircle, category: 'payment' as IconCategory },
+    { value: 'CERTIFICATES', label: 'Certificates', icon: Award, category: 'documents' as IconCategory },
   ];
 
   const filteredServices = Array.isArray(services)
@@ -98,7 +98,7 @@ export default function ServicesPage() {
       ANNUAL_COMPLIANCE: 'green',
       AMENDMENTS: 'amber',
       DISSOLUTION: 'purple',
-      CERTIFICATES: 'sky',
+      CERTIFICATES: 'green',
     };
     return colors[category] || 'sky';
   };
@@ -123,32 +123,47 @@ export default function ServicesPage() {
         {/* Category Filter - Liquid Glass Style */}
         <div style={{ marginBottom: '64px' }}>
           <div className="flex flex-wrap gap-4">
-            {categories.map(cat => (
-              <button
-                key={cat.value}
-                onClick={() => setSelectedCategory(cat.value)}
-                className={cn(
-                  'inline-flex items-center gap-3 rounded-xl font-medium transition-all duration-200 px-5 py-3',
-                  selectedCategory === cat.value
-                    ? 'bg-white shadow-lg border-2 border-sky-200 scale-105'
-                    : 'bg-white/60 border border-slate-200 hover:bg-white hover:shadow-md hover:scale-102'
-                )}
-              >
-                <LiquidGlassIcon
-                  icon={cat.icon}
-                  category={cat.category}
-                  size="sm"
-                />
-                <span className={cn(
-                  'text-sm',
-                  selectedCategory === cat.value
-                    ? 'text-slate-900 font-semibold'
-                    : 'text-slate-600'
-                )}>
-                  {cat.label}
-                </span>
-              </button>
-            ))}
+            {categories.map(cat => {
+              // Define color schemes for each category
+              const colorSchemes: Record<string, { border: string; bg: string; shadow: string }> = {
+                all: { border: 'border-slate-300', bg: 'bg-gradient-to-br from-slate-50 to-slate-100', shadow: 'shadow-slate-200/50' },
+                FORMATION: { border: 'border-sky-300', bg: 'bg-gradient-to-br from-sky-50 to-sky-100', shadow: 'shadow-sky-200/50' },
+                ANNUAL_COMPLIANCE: { border: 'border-emerald-300', bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100', shadow: 'shadow-emerald-200/50' },
+                AMENDMENTS: { border: 'border-amber-300', bg: 'bg-gradient-to-br from-amber-50 to-amber-100', shadow: 'shadow-amber-200/50' },
+                DISSOLUTION: { border: 'border-purple-300', bg: 'bg-gradient-to-br from-purple-50 to-purple-100', shadow: 'shadow-purple-200/50' },
+                CERTIFICATES: { border: 'border-green-300', bg: 'bg-gradient-to-br from-green-50 to-green-100', shadow: 'shadow-green-200/50' },
+              };
+
+              const colors = colorSchemes[cat.value] || colorSchemes.all;
+
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setSelectedCategory(cat.value)}
+                  className={cn(
+                    'inline-flex items-center gap-3 rounded-xl font-medium transition-all duration-200 pl-4 pr-8 py-3',
+                    selectedCategory === cat.value
+                      ? `${colors.bg} shadow-lg border-2 ${colors.border} ${colors.shadow} scale-105`
+                      : 'bg-white/60 border border-slate-200 hover:bg-white hover:shadow-md hover:scale-102'
+                  )}
+                >
+                  <LiquidGlassIcon
+                    icon={cat.icon}
+                    category={cat.category}
+                    size="sm"
+                  />
+                  <span className={cn(
+                    'text-sm mr-4',
+                    selectedCategory === cat.value
+                      ? 'text-slate-900 font-semibold'
+                      : 'text-slate-600'
+                  )}>
+                    {cat.label}
+                  </span>
+                  <span className="w-2"></span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -163,7 +178,7 @@ export default function ServicesPage() {
             {/* Featured Services Section */}
             {featuredServices.length > 0 && (
               <div style={{ marginBottom: '96px' }}>
-                <div className="mb-8">
+                <div style={{ marginBottom: '24px' }}>
                   <h2 className="text-3xl font-semibold text-slate-900 mb-2">Featured Services</h2>
                   <p className="text-slate-600">Our most popular services to get you started</p>
                 </div>
@@ -187,7 +202,7 @@ export default function ServicesPage() {
             {/* Other Services Section */}
             {otherServices.length > 0 && (
               <div>
-                <div className="mb-8">
+                <div style={{ marginBottom: '24px' }}>
                   <h2 className="text-3xl font-semibold text-slate-900 mb-2">
                     {featuredServices.length > 0 ? 'Other Services' : 'Available Services'}
                   </h2>

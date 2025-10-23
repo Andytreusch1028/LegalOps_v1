@@ -115,9 +115,9 @@
 - [ ] Has working development environment
 - [ ] Can debug common issues independently
 
-## Phase 2: MVP Core (Month 2)
+## Phase 2: MVP Core + Basic Dashboard (Month 2)
 
-**Goal:** Build minimal viable product with authentication and basic tenant management
+**Goal:** Build minimal viable product with authentication, basic tenant management, and customer dashboard foundation
 
 ### Week 1: Project Setup & Architecture
 **Objectives:**
@@ -141,12 +141,13 @@
 - [ ] CI/CD pipeline configuration
 - [ ] Environment setup documentation
 
-### Week 2: Authentication System
+### Week 2: Authentication System + Payment Processing + Tiered Pricing (ENHANCED)
 **Objectives:**
 - [ ] Implement secure user authentication
 - [ ] Create user registration and login flows
 - [ ] Set up JWT token management
-- [ ] Implement basic security measures
+- [ ] Implement Stripe payment integration
+- [ ] **🆕 CRITICAL: Implement tiered pricing packages (Basic/Standard/Premium)**
 
 **Activities:**
 - [ ] Set up NextAuth.js for authentication
@@ -155,35 +156,119 @@
 - [ ] Add JWT token refresh mechanism
 - [ ] Implement password hashing with bcrypt
 - [ ] Add rate limiting for auth endpoints
+- [ ] Integrate Stripe payment processing
+- [ ] Create order management system
+- [ ] **🆕 Create Package model in database (Basic $0, Standard $149, Premium $299)**
+- [ ] **🆕 Seed database with 3 pricing packages**
+- [ ] **🆕 Update Service model to support package-based pricing**
 
 **Deliverables:**
 - [ ] User registration and login system
 - [ ] JWT authentication with refresh tokens
 - [ ] Password security implementation
 - [ ] Rate limiting configuration
+- [ ] Stripe integration
+- [ ] Order management system
 - [ ] Authentication flow documentation
+- [ ] **🆕 Package model with 3 tiers (Basic/Standard/Premium)**
+- [ ] **🆕 Package seeding script**
 
-### Week 3: Multi-Tenant Foundation
+**Database Schema Addition:**
+```prisma
+model Package {
+  id              String   @id @default(cuid())
+  name            String   // "Basic", "Standard", "Premium"
+  slug            String   @unique
+  price           Decimal  @db.Decimal(10, 2) // $0, $149, $299
+  features        Json     // Array of features
+  isActive        Boolean  @default(true)
+  displayOrder    Int
+
+  // Included Services
+  includesRA      Boolean  @default(false)
+  raYears         Int      @default(0)
+  includesEIN     Boolean  @default(false)
+  includesAI      Boolean  @default(false)
+  includesOperatingAgreement Boolean @default(false)
+  includesComplianceCalendar Boolean @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("packages")
+}
+```
+
+### Week 3: Basic Customer Dashboard + Package Selection UI (ENHANCED)
 **Objectives:**
-- [ ] Implement tenant (organization) management
-- [ ] Create role-based access control
-- [ ] Set up tenant isolation
-- [ ] Build basic admin functionality
+- [ ] Create customer dashboard foundation
+- [ ] Build business overview interface
+- [ ] Implement notices system
+- [ ] Create orders tracking page
+- [ ] **🆕 CRITICAL: Build package selection UI on services pages**
+- [ ] **🆕 Update checkout flow to support package-based pricing**
 
 **Activities:**
-- [ ] Create tenant/organization data model
-- [ ] Implement tenant creation during registration
-- [ ] Add role-based access control (owner/staff)
-- [ ] Create tenant switching functionality
-- [ ] Implement basic admin dashboard
-- [ ] Add audit logging for security events
+- [ ] Create dashboard layout (`/dashboard/customer/page.tsx`)
+- [ ] Build business overview cards (My Businesses section)
+- [ ] Implement quick stats (4 metrics: Active Businesses, Orders, Documents, Tasks)
+- [ ] Create Important Notices section with priority badges
+- [ ] Build Orders page with status tracking
+- [ ] Create Profile page (basic settings)
+- [ ] Implement responsive design for mobile
+- [ ] **🆕 Create PackageSelector component (3-tier pricing cards)**
+- [ ] **🆕 Update /services/[slug] page to show package selection**
+- [ ] **🆕 Create package comparison table component**
+- [ ] **🆕 Add "Most Popular" badge to Standard package**
+- [ ] **🆕 Add "Best Value" badge to Premium package**
+- [ ] **🆕 Update checkout flow to calculate pricing based on selected package**
+- [ ] **🆕 Implement upsell screen for Basic package (RA service required)**
 
 **Deliverables:**
-- [ ] Multi-tenant data architecture
-- [ ] Role-based access control system
-- [ ] Tenant management interface
-- [ ] Basic admin dashboard
-- [ ] Audit logging system
+- [ ] Customer dashboard layout
+- [ ] Business overview cards with status badges
+- [ ] Quick stats dashboard (4 metrics)
+- [ ] Notices system (URGENT, ATTENTION, SUCCESS)
+- [ ] Orders tracking page
+- [ ] Profile settings page
+- [ ] Mobile-responsive dashboard
+- [ ] **🆕 PackageSelector component with 3 tiers**
+- [ ] **🆕 Package comparison table**
+- [ ] **🆕 Updated service detail pages with package selection**
+- [ ] **🆕 Updated checkout flow with package-based pricing**
+- [ ] **🆕 Upsell screen for Basic package**
+
+**Database Models:**
+```prisma
+model Notice {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  message     String
+  priority    String   // URGENT, ATTENTION, SUCCESS
+  isDismissed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  serviceType String
+  status      String   // PENDING, PROCESSING, COMPLETED, DECLINED
+  amount      Decimal
+  packageId   String?  // 🆕 Link to selected package
+  package     Package? @relation(fields: [packageId], references: [id])
+  createdAt   DateTime @default(now())
+}
+```
+
+**Files to Modify:**
+- `src/app/services/[slug]/page.tsx` - Add package selector before LLC form
+- `src/app/checkout/[orderId]/page.tsx` - Update pricing calculation
+- `src/components/legalops/checkout/PackageSelector.tsx` - NEW component
+- `src/components/legalops/checkout/PackageComparisonTable.tsx` - NEW component
 
 ### Week 4: UPL Compliance Framework
 **Objectives:**
@@ -211,113 +296,253 @@
 - [ ] Users can register, login, and manage accounts
 - [ ] Multi-tenant architecture works correctly
 - [ ] UPL compliance framework prevents violations
+- [ ] **Customer dashboard displays businesses, orders, and notices**
+- [ ] **Orders tracking system functional**
+- [ ] **🆕 CRITICAL: Tiered pricing packages (Basic/Standard/Premium) implemented**
+- [ ] **🆕 CRITICAL: Package selection UI working on service pages**
+- [ ] **🆕 CRITICAL: Checkout flow calculates pricing based on selected package**
+- [ ] **🆕 CRITICAL: Upsell screen for Basic package (RA service) functional**
 - [ ] All features have comprehensive tests (80%+ coverage)
 - [ ] Application is deployed and accessible
 - [ ] Security measures are in place and tested
 
-## Phase 3: Document Library (Month 3)
+## Phase 3: Document Management + RA Mail (Month 3)
 
-**Goal:** Implement UPL-compliant document library with fill-in-the-blank forms
+**Goal:** Implement customer document upload/download system and registered agent mail inbox
 
-### Week 1: Document Management Foundation
+### Week 1: Document Storage Foundation (Enhanced)
 **Objectives:**
 - [ ] Create document storage and management system
 - [ ] Implement file upload and security
 - [ ] Build document categorization
-- [ ] Set up version control for documents
+- [ ] Set up customer document library
 
 **Activities:**
-- [ ] Set up AWS S3 or similar for document storage
-- [ ] Create document upload/download functionality
-- [ ] Implement document categorization system
-- [ ] Add document version control
-- [ ] Create document access control
-- [ ] Implement document search functionality
+- [ ] Set up Vercel Blob storage for documents
+- [ ] Create Document model in database
+- [ ] Build file upload API (`/api/documents/upload`)
+- [ ] Build file download API (`/api/documents/[id]/download`)
+- [ ] Build document list API (`/api/documents`)
+- [ ] Create FileUpload component (drag-and-drop, multi-file)
+- [ ] Create DocumentCard component with thumbnails
+- [ ] Implement folder organization (Formation, Compliance, Tax, Legal, RA Mail, Other)
 
 **Deliverables:**
-- [ ] Document storage system
-- [ ] File upload/download functionality
-- [ ] Document categorization interface
-- [ ] Version control system
-- [ ] Document search capabilities
+- [ ] Document storage system (Vercel Blob)
+- [ ] File upload/download APIs
+- [ ] Document categorization system
+- [ ] Drag-and-drop upload component
+- [ ] Document card component
 
-### Week 2: Fill-in-the-Blank Form System
+**Database Schema:**
+```prisma
+model Document {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  businessId      String?
+  business        BusinessEntity? @relation(fields: [businessId], references: [id])
+
+  fileName        String
+  fileUrl         String   // Vercel Blob URL
+  fileSize        Int      // bytes
+  fileType        String   // MIME type
+  category        DocumentCategory
+  description     String?
+
+  uploadedAt      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("documents")
+}
+
+enum DocumentCategory {
+  FORMATION
+  COMPLIANCE
+  TAX
+  LEGAL
+  RA_MAIL
+  OTHER
+}
+```
+
+### Week 2: Documents Page + Preview + Onboarding Checklist (ENHANCED)
 **Objectives:**
-- [ ] Create template-based document system
-- [ ] Implement form field management
-- [ ] Build document generation engine
-- [ ] Add UPL compliance controls
+- [ ] Build customer-facing documents page
+- [ ] Implement document preview functionality
+- [ ] Add search and filter capabilities
+- [ ] Create bulk operations
+- [ ] **🆕 CRITICAL: Implement onboarding checklist for new customers**
 
 **Activities:**
-- [ ] Design fill-in-the-blank template system
-- [ ] Create form field definition interface
-- [ ] Implement document generation from templates
-- [ ] Add field validation and restrictions
-- [ ] Create template preview functionality
-- [ ] Implement usage tracking and restrictions
+- [ ] Build Documents page (`/dashboard/documents/page.tsx`)
+- [ ] Create grid view with document cards
+- [ ] Implement filter by category
+- [ ] Add sort by date/name
+- [ ] Build search by filename
+- [ ] Create in-browser PDF preview component
+- [ ] Add image preview for jpg/png files
+- [ ] Implement bulk download (zip multiple files)
+- [ ] Add delete functionality with confirmation
+- [ ] Create empty state with "Upload First Document" CTA
+- [ ] **🆕 Create OnboardingChecklist model in database**
+- [ ] **🆕 Build OnboardingChecklist component**
+- [ ] **🆕 Add checklist to customer dashboard (top of page)**
+- [ ] **🆕 Create checklist items for LLC (8 steps) and Corporation (8 steps)**
+- [ ] **🆕 Implement progress bar showing % complete**
+- [ ] **🆕 Add educational content for each checklist item**
+- [ ] **🆕 Link checklist items to relevant services (EIN, Operating Agreement, etc.)**
+- [ ] **🆕 Auto-check "Formation Filed" when order completes**
+- [ ] **🆕 Create API to update checklist progress**
 
 **Deliverables:**
-- [ ] Template management system
-- [ ] Form field definition interface
-- [ ] Document generation engine
-- [ ] Field validation system
-- [ ] Template preview functionality
+- [ ] Documents page with grid layout
+- [ ] PDF preview modal
+- [ ] Image preview modal
+- [ ] Search and filter functionality
+- [ ] Bulk download feature
+- [ ] Mobile-responsive design
+- [ ] **🆕 OnboardingChecklist component**
+- [ ] **🆕 Checklist progress tracking**
+- [ ] **🆕 Educational content for each step**
+- [ ] **🆕 Service upsell links from checklist**
 
-### Week 3: UPL-Compliant Document Library
+**Database Schema Addition:**
+```prisma
+model OnboardingChecklist {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  businessId      String
+  business        BusinessEntity @relation(fields: [businessId], references: [id])
+
+  checklistType   String   // "LLC", "CORPORATION", "NONPROFIT"
+
+  items           Json     // Array of checklist items with IDs
+  completedItems  String[] // Array of completed item IDs
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, businessId])
+  @@map("onboarding_checklists")
+}
+```
+
+**Checklist Items (LLC):**
+1. ✅ LLC Formation Filed (auto-checked)
+2. ⬜ Obtain EIN from IRS → Link to EIN service
+3. ⬜ Open Business Bank Account → Educational content
+4. ⬜ Create Operating Agreement → Link to Operating Agreement service
+5. ⬜ File Initial Annual Report (if required) → Link to Annual Report service
+6. ⬜ Register for State Taxes → External link to FL DOR
+7. ⬜ Obtain Business Licenses (if required) → Educational content
+8. ⬜ Set Up Bookkeeping System → Educational content
+
+**Checklist Items (Corporation):**
+1. ✅ Corporation Formation Filed (auto-checked)
+2. ⬜ Obtain EIN from IRS → Link to EIN service
+3. ⬜ Create Corporate Bylaws → Link to Bylaws service
+4. ⬜ Hold First Board Meeting → Educational content
+5. ⬜ Issue Stock Certificates → Educational content
+6. ⬜ Open Business Bank Account → Educational content
+7. ⬜ File Initial Annual Report (if required) → Link to Annual Report service
+8. ⬜ Register for State Taxes → External link to FL DOR
+
+### Week 3: Registered Agent Mail Inbox (NEW)
 **Objectives:**
-- [ ] Implement UPL compliance for all documents
+- [ ] Create RA mail management system
+- [ ] Build inbox-style mail viewer
+- [ ] Implement email notifications
+- [ ] Add mail tracking features
+
+**Activities:**
+- [ ] Create RAMail model in database
+- [ ] Build RA mail upload API (for staff to upload scanned mail)
+- [ ] Build RA mail list API (`/api/ra-mail`)
+- [ ] Build RA mail viewer API (`/api/ra-mail/[id]`)
+- [ ] Create RA Mail page (`/dashboard/ra-mail/page.tsx`)
+- [ ] Implement inbox-style layout (like email)
+- [ ] Add unread count badge
+- [ ] Create "Mark as Read" functionality
+- [ ] Build email notification system (new mail alerts)
+- [ ] Add filter by date range
+- [ ] Create search by sender/subject
+- [ ] Add "Contact RA" button (opens support chat)
+
+**Deliverables:**
+- [ ] RA mail inbox page
+- [ ] Mail viewer with PDF preview
+- [ ] Email notifications for new mail
+- [ ] Unread count badge
+- [ ] Search and filter functionality
+- [ ] "Contact RA" button
+
+**Database Schema:**
+```prisma
+model RAMail {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  businessId      String
+  business        BusinessEntity @relation(fields: [businessId], references: [id])
+
+  sender          String
+  subject         String?
+  receivedDate    DateTime
+  scannedFileUrl  String   // PDF scan
+
+  isRead          Boolean  @default(false)
+  isImportant     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("ra_mail")
+}
+```
+
+### Week 4: UPL Compliance + Testing
+**Objectives:**
+- [ ] Implement UPL compliance for documents
 - [ ] Create attorney review workflow
-- [ ] Build educational content system
+- [ ] Test document and RA mail workflows
 - [ ] Add compliance monitoring
 
 **Activities:**
-- [ ] Add UPL disclaimers to all document templates
+- [ ] Add UPL disclaimers to document templates
 - [ ] Create attorney review and approval workflow
-- [ ] Implement educational content for each document type
+- [ ] Implement educational content for document types
 - [ ] Add compliance risk assessment for documents
-- [ ] Create usage restrictions and controls
+- [ ] Test complete document upload/download workflow
+- [ ] Test RA mail inbox and notifications
 - [ ] Implement compliance audit trail
+- [ ] Add usage restrictions and controls
 
 **Deliverables:**
-- [ ] UPL-compliant document templates
+- [ ] UPL-compliant document system
 - [ ] Attorney review workflow
 - [ ] Educational content system
 - [ ] Compliance monitoring dashboard
-- [ ] Usage restriction controls
-
-### Week 4: Document Library User Interface
-**Objectives:**
-- [ ] Create intuitive document browsing interface
-- [ ] Implement document generation workflow
-- [ ] Build document management dashboard
-- [ ] Add user guidance and help system
-
-**Activities:**
-- [ ] Design document library browsing interface
-- [ ] Create step-by-step document generation wizard
-- [ ] Build user document management dashboard
-- [ ] Add contextual help and guidance
-- [ ] Implement document sharing and collaboration
-- [ ] Create document completion tracking
-
-**Deliverables:**
-- [ ] Document library interface
-- [ ] Document generation wizard
-- [ ] User dashboard for document management
-- [ ] Help and guidance system
-- [ ] Document sharing functionality
+- [ ] Tested document and RA mail workflows
 
 **Month 3 Success Criteria:**
-- [ ] Users can browse and generate UPL-compliant documents
+- [ ] **Customers can upload and download documents**
+- [ ] **Document library with folders and search works**
+- [ ] **RA mail inbox displays scanned mail**
+- [ ] **Email notifications sent when new RA mail received**
+- [ ] **🆕 CRITICAL: Onboarding checklist displays on customer dashboard**
+- [ ] **🆕 CRITICAL: Checklist progress tracking works (customers can check off items)**
+- [ ] **🆕 CRITICAL: Educational content displays for each checklist item**
+- [ ] **🆕 CRITICAL: Service upsell links work from checklist**
 - [ ] All documents include proper disclaimers and restrictions
 - [ ] Attorney review workflow functions correctly
-- [ ] Document generation is intuitive and error-free
 - [ ] Compliance monitoring prevents UPL violations
 - [ ] System handles document storage and retrieval efficiently
 
-## Phase 4: Business Formation Services (Month 4)
+## Phase 4: Business Formation + AI Document Intelligence (Month 4)
 
-**Goal:** Add business formation services with compliance tracking
+**Goal:** Add business formation services with compliance tracking and AI-powered document features
 
 ### Week 1: Business Entity Management
 **Objectives:**
@@ -341,32 +566,71 @@
 - [ ] Deadline management interface
 - [ ] Automated reminder system
 
-### Week 2: Registered Agent Services
+### Week 2: Business Detail Pages (NEW)
 **Objectives:**
-- [ ] Implement registered agent service management
-- [ ] Create service billing and tracking
-- [ ] Build communication management
-- [ ] Add service fulfillment workflow
+- [ ] Create comprehensive business detail pages
+- [ ] Build activity timeline
+- [ ] Implement business information editing
+- [ ] Add quick action buttons
 
 **Activities:**
-- [ ] Create registered agent service models
-- [ ] Implement service subscription management
-- [ ] Build billing and payment tracking
-- [ ] Create communication management system
-- [ ] Add service fulfillment workflow
-- [ ] Implement service status tracking
+- [ ] Build Business Detail page (`/dashboard/businesses/[id]/page.tsx`)
+- [ ] Display complete business information
+- [ ] Create activity timeline component (chronological history)
+- [ ] Show all filings for this business
+- [ ] Show all documents for this business
+- [ ] Add quick action buttons (File Report, Amend, Dissolve, etc.)
+- [ ] Display registered agent information
+- [ ] Show officers/members list
+- [ ] Implement edit business information form
+- [ ] Add approval workflow for business info edits
 
 **Deliverables:**
-- [ ] Registered agent service system
-- [ ] Subscription management interface
-- [ ] Billing and payment tracking
-- [ ] Communication management system
-- [ ] Service fulfillment workflow
+- [ ] Business detail page with complete information
+- [ ] Activity timeline component
+- [ ] All filings display
+- [ ] All documents display
+- [ ] Quick action buttons
+- [ ] Edit business information form
+- [ ] Approval workflow for edits
 
-### Week 3: Compliance Dashboard
+### Week 3: AI Document Intelligence (NEW)
+**Objectives:**
+- [ ] Integrate OCR for document text extraction
+- [ ] Implement AI document summarization
+- [ ] Add AI auto-categorization
+- [ ] Build full-text search
+
+**Activities:**
+- [ ] Integrate OCR service (Tesseract.js or Google Vision API)
+- [ ] Build OCR processing API (`/api/documents/[id]/ocr`)
+- [ ] Integrate OpenAI GPT-4 API
+- [ ] Build AI summarization API (`/api/documents/[id]/summarize`)
+- [ ] Add "AI Summary" section to document viewer
+- [ ] Implement AI auto-categorization on upload
+- [ ] Build full-text search (search OCR'd text)
+- [ ] Add AI processing to document upload workflow
+- [ ] Create "AI Summary" badge on documents
+- [ ] Implement deadline extraction from documents
+
+**Deliverables:**
+- [ ] OCR processing system
+- [ ] AI document summarization
+- [ ] AI auto-categorization
+- [ ] Full-text search across all documents
+- [ ] AI summary display in document viewer
+- [ ] Deadline extraction feature
+
+**AI Services Setup:**
+- [ ] OpenAI API key configuration
+- [ ] OCR service integration (Tesseract.js or Google Vision)
+- [ ] AI prompt templates for summarization
+- [ ] AI categorization model
+
+### Week 4: Compliance Dashboard + AI Enhancement
 **Objectives:**
 - [ ] Create comprehensive compliance dashboard
-- [ ] Implement risk assessment tools
+- [ ] Implement AI-powered compliance task generation
 - [ ] Build reporting and analytics
 - [ ] Add compliance automation
 
@@ -377,6 +641,11 @@
 - [ ] Build analytics and insights
 - [ ] Add automated compliance checks
 - [ ] Create compliance audit trails
+- [ ] **Implement AI-powered compliance task generation**
+- [ ] **Add AI deadline extraction to compliance calendar**
+- [ ] **Auto-populate compliance calendar from documents**
+- [ ] Test complete business formation workflows
+- [ ] Add comprehensive error handling
 
 **Deliverables:**
 - [ ] Compliance dashboard
@@ -384,41 +653,24 @@
 - [ ] Compliance reporting system
 - [ ] Analytics and insights interface
 - [ ] Automated compliance system
-
-### Week 4: Integration and Testing
-**Objectives:**
-- [ ] Integrate all business formation features
-- [ ] Comprehensive testing of workflows
-- [ ] Performance optimization
-- [ ] User experience refinement
-
-**Activities:**
-- [ ] Integrate entity formation with document library
-- [ ] Test complete business formation workflows
-- [ ] Optimize performance for complex operations
-- [ ] Refine user experience based on testing
-- [ ] Add comprehensive error handling
-- [ ] Create user documentation and guides
-
-**Deliverables:**
-- [ ] Integrated business formation system
-- [ ] Comprehensive test suite
-- [ ] Performance optimization
-- [ ] User experience improvements
-- [ ] Error handling system
-- [ ] User documentation
+- [ ] AI-powered task generation
+- [ ] AI-populated compliance calendar
 
 **Month 4 Success Criteria:**
 - [ ] Users can form business entities with proper compliance
 - [ ] Registered agent services are fully functional
+- [ ] **Business detail pages show complete information**
+- [ ] **AI document summarization works on uploaded PDFs**
+- [ ] **Full-text OCR search finds content in documents**
+- [ ] **AI auto-categorizes uploaded documents**
 - [ ] Compliance tracking prevents legal issues
 - [ ] All workflows are tested and optimized
 - [ ] System handles complex business formation scenarios
 - [ ] UPL compliance is maintained throughout all processes
 
-## Phase 5: Production Readiness (Month 5)
+## Phase 5: Production Readiness + AI Dashboard Features (Month 5)
 
-**Goal:** Security hardening, performance optimization, and deployment preparation
+**Goal:** Security hardening, performance optimization, and AI-powered dashboard enhancements
 
 ### Week 1: Security Hardening
 **Objectives:**
@@ -442,105 +694,228 @@
 - [ ] Security monitoring system
 - [ ] Input validation framework
 
-### Week 2: Performance Optimization
+### Week 2: Business Health Score (NEW)
 **Objectives:**
+- [ ] Implement AI-powered business health scoring
+- [ ] Create health score calculation algorithm
+- [ ] Build trend analysis
+- [ ] Add predictive insights
+
+**Activities:**
+- [ ] Create BusinessHealthScore model in database
+- [ ] Build health score calculation algorithm
+- [ ] Build health score API (`/api/businesses/[id]/health-score`)
+- [ ] Add health score to main dashboard
+- [ ] Build trend analysis (score over time)
+- [ ] Add predictive insights ("Score will drop if...")
+- [ ] Add actionable recommendations to improve score
+- [ ] Create score breakdown (compliance, documents, timeliness)
+
+**Deliverables:**
+- [ ] BusinessHealthScore database model
+- [ ] Health score calculation algorithm
+- [ ] Health score API
+- [ ] Health score display on dashboard (0-100, color-coded)
+- [ ] Trend chart (score over time)
+- [ ] Predictive warnings
+- [ ] Actionable recommendations
+
+**Database Schema:**
+```prisma
+model BusinessHealthScore {
+  id              String   @id @default(cuid())
+  businessId      String   @unique
+  business        BusinessEntity @relation(fields: [businessId], references: [id])
+
+  overallScore    Int      // 0-100
+  complianceScore Int      // 0-100
+  documentScore   Int      // 0-100
+  timelinessScore Int      // 0-100
+
+  insights        Json     // AI-generated insights
+  recommendations Json     // AI-generated recommendations
+
+  calculatedAt    DateTime @default(now())
+
+  @@map("business_health_scores")
+}
+```
+
+### Week 3: AI Action Center + RA Mail Intelligence (NEW)
+**Objectives:**
+- [ ] Create AI-powered action center
+- [ ] Implement junk mail detection for RA mail
+- [ ] Add AI summaries to RA mail
+- [ ] Build compliance task generation
+
+**Activities:**
+- [ ] Create ComplianceTask model in database
+- [ ] Build task generation API (AI creates tasks)
+- [ ] Build AI Action Center component
+- [ ] Add AI Action Center to main dashboard
+- [ ] Implement junk mail detection for RA mail
+- [ ] Add AI summaries to RA mail viewer
+- [ ] Build AI junk detection API (`/api/ra-mail/[id]/detect-junk`)
+- [ ] Add junk warning badges to RA mail
+- [ ] Create plain English explanations for each task
+- [ ] Add one-click filing buttons
+
+**Deliverables:**
+- [ ] ComplianceTask database model
+- [ ] AI task generation system
+- [ ] AI Action Center on dashboard (urgent, recommended, optional)
+- [ ] Junk mail detection for RA mail
+- [ ] AI summaries on RA mail
+- [ ] Plain English explanations
+- [ ] One-click action buttons
+
+**Database Schema:**
+```prisma
+model ComplianceTask {
+  id              String   @id @default(cuid())
+  userId          String
+  businessId      String
+
+  title           String
+  description     String
+  dueDate         DateTime
+  priority        String   // URGENT, RECOMMENDED, OPTIONAL
+  status          String   // PENDING, COMPLETED, OVERDUE
+
+  aiExplanation   String?  // Plain English explanation
+  estimatedCost   Decimal?
+  estimatedTime   String?
+
+  state           String
+  entityType      String
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  @@map("compliance_tasks")
+}
+```
+
+### Week 4: Support + Performance Optimization
+**Objectives:**
+- [ ] Add live chat and help center
 - [ ] Performance testing and optimization
 - [ ] Database query optimization
 - [ ] Caching implementation
-- [ ] CDN setup for static assets
 
 **Activities:**
+- [ ] Integrate live chat widget (Intercom, Crisp, or Tawk.to)
+- [ ] Build Help Center page (`/help`)
+- [ ] Create FAQ database
+- [ ] Build contact form (`/contact`)
+- [ ] Add "Contact RA" button to RA mail page
 - [ ] Conduct load testing with realistic data
 - [ ] Optimize database queries and indexes
 - [ ] Implement Redis caching for frequently accessed data
 - [ ] Set up CDN for static assets and documents
 - [ ] Optimize frontend bundle size and loading
-- [ ] Implement lazy loading and code splitting
 
 **Deliverables:**
+- [ ] Live chat widget (bottom-right)
+- [ ] Help center with searchable FAQs
+- [ ] Contact form with file attachments
+- [ ] "Contact RA" button in RA mail
 - [ ] Performance testing results
 - [ ] Database optimization
 - [ ] Caching system implementation
 - [ ] CDN configuration
-- [ ] Frontend optimization
-
-### Week 3: Monitoring and Observability
-**Objectives:**
-- [ ] Comprehensive monitoring setup
-- [ ] Error tracking and alerting
-- [ ] Performance monitoring
-- [ ] Business metrics tracking
-
-**Activities:**
-- [ ] Set up application performance monitoring (APM)
-- [ ] Implement error tracking and alerting
-- [ ] Create business metrics dashboard
-- [ ] Set up log aggregation and analysis
-- [ ] Add health checks and uptime monitoring
-- [ ] Create incident response procedures
-
-**Deliverables:**
-- [ ] APM system implementation
-- [ ] Error tracking and alerting
-- [ ] Business metrics dashboard
-- [ ] Log aggregation system
-- [ ] Incident response procedures
-
-### Week 4: Deployment and Infrastructure
-**Objectives:**
-- [ ] Production infrastructure setup
-- [ ] Deployment automation
-- [ ] Backup and disaster recovery
-- [ ] Documentation and runbooks
-
-**Activities:**
-- [ ] Set up production infrastructure (AWS/Vercel)
-- [ ] Create automated deployment pipeline
-- [ ] Implement backup and disaster recovery
-- [ ] Create operational runbooks
-- [ ] Set up staging environment for testing
-- [ ] Create rollback procedures
-
-**Deliverables:**
-- [ ] Production infrastructure
-- [ ] Automated deployment pipeline
-- [ ] Backup and disaster recovery system
-- [ ] Operational runbooks
-- [ ] Staging environment
 
 **Month 5 Success Criteria:**
 - [ ] Application is secure and hardened against attacks
+- [ ] **Business health score displays on dashboard**
+- [ ] **AI action center shows urgent and recommended tasks**
+- [ ] **RA mail has AI summaries and junk detection**
+- [ ] **Live chat and help center functional**
 - [ ] Performance meets or exceeds requirements
 - [ ] Comprehensive monitoring and alerting in place
 - [ ] Production infrastructure is ready and tested
-- [ ] Deployment and rollback procedures are automated
-- [ ] Disaster recovery plan is tested and functional
 
-## Phase 6: Launch & Iteration (Month 6)
+## Phase 6: Launch + State Integration + Final AI Polish (Month 6)
 
-**Goal:** Production deployment, monitoring, and initial user feedback integration
+**Goal:** Production deployment, state integration, and final AI dashboard features
 
-### Week 1: Production Deployment
+### Week 1: State Integration (Sunbiz API)
 **Objectives:**
-- [ ] Deploy to production environment
-- [ ] Verify all systems operational
-- [ ] Monitor initial performance
-- [ ] Address any deployment issues
+- [ ] Integrate Florida Sunbiz API
+- [ ] Automate state filing processes
+- [ ] Add "View on Sunbiz" links
+- [ ] Implement compliance automation
 
 **Activities:**
+- [ ] Integrate Sunbiz API for entity lookups
+- [ ] Add "View on Sunbiz" button to business detail pages
+- [ ] Automate annual report filing status checks
+- [ ] Implement state filing automation
+- [ ] Add compliance automation based on state data
+- [ ] Create state data sync jobs
+
+**Deliverables:**
+- [ ] Sunbiz API integration
+- [ ] "View on Sunbiz" links on business pages
+- [ ] Automated filing status checks
+- [ ] State filing automation
+- [ ] Compliance automation
+
+### Week 2: AI Insights + Analytics (NEW)
+**Objectives:**
+- [ ] Build benchmarking system
+- [ ] Add cost savings calculator
+- [ ] Create AI-populated compliance calendar
+- [ ] Implement predictive insights
+
+**Activities:**
+- [ ] Build benchmarking API (compare to similar businesses)
+- [ ] Add cost savings calculator ("You've saved $X vs DIY")
+- [ ] Build compliance calendar with AI-populated deadlines
+- [ ] Add predictive insights to dashboard
+- [ ] Build business insights section
+- [ ] Create analytics dashboard
+- [ ] Implement AI-powered recommendations
+
+**Deliverables:**
+- [ ] Benchmarking system ("Businesses like yours typically...")
+- [ ] Cost savings calculator
+- [ ] AI-populated compliance calendar
+- [ ] Predictive insights on dashboard
+- [ ] Business insights section
+- [ ] Analytics dashboard
+
+### Week 3: Final Testing + Production Deployment
+**Objectives:**
+- [ ] End-to-end testing
+- [ ] UPL compliance validation
+- [ ] Performance testing
+- [ ] Deploy to production
+
+**Activities:**
+- [ ] End-to-end testing of all workflows
+- [ ] UPL compliance validation
+- [ ] Performance testing and optimization
+- [ ] Security audit
 - [ ] Execute production deployment
 - [ ] Verify all features work in production
 - [ ] Monitor system performance and errors
 - [ ] Address any critical issues immediately
-- [ ] Set up user onboarding flow
-- [ ] Create user support documentation
 
-### Week 2: User Onboarding and Support
+**Deliverables:**
+- [ ] Complete test suite results
+- [ ] UPL compliance validation report
+- [ ] Performance testing results
+- [ ] Production deployment
+- [ ] Monitoring and alerting
+
+### Week 4: User Onboarding + Feedback
 **Objectives:**
 - [ ] Onboard initial users
 - [ ] Provide user support
 - [ ] Gather initial feedback
-- [ ] Monitor user behavior
+- [ ] Plan next iteration
 
 **Activities:**
 - [ ] Onboard beta users or initial customers
@@ -549,39 +924,15 @@
 - [ ] Monitor user behavior and usage patterns
 - [ ] Address user-reported issues
 - [ ] Create FAQ and help documentation
-
-### Week 3: Feedback Integration
-**Objectives:**
-- [ ] Analyze user feedback
-- [ ] Prioritize improvements
-- [ ] Implement critical fixes
-- [ ] Plan next iteration
-
-**Activities:**
 - [ ] Analyze collected user feedback
-- [ ] Prioritize bug fixes and improvements
-- [ ] Implement critical fixes and improvements
 - [ ] Plan next development iteration
-- [ ] Update documentation based on user needs
-- [ ] Refine user experience based on feedback
-
-### Week 4: Optimization and Planning
-**Objectives:**
-- [ ] Optimize based on real usage
-- [ ] Plan future development
-- [ ] Establish ongoing processes
-- [ ] Prepare for scale
-
-**Activities:**
-- [ ] Optimize performance based on real usage data
-- [ ] Plan future feature development
-- [ ] Establish ongoing development processes
-- [ ] Prepare for user growth and scaling
-- [ ] Create long-term roadmap
-- [ ] Set up ongoing monitoring and maintenance
 
 **Month 6 Success Criteria:**
 - [ ] Application is live and serving users successfully
+- [ ] **Sunbiz API integration working (View on Sunbiz links)**
+- [ ] **AI insights and benchmarking functional**
+- [ ] **Cost savings calculator displays on dashboard**
+- [ ] **AI-populated compliance calendar working**
 - [ ] User feedback is positive and actionable
 - [ ] Critical issues are resolved quickly
 - [ ] System performance is stable under real load
@@ -812,11 +1163,123 @@
 
 ### Monthly Progress Tracking
 **Month 1:** Skills foundation complete, ready for production work
-**Month 2:** MVP with authentication and tenant management working
-**Month 3:** Document library with UPL compliance functional
-**Month 4:** Business formation services operational
-**Month 5:** Production-ready with security and performance optimized
-**Month 6:** Live application serving users successfully
+**Month 2:** MVP with authentication, payments, and **basic customer dashboard** working
+**Month 3:** **Document upload/download + RA mail inbox** with UPL compliance functional
+**Month 4:** Business formation services + **AI document intelligence** operational
+**Month 5:** Production-ready with **AI dashboard features** (health score, action center) optimized
+**Month 6:** Live application with **complete AI-enhanced dashboard** serving users successfully
+
+---
+
+## 📊 Dashboard Features Summary (Integrated into Build Plan)
+
+### Month 2: Basic Dashboard Foundation ✅
+- Customer dashboard layout (`/dashboard/customer/page.tsx`)
+- Business overview cards (My Businesses section)
+- Quick stats (4 metrics: Active Businesses, Orders, Documents, Tasks)
+- Important Notices system (URGENT, ATTENTION, SUCCESS)
+- Orders tracking page
+- Profile settings page
+
+### Month 3: Core Utility Features
+- **Document Management:**
+  - Upload/download files (drag-and-drop, multi-file)
+  - Folder organization (Formation, Compliance, Tax, Legal, RA Mail, Other)
+  - Document preview (in-browser PDF viewer)
+  - Search by filename
+  - Filter by category
+  - Bulk download (zip)
+
+- **RA Mail Inbox:**
+  - Inbox-style mail viewer
+  - Email notifications for new mail
+  - Unread count badge
+  - "Mark as Read" functionality
+  - Search by sender/subject
+  - "Contact RA" button
+
+### Month 4: AI Document Intelligence
+- **OCR Processing:**
+  - Automatic text extraction from PDFs
+  - Full-text search across all documents
+
+- **AI Summarization:**
+  - Plain English summaries of documents
+  - "AI Summary" badge on documents
+
+- **AI Auto-Categorization:**
+  - Automatic document categorization on upload
+
+- **Deadline Extraction:**
+  - AI finds dates in documents
+  - Auto-populates compliance calendar
+
+- **Business Detail Pages:**
+  - Complete business information
+  - Activity timeline
+  - All filings and documents
+  - Quick action buttons
+
+### Month 5: AI Dashboard Features
+- **Business Health Score:**
+  - 0-100 score (color-coded: green, yellow, orange, red)
+  - Score breakdown (compliance, documents, timeliness)
+  - Trend chart (score over time)
+  - Predictive warnings ("Score will drop if...")
+  - Actionable recommendations
+
+- **AI Action Center:**
+  - AI-generated action items (urgent, recommended, optional)
+  - Plain English explanations
+  - One-click filing buttons
+  - Estimated cost and time for each task
+
+- **RA Mail Intelligence:**
+  - AI summaries of each mail
+  - Junk mail detection with warning badges
+  - Importance scoring
+
+- **Support Features:**
+  - Live chat widget
+  - Help center with searchable FAQs
+  - Contact form
+  - "Contact RA" button
+
+### Month 6: Final AI Polish
+- **AI Insights & Analytics:**
+  - Benchmarking ("Businesses like yours typically...")
+  - Cost savings calculator ("You've saved $X vs DIY")
+  - Predictive insights
+  - Business insights dashboard
+
+- **AI-Populated Compliance Calendar:**
+  - Deadlines extracted from documents
+  - State-specific compliance rules
+  - Automated reminders
+
+- **State Integration:**
+  - "View on Sunbiz" links on business pages
+  - Automated filing status checks
+
+### Competitive Advantages
+**What competitors offer:**
+- LegalZoom: Basic doc upload, RA mail scanning (no AI)
+- Northwest RA: Best RA mail handling (no AI)
+- ZenBusiness: Limited features (no AI)
+- Incfile: Basic features (no AI)
+
+**What LegalOps offers (unique):**
+- ✅ AI document summaries
+- ✅ AI junk mail detection
+- ✅ Business health score (0-100)
+- ✅ Predictive insights
+- ✅ AI auto-categorization
+- ✅ Full-text OCR search
+- ✅ AI-populated compliance calendar
+- ✅ Benchmarking and cost savings
+- ✅ Plain English explanations for everything
+
+**Result:** Best dashboard in the legal services industry! 🏆
 
 ---
 

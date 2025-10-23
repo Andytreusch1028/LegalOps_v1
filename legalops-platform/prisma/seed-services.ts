@@ -21,6 +21,7 @@ const services = [
     longDescription: 'Start your Florida LLC with our comprehensive formation service. We handle all paperwork and filing with the Florida Department of State.',
     serviceFee: 100,
     stateFee: 125,
+    registeredAgentFee: 0, // Free registered agent service for first year
     totalPrice: 225,
     rushFeeAvailable: true,
     rushFee: 50,
