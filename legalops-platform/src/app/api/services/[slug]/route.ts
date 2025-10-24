@@ -43,7 +43,17 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(service);
+    // Convert Decimal fields to numbers for JSON serialization
+    const serviceResponse = {
+      ...service,
+      totalPrice: Number(service.totalPrice),
+      serviceFee: Number(service.serviceFee),
+      stateFee: Number(service.stateFee),
+      registeredAgentFee: Number(service.registeredAgentFee),
+      rushFee: Number(service.rushFee),
+    };
+
+    return NextResponse.json(serviceResponse);
   } catch (error) {
     console.error('Error fetching service:', error);
     return NextResponse.json(

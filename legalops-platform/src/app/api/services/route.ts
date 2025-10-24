@@ -34,7 +34,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(services);
+    // Convert Decimal fields to numbers for JSON serialization
+    const servicesResponse = services.map(service => ({
+      ...service,
+      totalPrice: Number(service.totalPrice),
+      serviceFee: Number(service.serviceFee),
+      stateFee: Number(service.stateFee),
+    }));
+
+    return NextResponse.json(servicesResponse);
   } catch (error) {
     console.error('Error fetching services:', error);
     return NextResponse.json(

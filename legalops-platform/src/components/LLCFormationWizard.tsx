@@ -34,8 +34,19 @@ interface FormData {
   rushProcessing: boolean;
 }
 
+interface Service {
+  id: string;
+  serviceFee: number;
+  stateFee: number;
+  registeredAgentFee: number;
+  totalPrice: number;
+  rushFee: number;
+  rushFeeAvailable: boolean;
+}
+
 interface LLCFormationWizardProps {
   serviceId: string;
+  service?: Service;
   onSubmit?: (data: FormData) => void;
 }
 
@@ -47,7 +58,7 @@ const STEPS = [
   { id: 5, name: 'Review', description: 'Confirm & submit' },
 ];
 
-export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormationWizardProps) {
+export default function LLCFormationWizard({ serviceId, service, onSubmit }: LLCFormationWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -218,8 +229,8 @@ export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormation
         throw new Error('Failed to create order');
       }
 
-      const order = await response.json();
-      router.push(`/checkout/${order.id}`);
+      const data = await response.json();
+      router.push(`/checkout/${data.orderId || data.order?.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -772,20 +783,28 @@ export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormation
                 <div className="space-y-4" style={{ fontSize: '18px', lineHeight: '1.6' }}>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-700 font-medium">LLC Formation Service</span>
-                    <span className="text-slate-900 font-semibold">$125.00</span>
+                    <span className="text-slate-900 font-semibold">
+                      ${service?.serviceFee?.toFixed(2) || '100.00'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-700 font-medium">State Filing Fee</span>
-                    <span className="text-slate-900 font-semibold">$125.00</span>
+                    <span className="text-slate-900 font-semibold">
+                      ${service?.stateFee?.toFixed(2) || '125.00'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-700 font-medium">Registered Agent Fee (1st Year)</span>
-                    <span className="text-emerald-600 font-semibold">$0.00</span>
+                    <span className="text-emerald-600 font-semibold">
+                      ${service?.registeredAgentFee?.toFixed(2) || '0.00'}
+                    </span>
                   </div>
-                  {formData.rushProcessing && (
+                  {formData.rushProcessing && service?.rushFeeAvailable && (
                     <div className="flex justify-between items-center">
                       <span className="text-slate-700 font-medium">Rush Processing</span>
-                      <span className="text-slate-900 font-semibold">$50.00</span>
+                      <span className="text-slate-900 font-semibold">
+                        ${service?.rushFee?.toFixed(2) || '50.00'}
+                      </span>
                     </div>
                   )}
                   <div
@@ -794,7 +813,13 @@ export default function LLCFormationWizard({ serviceId, onSubmit }: LLCFormation
                   >
                     <span className="text-slate-900 font-bold" style={{ fontSize: '20px' }}>Total</span>
                     <span className="text-sky-600 font-bold" style={{ fontSize: '24px' }}>
-                      ${formData.rushProcessing ? '300.00' : '250.00'}
+                      ${(() => {
+                        const baseTotal = service?.totalPrice || 250;
+                        const rushFee = (formData.rushProcessing && service?.rushFeeAvailable)
+                          ? (service?.rushFee || 50)
+                          : 0;
+                        return (baseTotal + rushFee).toFixed(2);
+                      })()}
                     </span>
                   </div>
                 </div>

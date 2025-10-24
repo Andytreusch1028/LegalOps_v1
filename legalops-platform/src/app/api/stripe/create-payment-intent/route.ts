@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import Stripe from 'stripe';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-11-20',
+  apiVersion: '2024-10-28.acacia',
 });
 
 export async function POST(request: NextRequest) {

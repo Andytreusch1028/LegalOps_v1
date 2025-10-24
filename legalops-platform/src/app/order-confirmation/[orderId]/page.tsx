@@ -6,6 +6,15 @@ import { useSession } from 'next-auth/react';
 import { SuccessCard } from '@/components/legalops/cards/SuccessCard';
 import { formatCurrency } from '@/components/legalops/utils';
 
+interface OrderItem {
+  id: string;
+  serviceType: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
 interface Order {
   id: string;
   orderNumber: string;
@@ -16,6 +25,7 @@ interface Order {
   orderStatus: string;
   createdAt: string;
   paidAt: string;
+  orderItems?: OrderItem[];
 }
 
 export default function OrderConfirmationPage() {
@@ -112,7 +122,19 @@ export default function OrderConfirmationPage() {
         <div className="mt-8 bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_10px_20px_rgba(0,0,0,0.05)] p-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Order Summary</h3>
           <div className="space-y-3">
-            <div className="flex justify-between py-2 border-b border-slate-100">
+            {/* Line Items */}
+            {order.orderItems && order.orderItems.length > 0 && (
+              <div className="space-y-2 mb-4">
+                {order.orderItems.map((item) => (
+                  <div key={item.id} className="flex justify-between py-2">
+                    <span className="text-sm text-slate-600">{item.description}</span>
+                    <span className="text-sm font-medium text-slate-900">{formatCurrency(item.totalPrice)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-between py-2 border-t border-slate-200">
               <span className="text-sm text-slate-600">Subtotal</span>
               <span className="text-sm font-semibold text-slate-900">{formatCurrency(order.subtotal)}</span>
             </div>

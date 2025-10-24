@@ -16,6 +16,9 @@ interface Service {
   totalPrice: number;
   serviceFee: number;
   stateFee: number;
+  registeredAgentFee?: number;
+  rushFee?: number;
+  rushFeeAvailable?: boolean;
   icon: string;
   processingTime: string;
   category: string;
@@ -267,7 +270,18 @@ export default function ServiceDetailPage() {
                     Fill out the form below to get started with your {service.name.toLowerCase()}
                   </p>
                 </div>
-                <LLCFormationWizard serviceId={service.id} />
+                <LLCFormationWizard
+                  serviceId={service.id}
+                  service={{
+                    id: service.id,
+                    serviceFee: service.serviceFee,
+                    stateFee: service.stateFee,
+                    registeredAgentFee: service.registeredAgentFee || 0,
+                    totalPrice: service.totalPrice,
+                    rushFee: service.rushFee || 0,
+                    rushFeeAvailable: service.rushFeeAvailable || false,
+                  }}
+                />
               </div>
             </div>
           </div>

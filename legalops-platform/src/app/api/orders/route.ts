@@ -77,7 +77,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ orders });
+    // Convert Decimal fields to numbers for JSON serialization
+    const ordersResponse = orders.map(order => ({
+      ...order,
+      subtotal: Number(order.subtotal),
+      tax: Number(order.tax),
+      total: Number(order.total),
+    }));
+
+    return NextResponse.json({ orders: ordersResponse });
   } catch (error) {
     console.error("Error fetching orders:", error);
     return NextResponse.json(
@@ -135,28 +143,72 @@ export async function POST(request: NextRequest) {
       }
 
       // Calculate total with rush fee if applicable
-      let orderTotal = service.totalPrice;
+      let orderTotal = Number(service.totalPrice);
       if (orderData.rushProcessing && service.rushFeeAvailable) {
-        orderTotal += service.rushFee || 0;
+        orderTotal += Number(service.rushFee) || 0;
       }
 
-      // Create order with new schema
+      // Create order with new schema AND order items for proper breakdown
       const order = await prisma.order.create({
         data: {
           userId: user.id,
           orderNumber,
           orderStatus: "PENDING",
-          subtotal: service.serviceFee,
+          subtotal: orderTotal, // Use orderTotal (includes rush fee) not service.totalPrice
           tax: 0,
           total: orderTotal,
           paymentStatus: "PENDING",
+          orderItems: {
+            create: [
+              // LegalOps Service Fee
+              {
+                serviceType: orderType || "LLC_FORMATION",
+                description: "LegalOps Service Fee",
+                quantity: 1,
+                unitPrice: Number(service.serviceFee),
+                totalPrice: Number(service.serviceFee),
+              },
+              // Florida State Filing Fee
+              {
+                serviceType: orderType || "LLC_FORMATION",
+                description: "Florida State Filing Fee",
+                quantity: 1,
+                unitPrice: Number(service.stateFee),
+                totalPrice: Number(service.stateFee),
+              },
+              // Registered Agent Fee (if applicable)
+              ...(Number(service.registeredAgentFee) > 0 ? [{
+                serviceType: "REGISTERED_AGENT" as const,
+                description: "Registered Agent Service",
+                quantity: 1,
+                unitPrice: Number(service.registeredAgentFee),
+                totalPrice: Number(service.registeredAgentFee),
+              }] : []),
+              // Rush Fee (if applicable)
+              ...(orderData.rushProcessing && service.rushFeeAvailable && Number(service.rushFee) > 0 ? [{
+                serviceType: "EXPEDITED_PROCESSING" as const,
+                description: "Rush Processing Fee",
+                quantity: 1,
+                unitPrice: Number(service.rushFee),
+                totalPrice: Number(service.rushFee),
+              }] : []),
+            ],
+          },
         },
       });
+
+      // Convert Decimal fields to numbers for JSON serialization
+      const orderResponse = {
+        ...order,
+        subtotal: Number(order.subtotal),
+        tax: Number(order.tax),
+        total: Number(order.total),
+      };
 
       return NextResponse.json(
         {
           message: "Order created successfully",
-          order,
+          order: orderResponse,
           orderId: order.id,
         },
         { status: 201 }

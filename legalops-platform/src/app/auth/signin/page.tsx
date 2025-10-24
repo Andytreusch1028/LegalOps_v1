@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 /**
@@ -10,8 +10,11 @@ import Link from "next/link";
  * Principles: Clarity, Simplicity, Functionality First
  */
 
-export default function SignInPage() {
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard';
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,7 +35,7 @@ export default function SignInPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/dashboard");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch (error) {
@@ -260,3 +263,14 @@ export default function SignInPage() {
   );
 }
 
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
+  );
+}
