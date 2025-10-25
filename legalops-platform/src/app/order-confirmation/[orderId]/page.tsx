@@ -25,6 +25,7 @@ interface Order {
   orderStatus: string;
   createdAt: string;
   paidAt: string;
+  isRushOrder: boolean;
   orderItems?: OrderItem[];
 }
 
@@ -62,46 +63,110 @@ export default function OrderConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading confirmation...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div
+            className="w-16 h-16 rounded-full animate-spin mx-auto"
+            style={{
+              border: '4px solid #e2e8f0',
+              borderTopColor: '#0ea5e9',
+              marginBottom: '24px',
+            }}
+          />
+          <p className="text-slate-600 font-medium" style={{ fontSize: '18px' }}>
+            Loading confirmation...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">Order not found</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 font-semibold" style={{ fontSize: '18px' }}>Order not found</p>
+        </div>
       </div>
     );
   }
 
+  // Calculate rush processing timeline
+  const getRushTimingInfo = () => {
+    if (!order.isRushOrder) {
+      return null;
+    }
+
+    // Rush order - check if before noon EST
+    const orderDate = new Date(order.createdAt);
+
+    // Convert to EST (UTC-5 or UTC-4 depending on DST)
+    const estOffset = -5; // Standard time offset
+    const orderHourEST = orderDate.getUTCHours() + estOffset;
+
+    // Check if it's a weekday (Monday = 1, Friday = 5)
+    const dayOfWeek = orderDate.getUTCDay();
+    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+
+    if (isWeekday && orderHourEST < 12) {
+      // Before noon on weekday - same day filing
+      return {
+        reviewEta: 'Within 4 hours',
+        reviewDescription: "🚀 RUSH PROCESSING: We'll review your filing information for accuracy and completeness on a priority basis",
+        submitDescription: '🚀 RUSH PROCESSING: Your documents will be submitted to the Florida Department of State TODAY (same-day filing)',
+        submitEta: 'Same day (before 5pm EST)',
+      };
+    } else if (isWeekday) {
+      // After noon on weekday - next business day
+      return {
+        reviewEta: 'Within 4 hours',
+        reviewDescription: "🚀 RUSH PROCESSING: We'll review your filing information for accuracy and completeness on a priority basis",
+        submitDescription: '🚀 RUSH PROCESSING: Your documents will be submitted to the Florida Department of State by noon tomorrow',
+        submitEta: 'Next business day (before noon EST)',
+      };
+    } else {
+      // Weekend order - next business day
+      return {
+        reviewEta: 'Next business day morning',
+        reviewDescription: "🚀 RUSH PROCESSING: We'll review your filing information for accuracy and completeness first thing on the next business day",
+        submitDescription: '🚀 RUSH PROCESSING: Your documents will be submitted to the Florida Department of State on the next business day',
+        submitEta: 'Next business day (before noon EST)',
+      };
+    }
+  };
+
+  const rushInfo = getRushTimingInfo();
+
   const steps = [
     {
       title: 'Review Filing Information',
-      description: "We'll review your filing information for accuracy and completeness",
-      eta: 'Within 24 hours',
+      description: rushInfo?.reviewDescription || "We'll review your filing information for accuracy and completeness",
+      eta: rushInfo?.reviewEta || 'Within 24 hours',
+      isRush: !!rushInfo,
     },
     {
       title: 'Submit to State',
-      description: 'Our team will submit your documents to the Florida Department of State',
-      eta: '1-2 business days',
+      description: rushInfo?.submitDescription || 'Our team will submit your documents to the Florida Department of State',
+      eta: rushInfo?.submitEta || '1-2 business days',
+      isRush: !!rushInfo,
     },
     {
       title: 'Email Updates',
       description: "You'll receive email updates as your filing progresses",
       eta: 'Throughout process',
+      isRush: false,
     },
     {
       title: 'Filing Confirmation',
       description: "Once approved, you'll receive your filing confirmation",
       eta: '5-7 business days',
+      isRush: false,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] px-6 py-12 md:px-12 lg:px-24">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-50 flex items-center justify-center" style={{ padding: '48px 24px' }}>
+      <div className="w-full" style={{ maxWidth: '900px' }}>
         <SuccessCard
           title="Order Confirmed!"
           subtitle="Thank you for your order"
@@ -119,40 +184,58 @@ export default function OrderConfirmationPage() {
         />
 
         {/* Order Summary */}
-        <div className="mt-8 bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_10px_20px_rgba(0,0,0,0.05)] p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Order Summary</h3>
-          <div className="space-y-3">
+        <div
+          className="bg-white rounded-xl"
+          style={{
+            marginTop: '32px',
+            padding: '32px',
+            border: '3px solid #0ea5e9',
+            boxShadow: '0 6px 20px rgba(14, 165, 233, 0.2)',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%)',
+          }}
+        >
+          <h3 className="text-slate-900 font-bold" style={{ fontSize: '24px', marginBottom: '24px' }}>Order Summary</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {/* Line Items */}
             {order.orderItems && order.orderItems.length > 0 && (
-              <div className="space-y-2 mb-4">
+              <div style={{ marginBottom: '16px' }}>
                 {order.orderItems.map((item) => (
-                  <div key={item.id} className="flex justify-between py-2">
-                    <span className="text-sm text-slate-600">{item.description}</span>
-                    <span className="text-sm font-medium text-slate-900">{formatCurrency(item.totalPrice)}</span>
+                  <div key={item.id} className="flex justify-between" style={{ padding: '12px 0' }}>
+                    <span className="text-slate-600" style={{ fontSize: '16px' }}>{item.description}</span>
+                    <span className="text-slate-900 font-semibold" style={{ fontSize: '16px' }}>{formatCurrency(item.totalPrice)}</span>
                   </div>
                 ))}
               </div>
             )}
 
-            <div className="flex justify-between py-2 border-t border-slate-200">
-              <span className="text-sm text-slate-600">Subtotal</span>
-              <span className="text-sm font-semibold text-slate-900">{formatCurrency(order.subtotal)}</span>
+            <div className="flex justify-between" style={{ padding: '12px 0', borderTop: '2px solid #e2e8f0' }}>
+              <span className="text-slate-600" style={{ fontSize: '16px' }}>Subtotal</span>
+              <span className="text-slate-900 font-semibold" style={{ fontSize: '16px' }}>{formatCurrency(order.subtotal)}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-slate-100">
-              <span className="text-sm text-slate-600">Tax</span>
-              <span className="text-sm font-semibold text-slate-900">{formatCurrency(order.tax)}</span>
+            <div className="flex justify-between" style={{ padding: '12px 0', borderBottom: '2px solid #e2e8f0' }}>
+              <span className="text-slate-600" style={{ fontSize: '16px' }}>Tax</span>
+              <span className="text-slate-900 font-semibold" style={{ fontSize: '16px' }}>{formatCurrency(order.tax)}</span>
             </div>
-            <div className="flex justify-between py-3 text-lg">
-              <span className="font-bold text-slate-900">Total Paid</span>
-              <span className="font-bold text-sky-600">{formatCurrency(order.total)}</span>
+            <div className="flex justify-between" style={{ padding: '16px 0' }}>
+              <span className="text-slate-900 font-bold" style={{ fontSize: '20px' }}>Total Paid</span>
+              <span className="text-sky-600 font-bold" style={{ fontSize: '24px' }}>{formatCurrency(order.total)}</span>
             </div>
           </div>
         </div>
 
         {/* Support */}
-        <div className="mt-8 bg-white rounded-xl border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05),_0_10px_20px_rgba(0,0,0,0.05)] p-6 text-center">
-          <p className="text-slate-600 mb-2">Have questions?</p>
-          <p className="text-sm text-slate-600">
+        <div
+          className="bg-white rounded-xl text-center"
+          style={{
+            marginTop: '32px',
+            padding: '32px',
+            border: '3px solid #10b981',
+            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.2)',
+            background: 'linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%)',
+          }}
+        >
+          <p className="text-slate-700 font-semibold" style={{ fontSize: '18px', marginBottom: '12px' }}>Have questions?</p>
+          <p className="text-slate-600" style={{ fontSize: '16px', lineHeight: '1.6' }}>
             Contact our support team at <strong className="text-slate-900">support@legalops.com</strong> or call{' '}
             <strong className="text-slate-900">1-800-LEGAL-OPS</strong>
           </p>

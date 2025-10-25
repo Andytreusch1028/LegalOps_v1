@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
           tax: 0,
           total: orderTotal,
           paymentStatus: "PENDING",
+          isRushOrder: orderData.rushProcessing || false,
           orderItems: {
             create: [
               // LegalOps Service Fee
