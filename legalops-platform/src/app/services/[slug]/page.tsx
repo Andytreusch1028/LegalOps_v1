@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Check, Clock, Tag } from 'lucide-react';
 import LLCFormationWizard from '@/components/LLCFormationWizard';
+import PackageSelector from '@/components/PackageSelector';
 import { cn, cardBase } from '@/components/legalops/theme';
 import { formatCurrency } from '@/components/legalops/utils';
 
@@ -25,11 +26,30 @@ interface Service {
   requirements?: string[];
 }
 
+interface Package {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  features: string[];
+  badge: string | null;
+  highlightColor: string | null;
+  includesRA: boolean;
+  raYears: number;
+  includesEIN: boolean;
+  includesAI: boolean;
+  includesOperatingAgreement: boolean;
+  includesComplianceCalendar: boolean;
+}
+
 export default function ServiceDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -96,196 +116,104 @@ export default function ServiceDetailPage() {
         </div>
       </div>
 
-      {/* Combined Section - Service Info + Form */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px 64px' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left Sidebar - Service Info Cards */}
-          <div className="lg:col-span-4">
-            <div className="space-y-8 sticky top-6">
-              {/* About Card */}
-              <div
-                className="bg-white rounded-xl"
-                style={{
-                  borderTop: '1px solid #e2e8f0',
-                  borderRight: '1px solid #e2e8f0',
-                  borderBottom: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #0ea5e9',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-                  padding: '24px',
-                  marginBottom: '24px',
-                }}
-              >
-                <h3 className="font-semibold text-slate-900 mb-3" style={{ fontSize: '18px', lineHeight: '1.4' }}>
-                  About This Service
-                </h3>
-                <p className="text-slate-600" style={{ fontSize: '15px', lineHeight: '1.6' }}>
-                  {service.longDescription}
+      {/* About This Service Section */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+        <div
+          className="bg-white rounded-xl text-center"
+          style={{
+            border: '3px solid #e2e8f0',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+            padding: '32px 48px',
+          }}
+        >
+          <h3 className="font-bold text-slate-900" style={{ fontSize: '20px', marginBottom: '16px' }}>
+            About This Service
+          </h3>
+          <p className="text-slate-600 max-w-3xl mx-auto" style={{ fontSize: '16px', lineHeight: '1.7' }}>
+            {service.longDescription}
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content - Package Selection or Form */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 64px' }}>
+        {!showForm ? (
+          /* Package Selection */
+          <div>
+            <PackageSelector
+              onSelectPackage={(pkg) => {
+                setSelectedPackage(pkg);
+                setShowForm(true);
+              }}
+              selectedPackageId={selectedPackage?.id}
+            />
+          </div>
+        ) : (
+          /* Form Wizard */
+          <div className="bg-white rounded-xl" style={{
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+          }}>
+            <div style={{ padding: '32px 32px 24px' }}>
+              {/* Package Selection Summary */}
+              {selectedPackage && (
+                <div className="mb-6 p-4 bg-sky-50 border border-sky-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-sky-700 font-medium">Selected Package:</p>
+                      <p className="text-lg font-bold text-sky-900">{selectedPackage.name} - ${selectedPackage.price}</p>
+                    </div>
+                    <button
+                      onClick={() => setShowForm(false)}
+                      className="text-sm text-sky-600 hover:text-sky-800 underline"
+                    >
+                      Change Package
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {!selectedPackage && (
+                <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-700 font-medium">Individual Filing Selected</p>
+                      <p className="text-xs text-slate-600">You can add services at checkout</p>
+                    </div>
+                    <button
+                      onClick={() => setShowForm(false)}
+                      className="text-sm text-sky-600 hover:text-sky-800 underline"
+                    >
+                      View Packages
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <h2 className="font-semibold" style={{ fontSize: '32px', color: '#0f172a', marginBottom: '8px', lineHeight: '1.2' }}>
+                  Complete Your Order
+                </h2>
+                <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>
+                  Fill out the form below to get started with your {service.name.toLowerCase()}
                 </p>
               </div>
-
-              {/* What's Included Card */}
-              <div
-                className="bg-white rounded-xl"
-                style={{
-                  borderTop: '1px solid #e2e8f0',
-                  borderRight: '1px solid #e2e8f0',
-                  borderBottom: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #10b981',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-                  padding: '24px',
-                  marginBottom: '24px',
+              <LLCFormationWizard
+                serviceId={service.id}
+                service={{
+                  id: service.id,
+                  serviceFee: service.serviceFee,
+                  stateFee: service.stateFee,
+                  registeredAgentFee: service.registeredAgentFee || 0,
+                  totalPrice: service.totalPrice,
+                  rushFee: service.rushFee || 0,
+                  rushFeeAvailable: service.rushFeeAvailable || false,
                 }}
-              >
-                <h3 className="font-semibold text-slate-900 mb-4" style={{ fontSize: '18px', lineHeight: '1.4' }}>
-                  What's Included
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-                      Professional document preparation
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-                      State filing & confirmation
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-                      Free registered agent service (first year)
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-                      Email receipt & support
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Pricing Card */}
-              <div
-                className="bg-white rounded-xl"
-                style={{
-                  borderTop: '1px solid #e2e8f0',
-                  borderRight: '1px solid #e2e8f0',
-                  borderBottom: '1px solid #e2e8f0',
-                  borderLeft: '4px solid #8b5cf6',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
-                  padding: '24px',
-                }}
-              >
-                {/* Pricing */}
-                <div className="mb-6">
-                  <h3 className="font-semibold text-slate-900 mb-4" style={{ fontSize: '18px', lineHeight: '1.4' }}>
-                    Pricing
-                  </h3>
-                  <div className="space-y-3 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600" style={{ fontSize: '15px' }}>Service Fee</span>
-                      <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
-                        {formatCurrency(service.serviceFee)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-600" style={{ fontSize: '15px' }}>State Fee</span>
-                      <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
-                        {formatCurrency(service.stateFee)}
-                      </span>
-                    </div>
-                    {service.registeredAgentFee !== undefined && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-600" style={{ fontSize: '15px' }}>Registered Agent Fee (1st year)</span>
-                        <span className="font-semibold text-emerald-600" style={{ fontSize: '16px' }}>
-                          {service.registeredAgentFee === 0 ? 'FREE' : formatCurrency(service.registeredAgentFee)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="pt-3" style={{ borderTop: '2px solid #e2e8f0' }}>
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>Total</span>
-                        <span className="font-bold text-sky-600" style={{ fontSize: '28px' }}>
-                          {formatCurrency(service.totalPrice)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Details */}
-                <div className="mb-6 pb-6" style={{ borderBottom: '2px solid #e2e8f0' }}>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-sky-600 flex-shrink-0" />
-                      <div>
-                        <p className="font-medium text-slate-900" style={{ fontSize: '14px' }}>
-                          {service.processingTime}
-                        </p>
-                        <p className="text-slate-600" style={{ fontSize: '13px' }}>Processing time</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Guarantee Badge */}
-                <div
-                  className="bg-emerald-50 rounded-lg"
-                  style={{
-                    border: '1px solid #a7f3d0',
-                    padding: '16px',
-                  }}
-                >
-                  <div className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-semibold text-emerald-900 mb-1" style={{ fontSize: '14px' }}>
-                        100% Satisfaction Guarantee
-                      </p>
-                      <p className="text-emerald-700" style={{ fontSize: '13px', lineHeight: '1.5' }}>
-                        Full refund if we can't complete your filing
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                selectedPackage={selectedPackage}
+              />
             </div>
           </div>
-
-          {/* Right Column - Complete Your Order Form */}
-          <div className="lg:col-span-8">
-            <div className="bg-white rounded-xl" style={{
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
-            }}>
-              <div style={{ padding: '32px 32px 24px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                  <h2 className="font-semibold" style={{ fontSize: '32px', color: '#0f172a', marginBottom: '8px', lineHeight: '1.2' }}>
-                    Complete Your Order
-                  </h2>
-                  <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>
-                    Fill out the form below to get started with your {service.name.toLowerCase()}
-                  </p>
-                </div>
-                <LLCFormationWizard
-                  serviceId={service.id}
-                  service={{
-                    id: service.id,
-                    serviceFee: service.serviceFee,
-                    stateFee: service.stateFee,
-                    registeredAgentFee: service.registeredAgentFee || 0,
-                    totalPrice: service.totalPrice,
-                    rushFee: service.rushFee || 0,
-                    rushFeeAvailable: service.rushFeeAvailable || false,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

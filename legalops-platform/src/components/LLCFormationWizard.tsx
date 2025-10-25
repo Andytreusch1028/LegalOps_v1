@@ -44,9 +44,23 @@ interface Service {
   rushFeeAvailable: boolean;
 }
 
+interface Package {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  includesRA: boolean;
+  raYears: number;
+  includesEIN: boolean;
+  includesAI: boolean;
+  includesOperatingAgreement: boolean;
+  includesComplianceCalendar: boolean;
+}
+
 interface LLCFormationWizardProps {
   serviceId: string;
   service?: Service;
+  selectedPackage?: Package | null;
   onSubmit?: (data: FormData) => void;
 }
 
@@ -58,7 +72,7 @@ const STEPS = [
   { id: 5, name: 'Review', description: 'Confirm & submit' },
 ];
 
-export default function LLCFormationWizard({ serviceId, service, onSubmit }: LLCFormationWizardProps) {
+export default function LLCFormationWizard({ serviceId, service, selectedPackage, onSubmit }: LLCFormationWizardProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -222,6 +236,7 @@ export default function LLCFormationWizard({ serviceId, service, onSubmit }: LLC
           serviceId,
           orderType: 'LLC_FORMATION',
           orderData: formData,
+          packageId: selectedPackage?.id || null,
         }),
       });
 

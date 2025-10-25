@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { serviceId, orderType, orderData, subtotal, tax, total } = body;
+    const { serviceId, orderType, orderData, packageId, subtotal, tax, total } = body;
 
     // Generate unique order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
@@ -142,10 +142,93 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Calculate total with rush fee if applicable
-      let orderTotal = Number(service.totalPrice);
-      if (orderData.rushProcessing && service.rushFeeAvailable) {
-        orderTotal += Number(service.rushFee) || 0;
+      // Fetch package if packageId is provided
+      let selectedPackage = null;
+      if (packageId) {
+        selectedPackage = await prisma.package.findUnique({
+          where: { id: packageId },
+        });
+      }
+
+      // Calculate total based on package or individual service
+      let orderTotal = 0;
+      let orderItems = [];
+
+      if (selectedPackage) {
+        // Package pricing
+        orderTotal = Number(selectedPackage.price) + Number(service.stateFee);
+
+        // Add package as line item
+        orderItems.push({
+          serviceType: orderType || "LLC_FORMATION",
+          description: `${selectedPackage.name} Package`,
+          quantity: 1,
+          unitPrice: Number(selectedPackage.price),
+          totalPrice: Number(selectedPackage.price),
+        });
+
+        // Add state fee
+        orderItems.push({
+          serviceType: orderType || "LLC_FORMATION",
+          description: "Florida State Filing Fee",
+          quantity: 1,
+          unitPrice: Number(service.stateFee),
+          totalPrice: Number(service.stateFee),
+        });
+
+        // Add rush fee if applicable
+        if (orderData.rushProcessing && service.rushFeeAvailable && Number(service.rushFee) > 0) {
+          orderTotal += Number(service.rushFee);
+          orderItems.push({
+            serviceType: "EXPEDITED_PROCESSING" as const,
+            description: "Rush Processing Fee",
+            quantity: 1,
+            unitPrice: Number(service.rushFee),
+            totalPrice: Number(service.rushFee),
+          });
+        }
+      } else {
+        // Individual service pricing
+        orderTotal = Number(service.totalPrice);
+        if (orderData.rushProcessing && service.rushFeeAvailable) {
+          orderTotal += Number(service.rushFee) || 0;
+        }
+
+        // Build order items for individual service
+        orderItems = [
+          // LegalOps Service Fee
+          {
+            serviceType: orderType || "LLC_FORMATION",
+            description: "LegalOps Service Fee",
+            quantity: 1,
+            unitPrice: Number(service.serviceFee),
+            totalPrice: Number(service.serviceFee),
+          },
+          // Florida State Filing Fee
+          {
+            serviceType: orderType || "LLC_FORMATION",
+            description: "Florida State Filing Fee",
+            quantity: 1,
+            unitPrice: Number(service.stateFee),
+            totalPrice: Number(service.stateFee),
+          },
+          // Registered Agent Fee (if applicable)
+          ...(Number(service.registeredAgentFee) > 0 ? [{
+            serviceType: "REGISTERED_AGENT" as const,
+            description: "Registered Agent Service",
+            quantity: 1,
+            unitPrice: Number(service.registeredAgentFee),
+            totalPrice: Number(service.registeredAgentFee),
+          }] : []),
+          // Rush Fee (if applicable)
+          ...(orderData.rushProcessing && service.rushFeeAvailable && Number(service.rushFee) > 0 ? [{
+            serviceType: "EXPEDITED_PROCESSING" as const,
+            description: "Rush Processing Fee",
+            quantity: 1,
+            unitPrice: Number(service.rushFee),
+            totalPrice: Number(service.rushFee),
+          }] : []),
+        ];
       }
 
       // Create order with new schema AND order items for proper breakdown
@@ -154,46 +237,14 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           orderNumber,
           orderStatus: "PENDING",
-          subtotal: orderTotal, // Use orderTotal (includes rush fee) not service.totalPrice
+          subtotal: orderTotal,
           tax: 0,
           total: orderTotal,
           paymentStatus: "PENDING",
           isRushOrder: orderData.rushProcessing || false,
+          packageId: packageId || null,
           orderItems: {
-            create: [
-              // LegalOps Service Fee
-              {
-                serviceType: orderType || "LLC_FORMATION",
-                description: "LegalOps Service Fee",
-                quantity: 1,
-                unitPrice: Number(service.serviceFee),
-                totalPrice: Number(service.serviceFee),
-              },
-              // Florida State Filing Fee
-              {
-                serviceType: orderType || "LLC_FORMATION",
-                description: "Florida State Filing Fee",
-                quantity: 1,
-                unitPrice: Number(service.stateFee),
-                totalPrice: Number(service.stateFee),
-              },
-              // Registered Agent Fee (if applicable)
-              ...(Number(service.registeredAgentFee) > 0 ? [{
-                serviceType: "REGISTERED_AGENT" as const,
-                description: "Registered Agent Service",
-                quantity: 1,
-                unitPrice: Number(service.registeredAgentFee),
-                totalPrice: Number(service.registeredAgentFee),
-              }] : []),
-              // Rush Fee (if applicable)
-              ...(orderData.rushProcessing && service.rushFeeAvailable && Number(service.rushFee) > 0 ? [{
-                serviceType: "EXPEDITED_PROCESSING" as const,
-                description: "Rush Processing Fee",
-                quantity: 1,
-                unitPrice: Number(service.rushFee),
-                totalPrice: Number(service.rushFee),
-              }] : []),
-            ],
+            create: orderItems,
           },
         },
       });

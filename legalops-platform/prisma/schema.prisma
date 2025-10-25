@@ -398,6 +398,38 @@ enum DocumentType {
 // ORDER & PAYMENT MANAGEMENT
 // ============================================================================
 
+// Package Model - For bundled service offerings
+model Package {
+  id              String   @id @default(cuid())
+  name            String   // "Basic", "Standard", "Premium"
+  slug            String   @unique // "basic", "standard", "premium"
+  price           Decimal  @db.Decimal(10, 2) // $0, $149, $299
+  description     String?  @db.Text
+  features        Json     // Array of feature strings
+  isActive        Boolean  @default(true)
+  displayOrder    Int      // 1, 2, 3
+
+  // Included Services
+  includesRA      Boolean  @default(false) // Free RA service?
+  raYears         Int      @default(0) // How many years of RA service
+  includesEIN     Boolean  @default(false) // EIN application included?
+  includesAI      Boolean  @default(false) // AI features included?
+  includesOperatingAgreement Boolean @default(false)
+  includesComplianceCalendar Boolean @default(false)
+
+  // Marketing
+  badge           String?  // "Most Popular", "Best Value"
+  highlightColor  String?  // "sky", "green", "purple"
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relationships
+  orders          Order[]
+
+  @@map("packages")
+}
+
 model Order {
   id              String   @id @default(cuid())
   userId          String
@@ -417,6 +449,10 @@ model Order {
   paymentMethod   String?
   stripePaymentId String?
   stripePaymentIntentId String?
+
+  // Package or Individual Service
+  packageId       String?
+  package         Package? @relation(fields: [packageId], references: [id])
 
   // Risk Assessment
   riskScore       Int?     // 0-100 risk score from AI
