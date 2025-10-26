@@ -29,6 +29,7 @@ export async function GET(
       },
       include: {
         orderItems: true,
+        package: true,  // Include package information
       },
     });
 

@@ -22,6 +22,21 @@ interface OrderItem {
   totalPrice: number;
 }
 
+interface Package {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  features: string[];
+  includesRA: boolean;
+  raYears: number;
+  includesEIN: boolean;
+  includesAI: boolean;
+  includesOperatingAgreement: boolean;
+  includesComplianceCalendar: boolean;
+}
+
 interface Order {
   id: string;
   orderNumber: string;
@@ -31,6 +46,8 @@ interface Order {
   paymentStatus: string;
   orderStatus: string;
   orderItems?: OrderItem[];
+  package?: Package | null;
+  packageId?: string | null;
 }
 
 export default function CheckoutPage() {
@@ -492,6 +509,61 @@ export default function CheckoutPage() {
           {/* Sidebar - Order Summary */}
           <div className="lg:col-span-1">
             <div className="sticky top-4" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {/* Package Information (if applicable) */}
+              {order.package && (
+                <div
+                  className="rounded-xl bg-gradient-to-br from-emerald-50 to-green-50"
+                  style={{
+                    border: '2px solid #10b981',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
+                    padding: '28px',
+                  }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div
+                      className="rounded-full"
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                      }}
+                    >
+                      <ShieldCheck className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-emerald-900" style={{ fontSize: '20px', lineHeight: '1.2' }}>
+                        {order.package.name} Package
+                      </h3>
+                      <p className="text-emerald-700" style={{ fontSize: '14px' }}>
+                        ${order.package.price} value included
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="text-slate-700 mb-4" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                    {order.package.description}
+                  </p>
+
+                  <div className="space-y-2">
+                    <p className="text-emerald-800 font-semibold" style={{ fontSize: '13px', marginBottom: '12px' }}>
+                      What's Included:
+                    </p>
+                    {order.package.features.slice(0, 5).map((feature, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <span className="text-emerald-600 font-bold" style={{ fontSize: '16px', marginTop: '-2px' }}>✓</span>
+                        <span className="text-slate-700" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Order Summary Card */}
               <div
                 className="rounded-xl bg-gradient-to-br from-sky-50 to-blue-50"

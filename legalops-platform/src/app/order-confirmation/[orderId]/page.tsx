@@ -15,6 +15,21 @@ interface OrderItem {
   totalPrice: number;
 }
 
+interface Package {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  description: string;
+  features: string[];
+  includesRA: boolean;
+  raYears: number;
+  includesEIN: boolean;
+  includesAI: boolean;
+  includesOperatingAgreement: boolean;
+  includesComplianceCalendar: boolean;
+}
+
 interface Order {
   id: string;
   orderNumber: string;
@@ -27,6 +42,8 @@ interface Order {
   paidAt: string;
   isRushOrder: boolean;
   orderItems?: OrderItem[];
+  package?: Package | null;
+  packageId?: string | null;
 }
 
 export default function OrderConfirmationPage() {
@@ -182,6 +199,100 @@ export default function OrderConfirmationPage() {
             onClick: () => router.push('/services'),
           }}
         />
+
+        {/* Package Information (if applicable) */}
+        {order.package && (
+          <div
+            className="bg-white rounded-xl"
+            style={{
+              marginTop: '32px',
+              padding: '32px',
+              border: '3px solid #10b981',
+              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.2)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%)',
+            }}
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div
+                className="rounded-full"
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                }}
+              >
+                <span style={{ fontSize: '28px' }}>✓</span>
+              </div>
+              <div>
+                <h3 className="text-emerald-900 font-bold" style={{ fontSize: '24px', lineHeight: '1.2' }}>
+                  {order.package.name} Package
+                </h3>
+                <p className="text-emerald-700" style={{ fontSize: '16px' }}>
+                  ${order.package.price} value included in your order
+                </p>
+              </div>
+            </div>
+
+            <p className="text-slate-700 mb-6" style={{ fontSize: '16px', lineHeight: '1.6' }}>
+              {order.package.description}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {order.package.features.map((feature, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <span className="text-emerald-600 font-bold" style={{ fontSize: '18px', marginTop: '2px' }}>✓</span>
+                  <span className="text-slate-700" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                    {feature}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Special callouts for package inclusions */}
+            {order.package.includesRA && (
+              <div
+                className="rounded-lg"
+                style={{
+                  marginTop: '24px',
+                  padding: '20px',
+                  background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
+                  border: '2px solid #3b82f6',
+                }}
+              >
+                <p className="text-blue-900 font-semibold" style={{ fontSize: '16px', marginBottom: '8px' }}>
+                  🎉 FREE Registered Agent Service Included!
+                </p>
+                <p className="text-blue-800" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                  Your package includes {order.package.raYears} year{order.package.raYears > 1 ? 's' : ''} of registered agent service
+                  (${125 * order.package.raYears} value). We'll handle all legal correspondence on behalf of your business.
+                </p>
+              </div>
+            )}
+
+            {order.package.includesOperatingAgreement && (
+              <div
+                className="rounded-lg"
+                style={{
+                  marginTop: '20px',
+                  padding: '20px',
+                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                  border: '2px solid #f59e0b',
+                }}
+              >
+                <p className="text-amber-900 font-semibold" style={{ fontSize: '16px', marginBottom: '8px' }}>
+                  📄 Operating Agreement Included!
+                </p>
+                <p className="text-amber-800" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                  Your customized Operating Agreement will be prepared and delivered with your formation documents.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Order Summary */}
         <div
