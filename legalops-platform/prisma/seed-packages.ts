@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function seedPackages() {
   console.log('🌱 Seeding packages...');
 
-  // Basic Package - $0 Entry Point
+  // Basic Package - $0 Entry Point (NO RA INCLUDED)
   const basicPackage = await prisma.package.upsert({
     where: { slug: 'basic' },
     update: {},
@@ -13,13 +13,14 @@ async function seedPackages() {
       name: 'Basic',
       slug: 'basic',
       price: 0,
-      description: 'Essential formation filing only. Perfect for DIY entrepreneurs who want to handle everything themselves.',
+      description: 'Essential formation filing only. You will need to provide your own registered agent.',
       features: [
         'LLC or Corporation formation filing',
         'State filing fees included',
         'Digital delivery of formation documents',
         'Email support',
         'Basic compliance guide',
+        '⚠️ Registered Agent NOT included (required by law)',
       ],
       isActive: true,
       displayOrder: 1,
@@ -34,7 +35,7 @@ async function seedPackages() {
     },
   });
 
-  // Standard Package - Most Popular
+  // Standard Package - Most Popular (FREE 1st year RA, then $125/year)
   const standardPackage = await prisma.package.upsert({
     where: { slug: 'standard' },
     update: {},
@@ -45,12 +46,13 @@ async function seedPackages() {
       description: 'Everything you need to get started. Most popular choice for new business owners.',
       features: [
         'Everything in Basic',
-        'FREE first year Registered Agent service ($199 value)',
-        'Operating Agreement (LLC) or Bylaws (Corporation)',
-        'Compliance calendar (1 year)',
+        '✅ FREE 1st Year Registered Agent Service ($125 value)',
+        'Then $125/year auto-renews (cancel anytime)',
+        'Operating Agreement (LLC) or Bylaws (Corporation) ($99 value)',
+        'Compliance calendar with reminders',
         'Priority email support',
         'Document storage in dashboard',
-        'Annual report reminder',
+        'Annual report reminder service',
       ],
       isActive: true,
       displayOrder: 2,
@@ -65,7 +67,7 @@ async function seedPackages() {
     },
   });
 
-  // Premium Package - Best Value
+  // Premium Package - Best Value (FREE 1st year RA, then $125/year)
   const premiumPackage = await prisma.package.upsert({
     where: { slug: 'premium' },
     update: {},
@@ -76,13 +78,14 @@ async function seedPackages() {
       description: 'Complete business setup with AI-powered features. Best value for serious entrepreneurs.',
       features: [
         'Everything in Standard',
+        '✅ FREE 1st Year Registered Agent Service ($125 value)',
+        'Then $125/year auto-renews (cancel anytime)',
         'EIN application assistance',
         'AI-powered business health score',
         'AI document intelligence',
         'AI compliance tracking',
         'Priority live chat support',
         'Unlimited document storage',
-        'Annual report reminder service (1 year)',
         'Banking resolution',
         'S-Corp election guidance',
       ],

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Info, Check } from 'lucide-react';
 import { FormWizard, FormInput, FormTextArea, FormSection } from '@/components/forms';
@@ -62,6 +62,9 @@ interface LLCFormationWizardProps {
   service?: Service;
   selectedPackage?: Package | null;
   onSubmit?: (data: FormData) => void;
+  onPackageChange?: (pkg: Package) => void;
+  initialFormData?: Partial<FormData>;
+  onFormDataChange?: (data: FormData) => void;
 }
 
 const STEPS = [
@@ -72,8 +75,11 @@ const STEPS = [
   { id: 5, name: 'Review', description: 'Confirm & submit' },
 ];
 
-export default function LLCFormationWizard({ serviceId, service, selectedPackage, onSubmit }: LLCFormationWizardProps) {
+export default function LLCFormationWizard({ serviceId, service, selectedPackage, onSubmit, onPackageChange, initialFormData, onFormDataChange }: LLCFormationWizardProps) {
+  // Check if package includes RA service
+  const includesRA = selectedPackage?.includesRA ?? false;
   const router = useRouter();
+  const [packages, setPackages] = useState<Package[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,26 +87,84 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showRushTooltip, setShowRushTooltip] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
-    businessName: '',
-    businessNameAlternative: '',
-    businessAddress: '',
-    businessCity: '',
-    businessState: 'FL',
-    businessZip: '',
-    mailingAddress: '',
-    mailingCity: '',
-    mailingState: 'FL',
-    mailingZip: '',
-    registeredAgentName: 'LegalOps Platform LLC',
-    registeredAgentAddress: '123 Business Blvd',
-    registeredAgentCity: 'Miami',
-    registeredAgentState: 'FL',
-    registeredAgentZip: '33101',
-    managers: [{ id: '1', name: '', email: '', phone: '' }],
-    businessPurpose: '',
-    rushProcessing: false,
+  const [formData, setFormData] = useState<FormData>(() => {
+    // If we have initial form data, use it and adjust RA fields based on current package
+    if (initialFormData) {
+      return {
+        ...initialFormData,
+        // Adjust RA fields based on current package
+        registeredAgentName: includesRA ? 'LegalOps Platform LLC' : (initialFormData.registeredAgentName || ''),
+        registeredAgentAddress: includesRA ? '123 Business Blvd' : (initialFormData.registeredAgentAddress || ''),
+        registeredAgentCity: includesRA ? 'Miami' : (initialFormData.registeredAgentCity || ''),
+        registeredAgentState: 'FL',
+        registeredAgentZip: includesRA ? '33101' : (initialFormData.registeredAgentZip || ''),
+        managers: initialFormData.managers || [{ id: '1', name: '', email: '', phone: '' }],
+      } as FormData;
+    }
+
+    // Default empty form
+    return {
+      businessName: '',
+      businessNameAlternative: '',
+      businessAddress: '',
+      businessCity: '',
+      businessState: 'FL',
+      businessZip: '',
+      mailingAddress: '',
+      mailingCity: '',
+      mailingState: 'FL',
+      mailingZip: '',
+      // Pre-fill RA info only if package includes RA service
+      registeredAgentName: includesRA ? 'LegalOps Platform LLC' : '',
+      registeredAgentAddress: includesRA ? '123 Business Blvd' : '',
+      registeredAgentCity: includesRA ? 'Miami' : '',
+      registeredAgentState: 'FL',
+      registeredAgentZip: includesRA ? '33101' : '',
+      managers: [{ id: '1', name: '', email: '', phone: '' }],
+      businessPurpose: '',
+      rushProcessing: false,
+    };
   });
+
+  // Fetch packages on mount
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const response = await fetch('/api/packages');
+        if (response.ok) {
+          const data = await response.json();
+          setPackages(data);
+        }
+      } catch (error) {
+        console.error('Error fetching packages:', error);
+      }
+    };
+    fetchPackages();
+  }, []);
+
+  // Notify parent of form data changes
+  useEffect(() => {
+    if (onFormDataChange) {
+      onFormDataChange(formData);
+    }
+  }, [formData, onFormDataChange]);
+
+  // Handle upgrade to Standard package
+  const handleUpgradeToStandard = () => {
+    const standardPackage = packages.find(pkg => pkg.slug === 'standard');
+    if (standardPackage && onPackageChange) {
+      onPackageChange(standardPackage);
+      // Pre-fill RA info after upgrade
+      setFormData(prev => ({
+        ...prev,
+        registeredAgentName: 'LegalOps Platform LLC',
+        registeredAgentAddress: '123 Business Blvd',
+        registeredAgentCity: 'Miami',
+        registeredAgentState: 'FL',
+        registeredAgentZip: '33101',
+      }));
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -434,26 +498,72 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
         {/* Step 3: Registered Agent */}
         {currentStep === 3 && (
           <FormSection title="Registered Agent">
-            <div
-              className="mb-10 bg-sky-50 rounded-xl flex items-start gap-5"
-              style={{
-                border: '1px solid #bae6fd',
-                borderLeft: '4px solid #0ea5e9',
-                padding: '24px',
-              }}
-            >
-              <div className="w-12 h-12 rounded-full bg-sky-100 flex items-center justify-center flex-shrink-0">
-                <Info className="w-6 h-6 text-sky-600" />
+            {includesRA ? (
+              // Package includes RA - show positive messaging
+              <div
+                className="mb-10 bg-emerald-50 rounded-xl flex items-start gap-5"
+                style={{
+                  border: '1px solid #a7f3d0',
+                  borderLeft: '4px solid #10b981',
+                  padding: '24px',
+                }}
+              >
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <Info className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="flex-1 text-slate-700" style={{ fontSize: '16px', lineHeight: '1.6', paddingTop: '4px' }}>
+                  <p className="mb-2">
+                    A registered agent is a person or business authorized to receive legal documents on behalf of your LLC.
+                  </p>
+                  <p className="font-medium text-emerald-700">
+                    ✓ Your package includes FREE registered agent service for the first year! Our address is pre-filled below, but you can change it if you prefer to use your own.
+                  </p>
+                  {selectedPackage && (
+                    <p className="text-sm text-slate-600 mt-3">
+                      Want to change packages? Use the <strong>"Change Package"</strong> button at the top of this form.
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="text-slate-700" style={{ fontSize: '16px', lineHeight: '1.6', paddingTop: '4px' }}>
-                <p className="mb-2">
-                  A registered agent is a person or business authorized to receive legal documents on behalf of your LLC.
-                </p>
-                <p className="font-medium text-sky-700">
-                  ✓ We include free registered agent service for the first year! Our address is pre-filled below, but you can change it if you prefer to use your own.
-                </p>
+            ) : (
+              // Package doesn't include RA - show warning and upgrade option
+              <div
+                className="mb-10 bg-amber-50 rounded-xl flex items-start gap-5"
+                style={{
+                  border: '1px solid #fde68a',
+                  borderLeft: '4px solid #f59e0b',
+                  padding: '28px',
+                }}
+              >
+                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <Info className="w-6 h-6 text-amber-600" />
+                </div>
+                <div className="flex-1 text-slate-700" style={{ fontSize: '16px', lineHeight: '1.8', paddingTop: '4px' }}>
+                  <p style={{ marginBottom: '20px' }}>
+                    <strong>Florida law requires</strong> every LLC to have a registered agent - a person or business authorized to receive legal documents on behalf of your LLC.
+                  </p>
+
+                  <p className="text-amber-800" style={{ marginBottom: '24px' }}>
+                    ⚠️ Your Basic package does not include registered agent service. You must provide your own registered agent information below.
+                  </p>
+
+                  <div className="bg-emerald-50 rounded-lg" style={{ border: '1px solid #a7f3d0', padding: '20px' }}>
+                    <p className="font-medium text-emerald-700" style={{ marginBottom: '16px' }}>
+                      💡 <strong>Want us to handle this?</strong> Upgrade to Standard package for FREE registered agent service (first year) + Operating Agreement - only $149!
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleUpgradeToStandard}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                      style={{ fontSize: '16px', padding: '14px 24px' }}
+                    >
+                      <span>✓</span>
+                      <span>Upgrade to Standard Package - $149</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             <FormInput
               label="Registered Agent Name"

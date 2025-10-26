@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Check, Clock, Tag } from 'lucide-react';
 import LLCFormationWizard from '@/components/LLCFormationWizard';
 import PackageSelector from '@/components/PackageSelector';
+import CheckoutUpsell from '@/components/CheckoutUpsell';
 import { cn, cardBase } from '@/components/legalops/theme';
 import { formatCurrency } from '@/components/legalops/utils';
 
@@ -45,11 +46,15 @@ interface Package {
 
 export default function ServiceDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showUpsell, setShowUpsell] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
+  const [preservedFormData, setPreservedFormData] = useState<any>(null);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -75,6 +80,64 @@ export default function ServiceDetailPage() {
 
     fetchService();
   }, [slug]);
+
+  // Handle form submission - show upsell if Basic package selected
+  const handleFormSubmit = async (formData: any) => {
+    // If user selected Basic package, show upsell modal
+    if (selectedPackage?.slug === 'basic') {
+      setPendingFormData(formData);
+      setShowUpsell(true);
+      return;
+    }
+
+    // Otherwise, proceed directly to create order
+    await createOrder(formData);
+  };
+
+  // Create order and redirect to checkout
+  const createOrder = async (formData: any) => {
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: service?.id,
+          orderType: 'LLC_FORMATION',
+          orderData: formData,
+          packageId: selectedPackage?.id || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+
+      const data = await response.json();
+      router.push(`/checkout/${data.orderId || data.order?.id}`);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to create order. Please try again.');
+    }
+  };
+
+  // Handle upgrade from upsell modal
+  const handleUpgrade = (pkg: Package) => {
+    setSelectedPackage(pkg);
+    setShowUpsell(false);
+    // Create order with upgraded package
+    if (pendingFormData) {
+      createOrder(pendingFormData);
+    }
+  };
+
+  // Handle continue with Basic package
+  const handleContinueBasic = () => {
+    setShowUpsell(false);
+    // Create order with Basic package
+    if (pendingFormData) {
+      createOrder(pendingFormData);
+    }
+  };
 
   if (loading) {
     return (
@@ -157,17 +220,34 @@ export default function ServiceDetailPage() {
             <div style={{ padding: '32px 32px 24px' }}>
               {/* Package Selection Summary */}
               {selectedPackage && (
-                <div className="mb-6 p-4 bg-sky-50 border border-sky-200 rounded-lg">
+                <div className="mb-6 bg-sky-50 border-2 border-sky-300 rounded-lg" style={{ padding: '20px 24px' }}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-sky-700 font-medium">Selected Package:</p>
                       <p className="text-lg font-bold text-sky-900">{selectedPackage.name} - ${selectedPackage.price}</p>
                     </div>
                     <button
-                      onClick={() => setShowForm(false)}
-                      className="text-sm text-sky-600 hover:text-sky-800 underline"
+                      onClick={() => {
+                        // Form data is already preserved via onFormDataChange callback
+                        setShowForm(false);
+                      }}
+                      className="relative overflow-hidden bg-white text-sky-700 hover:bg-sky-50 font-semibold rounded-lg transition-all duration-200 hover:scale-105"
+                      style={{
+                        fontSize: '14px',
+                        padding: '12px 28px',
+                        border: '2px solid #0ea5e9',
+                        boxShadow: '0 2px 8px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                      }}
                     >
-                      Change Package
+                      {/* Glass highlight effect */}
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%)',
+                          transform: 'translateY(-30%)',
+                        }}
+                      />
+                      <span className="relative">Change Package</span>
                     </button>
                   </div>
                 </div>
@@ -210,11 +290,24 @@ export default function ServiceDetailPage() {
                   rushFeeAvailable: service.rushFeeAvailable || false,
                 }}
                 selectedPackage={selectedPackage}
+                onSubmit={handleFormSubmit}
+                onPackageChange={setSelectedPackage}
+                initialFormData={preservedFormData}
+                onFormDataChange={setPreservedFormData}
               />
             </div>
           </div>
         )}
       </div>
+
+      {/* Checkout Upsell Modal */}
+      {showUpsell && (
+        <CheckoutUpsell
+          currentPackage={selectedPackage}
+          onUpgrade={handleUpgrade}
+          onContinue={handleContinueBasic}
+        />
+      )}
     </div>
   );
 }
