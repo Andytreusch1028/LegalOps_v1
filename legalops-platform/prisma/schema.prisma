@@ -507,17 +507,23 @@ model OrderItem {
   id          String   @id @default(cuid())
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id])
-  
+
   // Item Information
   serviceType ServiceType
   description String
   quantity    Int      @default(1)
   unitPrice   Decimal  @db.Decimal(10, 2)
   totalPrice  Decimal  @db.Decimal(10, 2)
-  
+
+  // Additional Data Collection (for upsells that need customer input)
+  requiresAdditionalData  Boolean  @default(false)
+  additionalDataCollected Boolean  @default(false)
+  additionalData          Json?    // Store collected form data
+  dataCollectionFormType  String?  // "OPERATING_AGREEMENT", "EIN_APPLICATION", etc.
+
   // Timestamps
   createdAt   DateTime @default(now())
-  
+
   @@map("order_items")
 }
 
@@ -527,6 +533,9 @@ enum ServiceType {
   ANNUAL_REPORT
   REGISTERED_AGENT
   EIN_APPLICATION
+  OPERATING_AGREEMENT
+  CORPORATE_BYLAWS
+  CERTIFICATE_OF_STATUS
   AMENDMENT
   DISSOLUTION
   NAME_RESERVATION

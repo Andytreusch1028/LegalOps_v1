@@ -10,6 +10,7 @@ import StripePaymentForm from '@/components/StripePaymentForm';
 import { ProgressSteps } from '@/components/legalops/checkout/ProgressSteps';
 import { OrderSummaryCard } from '@/components/legalops/cards/OrderSummaryCard';
 import { cn, cardBase } from '@/components/legalops/theme';
+import { CheckoutServiceUpsells } from '@/components/CheckoutServiceUpsells';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -61,6 +62,8 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [addedUpsells, setAddedUpsells] = useState<string[]>([]);
+  const [updatingOrder, setUpdatingOrder] = useState(false);
 
   useEffect(() => {
     if (!session) {
@@ -117,6 +120,218 @@ export default function CheckoutPage() {
 
   const handlePaymentError = (errorMessage: string) => {
     setError(errorMessage);
+  };
+
+  const handleAddUpsell = async (upsellId: string, price: number) => {
+    if (addedUpsells.includes(upsellId)) {
+      return; // Already added
+    }
+
+    setUpdatingOrder(true);
+    try {
+      const response = await fetch(`/api/orders/${orderId}/add-items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: [
+            {
+              description: upsellId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              price,
+              serviceType: 'REGISTERED_AGENT', // This should be mapped properly
+            },
+          ],
+        }),
+      });
+
+      if (response.ok) {
+        const updatedOrder = await response.json();
+        setOrder(updatedOrder);
+        setAddedUpsells([...addedUpsells, upsellId]);
+
+        // Update payment intent with new amount
+        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: updatedOrder.total,
+            description: `Order ${updatedOrder.orderNumber}`,
+          }),
+        });
+
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setClientSecret(paymentData.clientSecret);
+        }
+      } else {
+        setError('Failed to add service to order');
+      }
+    } catch (err) {
+      setError('Failed to add service to order');
+    } finally {
+      setUpdatingOrder(false);
+    }
+  };
+
+  const handleRemoveUpsell = async (upsellId: string, price: number) => {
+    setUpdatingOrder(true);
+    try {
+      const description = upsellId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+
+      const response = await fetch(`/api/orders/${orderId}/remove-items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemDescriptions: [description],
+        }),
+      });
+
+      if (response.ok) {
+        const updatedOrder = await response.json();
+        setOrder(updatedOrder);
+        setAddedUpsells(addedUpsells.filter((id) => id !== upsellId));
+
+        // Update payment intent with new amount
+        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: updatedOrder.total,
+            description: `Order ${updatedOrder.orderNumber}`,
+          }),
+        });
+
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setClientSecret(paymentData.clientSecret);
+        }
+      } else {
+        setError('Failed to remove service from order');
+      }
+    } catch (err) {
+      setError('Failed to remove service from order');
+    } finally {
+      setUpdatingOrder(false);
+    }
+  };
+
+  const handleAddBundle = async (bundleId: string, itemIds: string[], price: number) => {
+    setUpdatingOrder(true);
+    try {
+      // Check if any individual items from the bundle are already added
+      const alreadyAddedItems = itemIds.filter((id) => addedUpsells.includes(id));
+
+      // If any individual items are already added, remove them first
+      if (alreadyAddedItems.length > 0) {
+        const descriptionsToRemove = alreadyAddedItems.map((id) =>
+          id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+        );
+
+        const removeResponse = await fetch(`/api/orders/${orderId}/remove-items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itemDescriptions: descriptionsToRemove,
+          }),
+        });
+
+        if (!removeResponse.ok) {
+          setError('Failed to update order');
+          setUpdatingOrder(false);
+          return;
+        }
+
+        // Update local state to remove individual items
+        setAddedUpsells(addedUpsells.filter((id) => !alreadyAddedItems.includes(id)));
+      }
+
+      // Now add the bundle
+      const items = itemIds.map((id) => ({
+        description: id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+        price: price / itemIds.length, // Distribute bundle price evenly
+        serviceType: 'REGISTERED_AGENT',
+      }));
+
+      const response = await fetch(`/api/orders/${orderId}/add-items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+
+      if (response.ok) {
+        const updatedOrder = await response.json();
+        setOrder(updatedOrder);
+        setAddedUpsells([...addedUpsells.filter((id) => !alreadyAddedItems.includes(id)), ...itemIds]);
+
+        // Update payment intent
+        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: updatedOrder.total,
+            description: `Order ${updatedOrder.orderNumber}`,
+          }),
+        });
+
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setClientSecret(paymentData.clientSecret);
+        }
+      } else {
+        setError('Failed to add bundle to order');
+      }
+    } catch (err) {
+      setError('Failed to add bundle to order');
+    } finally {
+      setUpdatingOrder(false);
+    }
+  };
+
+  const handleRemoveBundle = async (bundleId: string, itemIds: string[], price: number) => {
+    setUpdatingOrder(true);
+    try {
+      const descriptions = itemIds.map((id) =>
+        id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+      );
+
+      const response = await fetch(`/api/orders/${orderId}/remove-items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemDescriptions: descriptions,
+        }),
+      });
+
+      if (response.ok) {
+        const updatedOrder = await response.json();
+        setOrder(updatedOrder);
+        setAddedUpsells(addedUpsells.filter((id) => !itemIds.includes(id)));
+
+        // Update payment intent
+        const paymentResponse = await fetch('/api/stripe/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId,
+            amount: updatedOrder.total,
+            description: `Order ${updatedOrder.orderNumber}`,
+          }),
+        });
+
+        if (paymentResponse.ok) {
+          const paymentData = await paymentResponse.json();
+          setClientSecret(paymentData.clientSecret);
+        }
+      } else {
+        setError('Failed to remove bundle from order');
+      }
+    } catch (err) {
+      setError('Failed to remove bundle from order');
+    } finally {
+      setUpdatingOrder(false);
+    }
   };
 
   if (loading) {
@@ -189,6 +404,18 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: '40px' }}>
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Upsells - Only show for individual service orders (not packages) */}
+            {!order.package && order.orderItems && order.orderItems.length > 0 && (
+              <CheckoutServiceUpsells
+                serviceType={order.orderItems[0].serviceType}
+                onAddUpsell={handleAddUpsell}
+                onRemoveUpsell={handleRemoveUpsell}
+                onAddBundle={handleAddBundle}
+                onRemoveBundle={handleRemoveBundle}
+                addedUpsells={addedUpsells}
+              />
+            )}
+
             {/* Service Agreement & Fraud Protection */}
             <div
               className="rounded-xl bg-white hover:shadow-lg transition-all duration-300"
@@ -595,7 +822,7 @@ export default function CheckoutPage() {
                           )}
                         </div>
                         <span className="text-slate-900 font-semibold ml-4">
-                          ${item.totalPrice.toFixed(2)}
+                          ${Number(item.totalPrice).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -609,7 +836,7 @@ export default function CheckoutPage() {
                 >
                   <span className="text-slate-600" style={{ fontSize: '15px' }}>Subtotal</span>
                   <span className="text-slate-900 font-medium" style={{ fontSize: '15px' }}>
-                    ${order.subtotal.toFixed(2)}
+                    ${Number(order.subtotal).toFixed(2)}
                   </span>
                 </div>
 
@@ -617,7 +844,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center py-3">
                   <span className="text-slate-600" style={{ fontSize: '15px' }}>Tax</span>
                   <span className="text-slate-900 font-medium" style={{ fontSize: '15px' }}>
-                    ${order.tax.toFixed(2)}
+                    ${Number(order.tax).toFixed(2)}
                   </span>
                 </div>
 
@@ -628,7 +855,7 @@ export default function CheckoutPage() {
                 >
                   <span className="text-slate-900 font-bold" style={{ fontSize: '20px' }}>Total</span>
                   <span className="text-sky-600 font-bold" style={{ fontSize: '28px' }}>
-                    ${order.total.toFixed(2)}
+                    ${Number(order.total).toFixed(2)}
                   </span>
                 </div>
 
