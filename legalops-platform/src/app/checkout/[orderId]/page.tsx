@@ -122,7 +122,7 @@ export default function CheckoutPage() {
     setError(errorMessage);
   };
 
-  const handleAddUpsell = async (upsellId: string, price: number) => {
+  const handleAddUpsell = async (upsellId: string, price: number, serviceType?: string) => {
     if (addedUpsells.includes(upsellId)) {
       return; // Already added
     }
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
             {
               description: upsellId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               price,
-              serviceType: 'REGISTERED_AGENT', // This should be mapped properly
+              serviceType: serviceType || 'REGISTERED_AGENT',
             },
           ],
         }),
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleAddBundle = async (bundleId: string, itemIds: string[], price: number) => {
+  const handleAddBundle = async (bundleId: string, itemIds: string[], price: number, itemServiceTypes?: Record<string, string>) => {
     setUpdatingOrder(true);
     try {
       // Check if any individual items from the bundle are already added
@@ -250,7 +250,7 @@ export default function CheckoutPage() {
       const items = itemIds.map((id) => ({
         description: id.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
         price: price / itemIds.length, // Distribute bundle price evenly
-        serviceType: 'REGISTERED_AGENT',
+        serviceType: itemServiceTypes?.[id] || 'REGISTERED_AGENT',
       }));
 
       const response = await fetch(`/api/orders/${orderId}/add-items`, {

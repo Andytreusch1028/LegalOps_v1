@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Info, Check } from 'lucide-react';
 import { FormWizard, FormInput, FormTextArea, FormSection } from '@/components/forms';
 import { cn } from '@/components/legalops/theme';
+import UPLDisclaimer from '@/components/UPLDisclaimer';
 
 interface Manager {
   id: string;
@@ -329,6 +330,11 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
       showTrustSignals={true}
       estimatedTime="5-10 Minutes"
     >
+        {/* UPL Disclaimer - Show on first step */}
+        {currentStep === 1 && (
+          <UPLDisclaimer variant="form" className="mb-6" />
+        )}
+
         {/* Step 1: Business Information */}
         {currentStep === 1 && (
           <FormSection

@@ -8,13 +8,18 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().optional(),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  phone: z.string().optional(),
+  tosAcceptedAt: z.string().optional(),
+  privacyPolicyAcceptedAt: z.string().optional(),
+  emailRemindersConsent: z.boolean().optional(),
+  smsRemindersConsent: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-  const { firstName, lastName, email, password } = registerSchema.parse(body);
+    const { firstName, lastName, email, password, phone, tosAcceptedAt, privacyPolicyAcceptedAt, emailRemindersConsent, smsRemindersConsent } = registerSchema.parse(body);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -32,13 +37,21 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create user
+    const now = new Date();
     const user = await prisma.user.create({
       data: {
         firstName,
         lastName: lastName || null,
         email,
         passwordHash: hashedPassword,
+        phone: phone || null,
         role: UserRole.INDIVIDUAL_CUSTOMER,
+        tosAcceptedAt: tosAcceptedAt ? new Date(tosAcceptedAt) : now,
+        privacyPolicyAcceptedAt: privacyPolicyAcceptedAt ? new Date(privacyPolicyAcceptedAt) : now,
+        emailRemindersConsent: emailRemindersConsent || false,
+        emailRemindersConsentAt: emailRemindersConsent ? now : null,
+        smsRemindersConsent: smsRemindersConsent || false,
+        smsRemindersConsentAt: smsRemindersConsent ? now : null,
       }
     });
 

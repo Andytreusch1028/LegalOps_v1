@@ -29,9 +29,9 @@ interface UpsellBundle {
 
 interface CheckoutServiceUpsellsProps {
   serviceType: string;
-  onAddUpsell: (upsellId: string, price: number) => void;
+  onAddUpsell: (upsellId: string, price: number, serviceType?: string) => void;
   onRemoveUpsell: (upsellId: string, price: number) => void;
-  onAddBundle: (bundleId: string, itemIds: string[], price: number) => void;
+  onAddBundle: (bundleId: string, itemIds: string[], price: number, itemServiceTypes?: Record<string, string>) => void;
   onRemoveBundle: (bundleId: string, itemIds: string[], price: number) => void;
   addedUpsells?: string[];
 }
@@ -188,7 +188,7 @@ export function CheckoutServiceUpsells({ serviceType, onAddUpsell, onRemoveUpsel
     if (isAdded) {
       onRemoveUpsell(upsell.id, upsell.price);
     } else {
-      onAddUpsell(upsell.id, upsell.price);
+      onAddUpsell(upsell.id, upsell.price, upsell.serviceType);
     }
   };
 
@@ -199,7 +199,17 @@ export function CheckoutServiceUpsells({ serviceType, onAddUpsell, onRemoveUpsel
       onRemoveBundle(bundle.id, bundle.itemIds, bundle.bundlePrice);
     } else {
       setSelectedBundle(bundle.id);
-      onAddBundle(bundle.id, bundle.itemIds, bundle.bundlePrice);
+
+      // Create a map of itemId -> serviceType for the bundle
+      const itemServiceTypes: Record<string, string> = {};
+      bundle.itemIds.forEach((itemId) => {
+        const upsell = config.upsells.find((u) => u.id === itemId);
+        if (upsell?.serviceType) {
+          itemServiceTypes[itemId] = upsell.serviceType;
+        }
+      });
+
+      onAddBundle(bundle.id, bundle.itemIds, bundle.bundlePrice, itemServiceTypes);
     }
   };
 

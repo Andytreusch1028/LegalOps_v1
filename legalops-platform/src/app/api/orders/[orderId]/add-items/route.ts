@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getServiceDataRequirements } from '@/config/service-data-requirements';
 
 /**
  * POST /api/orders/[orderId]/add-items
@@ -62,14 +63,21 @@ export async function POST(
     }
 
     // Add new items to the order
-    const newOrderItems = items.map((item: { description: string; price: number; serviceType?: string }) => ({
-      orderId: order.id,
-      serviceType: item.serviceType || 'REGISTERED_AGENT', // Default to REGISTERED_AGENT, should be passed from frontend
-      description: item.description,
-      quantity: 1,
-      unitPrice: item.price,
-      totalPrice: item.price,
-    }));
+    const newOrderItems = items.map((item: { description: string; price: number; serviceType?: string }) => {
+      const serviceType = item.serviceType || 'REGISTERED_AGENT';
+      const dataRequirements = getServiceDataRequirements(serviceType);
+
+      return {
+        orderId: order.id,
+        serviceType,
+        description: item.description,
+        quantity: 1,
+        unitPrice: item.price,
+        totalPrice: item.price,
+        requiresAdditionalData: dataRequirements?.requiresAdditionalData || false,
+        dataCollectionFormType: dataRequirements?.dataCollectionFormType || null,
+      };
+    });
 
     // Create order items
     await prisma.orderItem.createMany({

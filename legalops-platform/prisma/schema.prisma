@@ -45,6 +45,16 @@ model User {
   autoApproveGrantedAt    DateTime?                // When customer granted this permission
   autoApproveAcknowledged Boolean @default(false)  // Customer acknowledged risks
 
+  // Legal Compliance
+  tosAcceptedAt           DateTime?                // When user accepted Terms of Service
+  privacyPolicyAcceptedAt DateTime?                // When user accepted Privacy Policy
+
+  // Marketing Consent
+  emailRemindersConsent   Boolean  @default(false) // Opted in to email reminders
+  emailRemindersConsentAt DateTime?                // When they opted in
+  smsRemindersConsent     Boolean  @default(false) // Opted in to SMS reminders
+  smsRemindersConsentAt   DateTime?                // When they opted in
+
   // Relationships
   clients       Client[]
   orders        Order[]
@@ -432,8 +442,23 @@ model Package {
 
 model Order {
   id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  userId          String?  // Optional for guest checkout
+  user            User?    @relation(fields: [userId], references: [id])
+
+  // Guest Checkout Information
+  isGuestOrder    Boolean  @default(false)
+  guestEmail      String?
+  guestFirstName  String?
+  guestLastName   String?
+  guestPhone      String?
+  tosAcceptedAt   DateTime?  // For guest orders
+  privacyPolicyAcceptedAt DateTime?  // For guest orders
+
+  // Marketing Consent (for guest orders and follow-up reminders)
+  emailRemindersConsent Boolean @default(false)  // Opted in to email reminders
+  emailRemindersConsentAt DateTime?  // When they opted in
+  smsRemindersConsent Boolean @default(false)  // Opted in to SMS reminders
+  smsRemindersConsentAt DateTime?  // When they opted in
 
   // Order Information
   orderNumber     String   @unique
@@ -536,7 +561,11 @@ enum ServiceType {
   OPERATING_AGREEMENT
   CORPORATE_BYLAWS
   CERTIFICATE_OF_STATUS
-  AMENDMENT
+  AMENDMENT // Deprecated - use ENTITY_INFORMATION_UPDATE or BUSINESS_AMENDMENT
+  ENTITY_INFORMATION_UPDATE // Free updates: email, FEIN, addresses
+  OFFICER_ADDRESS_UPDATE // Free update for officer/manager addresses
+  REGISTERED_AGENT_CHANGE // $25 fee - requires mailing
+  BUSINESS_AMENDMENT // $25 fee - name, purpose, management, stock changes
   DISSOLUTION
   NAME_RESERVATION
   EXPEDITED_PROCESSING
