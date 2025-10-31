@@ -1,0 +1,29 @@
+{
+  // 💡 Workspace Settings
+  // Always open and pin reference guides on startup
+  "workbench.startupEditor": "none",
+  "workbench.editor.restoreViewState": true,
+
+  // Files to auto-open when workspace loads
+  "filesToOpen": [
+    "AUGMENT_COMMAND_CHEATSHEET.md",
+    "RUN_SEQUENCE_GUIDE.md"
+  ],
+
+  // Optional: show Markdown preview by default
+  "markdown.preview.openSideBySide": true,
+  "markdown.preview.breaks": true,
+
+  // Optional: keep these pinned
+  "workbench.editor.pinnedTabs": true,
+
+  // Optional: open to last active editor group
+  "workbench.editor.openPositioning": "first",
+
+  // Run open-guides.js when VS Code starts
+  "extensions.startupActivationEvents": [
+    "workspaceContains:.vscode/open-guides.js"
+  ]
+}
+
+

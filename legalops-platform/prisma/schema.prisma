@@ -66,6 +66,10 @@ model User {
   agentInteractions    CustomerInteraction[] @relation("AgentInteractions")
   interactionAccessLogs InteractionAccessLog[] @relation("InteractionAccessLogs")
 
+  // Risk Assessment Relationships
+  riskAssessments       RiskAssessment[]
+  reviewedRiskAssessments RiskAssessment[] @relation("RiskReviewer")
+
   @@map("users")
 }
 
@@ -527,12 +531,7 @@ enum PaymentStatus {
   REFUNDED
 }
 
-enum RiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
+// RiskLevel enum moved to Phase 7 section (line ~990)
 
 model OrderItem {
   id          String   @id @default(cuid())
@@ -668,6 +667,8 @@ model RiskAssessment {
   id              String   @id @default(cuid())
   orderId         String   @unique
   order           Order    @relation(fields: [orderId], references: [id])
+  userId          String?  // Optional for guest orders
+  user            User?    @relation(fields: [userId], references: [id])
 
   // Risk Score
   riskScore       Int      // 0-100
@@ -703,6 +704,7 @@ model RiskAssessment {
   requiresReview  Boolean  @default(false)
   reviewedAt      DateTime?
   reviewedBy      String?  // Admin user ID
+  reviewer        User?    @relation("RiskReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
   reviewNotes     String?  @db.Text
   reviewDecision  ReviewDecision?
 
@@ -714,6 +716,14 @@ model RiskAssessment {
   @@index([riskLevel])
   @@index([createdAt])
   @@index([requiresReview])
+  @@index([userId])
+}
+
+enum RiskLevel {
+  LOW       // 0-25: Trusted customer, normal patterns
+  MEDIUM    // 26-50: Some flags, monitor
+  HIGH      // 51-75: Multiple flags, review required
+  CRITICAL  // 76-100: Severe risk, manual approval required
 }
 
 enum RiskRecommendation {
@@ -958,4 +968,10 @@ enum AttachmentFileType {
   DOCUMENT
   SCREEN_RECORDING
 }
+
+// ============================================================================
+// PHASE 7: SMART + SAFE EXPERIENCE OVERHAUL
+// ============================================================================
+// Note: RiskAssessment model already exists in AI Risk Scoring section (line ~666)
+// Phase 7 enhances existing risk scoring with Smart Forms and Liquid Glass UI
 
