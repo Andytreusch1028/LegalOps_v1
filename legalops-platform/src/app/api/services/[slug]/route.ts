@@ -20,6 +20,7 @@ export async function GET(
         id: true,
         name: true,
         slug: true,
+        orderType: true, // CRITICAL: Needed for checkout routing
         shortDescription: true,
         longDescription: true,
         totalPrice: true,

@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         slug: true,
+        orderType: true,
         shortDescription: true,
         totalPrice: true,
         serviceFee: true,

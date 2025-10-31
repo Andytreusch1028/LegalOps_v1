@@ -61,6 +61,11 @@ model User {
   notifications Notification[]
   notices       Notice[]
 
+  // Customer Service Relationships
+  customerInteractions CustomerInteraction[] @relation("CustomerInteractions")
+  agentInteractions    CustomerInteraction[] @relation("AgentInteractions")
+  interactionAccessLogs InteractionAccessLog[] @relation("InteractionAccessLogs")
+
   @@map("users")
 }
 
@@ -500,6 +505,7 @@ model Order {
   // Relationships
   orderItems      OrderItem[]
   riskAssessment  RiskAssessment?
+  interactions    CustomerInteraction[] @relation("OrderInteractions")
 
   @@map("orders")
 }
@@ -778,5 +784,178 @@ model Service {
   @@index([slug])
   @@index([isActive])
   @@map("services")
+}
+
+// ============================================================================
+// CUSTOMER SERVICE & DOCUMENTATION SYSTEM
+// Added: 2025-10-30
+// Purpose: Track all customer interactions for UPL protection, marketing intelligence, and customer service
+// ============================================================================
+
+model CustomerInteraction {
+  id                    String   @id @default(cuid())
+  customerId            String?
+  customer              User?    @relation("CustomerInteractions", fields: [customerId], references: [id])
+  orderId               String?
+  order                 Order?   @relation("OrderInteractions", fields: [orderId], references: [id])
+
+  // Interaction Details
+  channel               InteractionChannel
+  direction             InteractionDirection
+  subject               String
+  content               String   @db.Text // Full message/transcript
+  aiSummary             String?  @db.Text // AI-generated summary
+
+  // Agent Info
+  agentId               String?
+  agent                 User?    @relation("AgentInteractions", fields: [agentId], references: [id])
+
+  // Categorization
+  category              InteractionCategory
+  tags                  String[] // ["refund", "pricing", "upl_concern"]
+  sentiment             Sentiment?
+
+  // Resolution Tracking
+  status                InteractionStatus @default(OPEN)
+  priority              Priority @default(NORMAL)
+  resolvedAt            DateTime?
+  resolutionTime        Int?     // Minutes to resolve
+
+  // UPL Protection (CRITICAL for legal compliance)
+  uplDisclaimerShown    Boolean  @default(false)
+  uplDisclaimerText     String?  @db.Text
+  containsLegalQuestion Boolean  @default(false)
+
+  // Threading (for email/chat conversations)
+  parentInteractionId   String?
+  parentInteraction     CustomerInteraction? @relation("InteractionThread", fields: [parentInteractionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  childInteractions     CustomerInteraction[] @relation("InteractionThread")
+
+  // Attachments (audio, transcripts, screenshots)
+  attachments           InteractionAttachment[]
+
+  // Access Logging (for compliance)
+  accessLogs            InteractionAccessLog[]
+
+  // Metadata
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([orderId])
+  @@index([agentId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@index([containsLegalQuestion]) // Quick UPL audit queries
+  @@map("customer_interactions")
+}
+
+model InteractionAttachment {
+  id            String   @id @default(cuid())
+  interactionId String
+  interaction   CustomerInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+
+  fileType      AttachmentFileType
+  fileUrl       String   // S3 or cloud storage URL
+  fileName      String
+  fileSize      Int      // Bytes
+  mimeType      String
+
+  // For audio files
+  duration      Int?     // Seconds
+  transcriptUrl String?  // Link to transcript file
+
+  createdAt     DateTime @default(now())
+
+  @@index([interactionId])
+  @@map("interaction_attachments")
+}
+
+model InteractionAccessLog {
+  id             String   @id @default(cuid())
+  interactionId  String
+  interaction    CustomerInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation("InteractionAccessLogs", fields: [userId], references: [id])
+  action         AccessAction
+  ipAddress      String?
+  userAgent      String?
+  timestamp      DateTime @default(now())
+
+  @@index([interactionId])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("interaction_access_logs")
+}
+
+enum InteractionChannel {
+  EMAIL
+  CHAT
+  PHONE
+  SMS
+  DASHBOARD_MESSAGE
+  SOCIAL_MEDIA
+  IN_PERSON
+}
+
+enum InteractionDirection {
+  INBOUND  // Customer contacted us
+  OUTBOUND // We contacted customer
+}
+
+enum InteractionCategory {
+  GENERAL_INQUIRY
+  ORDER_STATUS
+  TECHNICAL_SUPPORT
+  BILLING_QUESTION
+  REFUND_REQUEST
+  COMPLAINT
+  LEGAL_QUESTION // UPL risk - requires disclaimer!
+  FEATURE_REQUEST
+  COMPLIANCE_ISSUE
+  FOLLOW_UP
+  AMENDMENT_REQUEST
+  DOCUMENT_REQUEST
+}
+
+enum InteractionStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_ON_CUSTOMER
+  WAITING_ON_INTERNAL
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum Sentiment {
+  VERY_NEGATIVE
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+  VERY_POSITIVE
+}
+
+enum AccessAction {
+  VIEW
+  EDIT
+  DELETE
+  EXPORT
+  SHARE
+}
+
+enum AttachmentFileType {
+  AUDIO_RECORDING
+  TRANSCRIPT
+  SCREENSHOT
+  DOCUMENT
+  SCREEN_RECORDING
 }
 

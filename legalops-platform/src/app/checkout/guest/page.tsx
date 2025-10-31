@@ -94,40 +94,51 @@ export default function GuestCheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom, #e8f0f7 0%, #f5f8fb 100%)', padding: '48px 24px' }}>
+      <div className="max-w-2xl mx-auto w-full">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center" style={{ marginBottom: '32px' }}>
           <div className="inline-flex items-center justify-center w-16 h-16 bg-sky-100 rounded-full mb-4">
             <ShoppingCart className="w-8 h-8 text-sky-600" />
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-3">
+          <h1 className="font-bold text-slate-900" style={{ fontSize: '32px', marginBottom: '8px' }}>
             Guest Checkout
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-slate-600" style={{ fontSize: '16px' }}>
             {serviceName && `Complete your ${serviceName} order`}
           </p>
         </div>
 
         {/* UPL Disclaimer */}
-        <UPLDisclaimer variant="minimal" className="mb-8" />
+        <div style={{ marginBottom: '24px' }}>
+          <UPLDisclaimer variant="minimal" />
+        </div>
 
         {/* Service Summary */}
-        <div className="bg-white rounded-lg shadow-lg border-2 border-slate-200 mb-8" style={{ padding: '24px' }}>
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Order Summary</h2>
+        <div className="bg-white rounded-lg" style={{
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          padding: '24px',
+          marginBottom: '24px'
+        }}>
+          <h2 className="font-bold text-slate-900" style={{ fontSize: '18px', marginBottom: '16px' }}>Order Summary</h2>
           <div className="flex justify-between items-center">
             <div>
               <p className="font-semibold text-slate-900">{serviceName}</p>
               <p className="text-sm text-slate-600">One-time service</p>
             </div>
-            <div className="text-2xl font-bold text-sky-600">
+            <div className="font-bold text-sky-600" style={{ fontSize: '24px' }}>
               ${servicePrice.toFixed(2)}
             </div>
           </div>
         </div>
 
         {/* Guest Information Form */}
-        <div className="bg-white rounded-lg shadow-lg border-2 border-slate-200" style={{ padding: '32px' }}>
+        <div className="bg-white rounded-lg" style={{
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+          padding: '32px'
+        }}>
           <h2 className="text-2xl font-bold text-slate-900 mb-6">Your Information</h2>
           
           <form onSubmit={handleSubmit}>
@@ -210,16 +221,16 @@ export default function GuestCheckoutPage() {
             </div>
 
             {/* Marketing Consent */}
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-5 mb-6">
-              <h3 className="font-bold text-amber-900 mb-3 text-sm">
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg" style={{ padding: '20px', marginTop: '24px' }}>
+              <h3 className="font-bold text-amber-900 text-sm" style={{ marginBottom: '12px' }}>
                 📬 Stay Informed (Optional)
               </h3>
-              <p className="text-xs text-amber-800 mb-4">
+              <p className="text-xs text-amber-800" style={{ marginBottom: '16px' }}>
                 We can send you helpful reminders for important deadlines like annual reports, renewals, and compliance requirements.
               </p>
 
               {/* Email Reminders */}
-              <div className="flex items-start mb-3">
+              <div className="flex items-start" style={{ marginBottom: '12px' }}>
                 <input
                   type="checkbox"
                   id="emailReminders"
@@ -255,30 +266,30 @@ export default function GuestCheckoutPage() {
                 </label>
               </div>
 
-              <p className="text-xs text-amber-600 mt-3 italic">
+              <p className="text-xs text-amber-600 italic" style={{ marginTop: '12px' }}>
                 You can unsubscribe at any time. We'll never share your information.
               </p>
             </div>
 
             {/* Benefits of Creating Account */}
-            <div className="bg-sky-50 border-2 border-sky-200 rounded-lg p-6 mb-6">
-              <h3 className="font-bold text-sky-900 mb-3">
+            <div className="bg-sky-50 border-2 border-sky-200 rounded-lg" style={{ padding: '24px', marginTop: '24px' }}>
+              <h3 className="font-bold text-sky-900" style={{ marginBottom: '12px' }}>
                 💡 Want to save time on future orders?
               </h3>
-              <p className="text-sm text-sky-800 mb-3">
+              <p className="text-sm text-sky-800" style={{ marginBottom: '12px' }}>
                 Create an account to:
               </p>
-              <ul className="text-sm text-sky-800 space-y-1 list-disc ml-5">
-                <li>Access all your documents in one place</li>
-                <li>Track order status in real-time</li>
-                <li>Reuse your information for faster checkout</li>
+              <ul className="text-sm text-sky-800 list-disc" style={{ marginLeft: '20px', marginBottom: '16px' }}>
+                <li style={{ marginBottom: '4px' }}>Access all your documents in one place</li>
+                <li style={{ marginBottom: '4px' }}>Track order status in real-time</li>
+                <li style={{ marginBottom: '4px' }}>Reuse your information for faster checkout</li>
                 <li>Receive important compliance reminders</li>
               </ul>
               <button
                 type="button"
                 onClick={() => router.push(`/checkout/create-account?service=${serviceType}&name=${serviceName}&price=${servicePrice}`)}
-                className="mt-4 w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors"
-                style={{ padding: '10px 20px' }}
+                className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors"
+                style={{ padding: '12px 24px', marginTop: '16px' }}
               >
                 Create Account Instead
               </button>
@@ -289,7 +300,7 @@ export default function GuestCheckoutPage() {
               type="submit"
               disabled={loading}
               className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              style={{ padding: '14px 28px' }}
+              style={{ padding: '14px 28px', marginTop: '24px' }}
             >
               {loading ? 'Processing...' : 'Continue to Payment'}
             </button>

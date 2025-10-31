@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Check, Clock, Tag } from 'lucide-react';
+import { Check, Clock, Tag, ShoppingCart, Lock } from 'lucide-react';
 import LLCFormationWizard from '@/components/LLCFormationWizard';
 import PackageSelector from '@/components/PackageSelector';
 import CheckoutUpsell from '@/components/CheckoutUpsell';
 import { cn, cardBase } from '@/components/legalops/theme';
 import { formatCurrency } from '@/components/legalops/utils';
+import { requiresAccount, allowsGuestCheckout } from '@/config/service-data-requirements';
 
 interface Service {
   id: string;
   name: string;
   slug: string;
+  orderType: string; // Maps to ServiceType enum (LLC_FORMATION, OPERATING_AGREEMENT, etc.)
   shortDescription: string;
   longDescription: string;
   totalPrice: number;
@@ -180,124 +182,228 @@ export default function ServiceDetailPage() {
       </div>
 
       {/* About This Service Section */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
-        <div
-          className="bg-white rounded-xl text-center"
-          style={{
-            border: '3px solid #e2e8f0',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-            padding: '32px 48px',
-          }}
-        >
-          <h3 className="font-bold text-slate-900" style={{ fontSize: '20px', marginBottom: '16px' }}>
-            About This Service
-          </h3>
-          <p className="text-slate-600 max-w-3xl mx-auto" style={{ fontSize: '16px', lineHeight: '1.7' }}>
-            {service.longDescription}
-          </p>
+      <div className="flex items-center justify-center" style={{ padding: '32px 24px' }}>
+        <div className="max-w-4xl mx-auto w-full">
+          <div
+            className="bg-white rounded-xl text-center"
+            style={{
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+              padding: '32px',
+            }}
+          >
+            <h3 className="font-bold text-slate-900" style={{ fontSize: '20px', marginBottom: '16px' }}>
+              About This Service
+            </h3>
+            <p className="text-slate-600 max-w-3xl mx-auto" style={{ fontSize: '16px', lineHeight: '1.7' }}>
+              {service.longDescription}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Main Content - Package Selection or Form */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 64px' }}>
-        {!showForm ? (
-          /* Package Selection */
-          <div>
-            <PackageSelector
-              onSelectPackage={(pkg) => {
-                setSelectedPackage(pkg);
-                setShowForm(true);
-              }}
-              selectedPackageId={selectedPackage?.id}
-            />
-          </div>
-        ) : (
-          /* Form Wizard */
-          <div className="bg-white rounded-xl" style={{
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
-          }}>
-            <div style={{ padding: '32px 32px 24px' }}>
-              {/* Package Selection Summary */}
-              {selectedPackage && (
-                <div className="mb-6 bg-sky-50 border-2 border-sky-300 rounded-lg" style={{ padding: '20px 24px' }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-sky-700 font-medium">Selected Package:</p>
-                      <p className="text-lg font-bold text-sky-900">{selectedPackage.name} - ${selectedPackage.price}</p>
+      {/* Main Content - Different for LLC Formation vs Other Services */}
+      <div className="flex items-center justify-center" style={{ padding: '0 24px 64px' }}>
+        <div className="max-w-4xl mx-auto w-full">
+          {service.orderType === 'LLC_FORMATION' ? (
+            /* LLC Formation - Show Package Selector and Form Wizard */
+            <>
+              {!showForm ? (
+                /* Package Selection */
+                <div>
+                  <PackageSelector
+                    onSelectPackage={(pkg) => {
+                      setSelectedPackage(pkg);
+                      setShowForm(true);
+                    }}
+                    selectedPackageId={selectedPackage?.id}
+                  />
+                </div>
+              ) : (
+                /* Form Wizard */
+                <div className="bg-white rounded-xl" style={{
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+                }}>
+                  <div style={{ padding: '32px 32px 24px' }}>
+                    {/* Package Selection Summary */}
+                    {selectedPackage && (
+                      <div className="mb-6 bg-sky-50 border-2 border-sky-300 rounded-lg" style={{ padding: '20px 24px' }}>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-sky-700 font-medium">Selected Package:</p>
+                            <p className="text-lg font-bold text-sky-900">{selectedPackage.name} - ${selectedPackage.price}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              // Form data is already preserved via onFormDataChange callback
+                              setShowForm(false);
+                            }}
+                            className="relative overflow-hidden bg-white text-sky-700 hover:bg-sky-50 font-semibold rounded-lg transition-all duration-200 hover:scale-105"
+                            style={{
+                              fontSize: '14px',
+                              padding: '12px 28px',
+                              border: '2px solid #0ea5e9',
+                              boxShadow: '0 2px 8px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                            }}
+                          >
+                            {/* Glass highlight effect */}
+                            <div
+                              className="absolute inset-0 pointer-events-none"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%)',
+                                transform: 'translateY(-30%)',
+                              }}
+                            />
+                            <span className="relative">Change Package</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {!selectedPackage && (
+                      <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-slate-700 font-medium">Individual Filing Selected</p>
+                            <p className="text-xs text-slate-600">You can add services at checkout</p>
+                          </div>
+                          <button
+                            onClick={() => setShowForm(false)}
+                            className="text-sm text-sky-600 hover:text-sky-800 underline"
+                          >
+                            View Packages
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                      <h2 className="font-semibold" style={{ fontSize: '32px', color: '#0f172a', marginBottom: '8px', lineHeight: '1.2' }}>
+                        Complete Your Order
+                      </h2>
+                      <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>
+                        Fill out the form below to get started with your {service.name.toLowerCase()}
+                      </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        // Form data is already preserved via onFormDataChange callback
-                        setShowForm(false);
+                    <LLCFormationWizard
+                      serviceId={service.id}
+                      service={{
+                        id: service.id,
+                        serviceFee: service.serviceFee,
+                        stateFee: service.stateFee,
+                        registeredAgentFee: service.registeredAgentFee || 0,
+                        totalPrice: service.totalPrice,
+                        rushFee: service.rushFee || 0,
+                        rushFeeAvailable: service.rushFeeAvailable || false,
                       }}
-                      className="relative overflow-hidden bg-white text-sky-700 hover:bg-sky-50 font-semibold rounded-lg transition-all duration-200 hover:scale-105"
-                      style={{
-                        fontSize: '14px',
-                        padding: '12px 28px',
-                        border: '2px solid #0ea5e9',
-                        boxShadow: '0 2px 8px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                      }}
-                    >
-                      {/* Glass highlight effect */}
-                      <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: 'linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%)',
-                          transform: 'translateY(-30%)',
-                        }}
-                      />
-                      <span className="relative">Change Package</span>
-                    </button>
+                      selectedPackage={selectedPackage}
+                      onSubmit={handleFormSubmit}
+                      onPackageChange={setSelectedPackage}
+                      initialFormData={preservedFormData}
+                      onFormDataChange={setPreservedFormData}
+                    />
                   </div>
                 </div>
               )}
-
-              {!selectedPackage && (
-                <div className="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-700 font-medium">Individual Filing Selected</p>
-                      <p className="text-xs text-slate-600">You can add services at checkout</p>
-                    </div>
-                    <button
-                      onClick={() => setShowForm(false)}
-                      className="text-sm text-sky-600 hover:text-sky-800 underline"
-                    >
-                      View Packages
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <h2 className="font-semibold" style={{ fontSize: '32px', color: '#0f172a', marginBottom: '8px', lineHeight: '1.2' }}>
-                  Complete Your Order
-                </h2>
-                <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>
-                  Fill out the form below to get started with your {service.name.toLowerCase()}
+            </>
+          ) : (
+            /* All Other Services - Show Buy Now Button */
+            /* Pricing Card */
+            <div className="bg-white rounded-xl" style={{
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+              padding: '32px',
+            }}>
+              <div className="text-center" style={{ marginBottom: '32px' }}>
+                <p className="text-slate-600 mb-2" style={{ fontSize: '16px' }}>Total Price</p>
+                <p className="font-bold text-sky-600" style={{ fontSize: '56px', lineHeight: '1' }}>
+                  ${service.totalPrice.toFixed(2)}
                 </p>
               </div>
-              <LLCFormationWizard
-                serviceId={service.id}
-                service={{
-                  id: service.id,
-                  serviceFee: service.serviceFee,
-                  stateFee: service.stateFee,
-                  registeredAgentFee: service.registeredAgentFee || 0,
-                  totalPrice: service.totalPrice,
-                  rushFee: service.rushFee || 0,
-                  rushFeeAvailable: service.rushFeeAvailable || false,
+
+              {/* Price Breakdown */}
+              <div className="space-y-3 pb-8 border-b border-slate-200" style={{ marginBottom: '32px' }}>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-700" style={{ fontSize: '16px' }}>Service Fee</span>
+                  <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
+                    ${service.serviceFee.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-700" style={{ fontSize: '16px' }}>State Filing Fee</span>
+                  <span className="font-semibold text-slate-900" style={{ fontSize: '16px' }}>
+                    ${service.stateFee.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Processing Time */}
+              <div className="flex items-center justify-center gap-2 text-slate-600" style={{ marginBottom: '32px' }}>
+                <Clock className="w-5 h-5" />
+                <span style={{ fontSize: '15px' }}>{service.processingTime}</span>
+              </div>
+
+              {/* Buy Now Button */}
+              <button
+                onClick={() => router.push(`/checkout-router?service=${service.orderType}&name=${encodeURIComponent(service.name)}&price=${service.totalPrice}`)}
+                className="w-full relative overflow-hidden bg-gradient-to-r from-sky-500 to-sky-600 text-white font-bold rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3"
+                style={{
+                  padding: '16px 32px',
+                  fontSize: '18px',
+                  boxShadow: '0 4px 14px rgba(14, 165, 233, 0.4)',
                 }}
-                selectedPackage={selectedPackage}
-                onSubmit={handleFormSubmit}
-                onPackageChange={setSelectedPackage}
-                initialFormData={preservedFormData}
-                onFormDataChange={setPreservedFormData}
-              />
+              >
+                {/* Glass highlight effect */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 50%)',
+                    transform: 'translateY(-30%)',
+                  }}
+                />
+                <ShoppingCart className="w-6 h-6" />
+                <span className="relative">Buy Now</span>
+              </button>
+
+              {/* Account Requirement Notice */}
+              {requiresAccount(service.orderType) && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg" style={{
+                  marginTop: '24px',
+                  padding: '16px 20px'
+                }}>
+                  <div className="flex items-start gap-3">
+                    <Lock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900 mb-1">Account Required</p>
+                      <p className="text-xs text-blue-700">
+                        This service requires creating an account for ongoing access and document delivery.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Guest Checkout Available Notice */}
+              {allowsGuestCheckout(service.orderType) && (
+                <div className="bg-green-50 border-2 border-green-200 rounded-lg" style={{
+                  marginTop: '24px',
+                  padding: '16px 20px'
+                }}>
+                  <div className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-green-900 mb-1">Guest Checkout Available</p>
+                      <p className="text-xs text-green-700">
+                        You can purchase this service without creating an account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Checkout Upsell Modal */}
