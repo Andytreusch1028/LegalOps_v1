@@ -47,50 +47,41 @@ export function useSmartForm({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   
   /**
-   * Load saved draft on mount
-   */
-  useEffect(() => {
-    if (enableAutoFill) {
-      loadDraft();
-    }
-  }, [formType, enableAutoFill]);
-  
-  /**
-   * Auto-save draft when form data changes
-   */
-  useEffect(() => {
-    if (!isDirty) return;
-    
-    const timer = setTimeout(() => {
-      saveDraft();
-    }, autoSaveInterval);
-    
-    return () => clearTimeout(timer);
-  }, [formData, isDirty, autoSaveInterval]);
-  
-  /**
    * Load saved draft from API
    */
-  const loadDraft = async () => {
+  const loadDraft = useCallback(async () => {
     try {
       const response = await fetch(`/api/forms/drafts?formType=${formType}`);
       const data = await response.json();
-      
+
       if (data.draft) {
         setFormData(prev => ({ ...prev, ...data.draft }));
         setLastSaved(new Date(data.savedAt));
+
+        // Mark all loaded fields as verified
+        Object.keys(data.draft).forEach(fieldName => {
+          setVerifiedFields(prev => [
+            ...prev.filter(f => f.fieldName !== fieldName),
+            {
+              fieldName,
+              value: data.draft[fieldName],
+              source: 'saved',
+              verifiedAt: new Date().toISOString(),
+            },
+          ]);
+        });
       }
     } catch (error) {
       console.error('Failed to load draft:', error);
     }
-  };
-  
+  }, [formType]);
+
   /**
    * Save draft to API
    */
-  const saveDraft = async () => {
+  const saveDraft = useCallback(async () => {
     setIsSaving(true);
-    
+
     try {
       const response = await fetch('/api/forms/drafts', {
         method: 'POST',
@@ -100,9 +91,9 @@ export function useSmartForm({
           data: formData,
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success) {
         setLastSaved(new Date(result.savedAt));
         setIsDirty(false);
@@ -112,7 +103,29 @@ export function useSmartForm({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [formType, formData]);
+
+  /**
+   * Load saved draft on mount
+   */
+  useEffect(() => {
+    if (enableAutoFill) {
+      loadDraft();
+    }
+  }, [enableAutoFill, loadDraft]);
+
+  /**
+   * Auto-save draft when form data changes
+   */
+  useEffect(() => {
+    if (!isDirty) return;
+
+    const timer = setTimeout(() => {
+      saveDraft();
+    }, autoSaveInterval);
+
+    return () => clearTimeout(timer);
+  }, [formData, isDirty, autoSaveInterval, saveDraft]);
   
   /**
    * Update form field value

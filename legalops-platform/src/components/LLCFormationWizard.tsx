@@ -155,13 +155,18 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
 
   // Phase 7: Sync Smart Form data with local state
   useEffect(() => {
+    console.log('Smart Form Data:', smartForm.formData);
+    console.log('Smart Form isDirty:', smartForm.isDirty);
+    console.log('Smart Form lastSaved:', smartForm.lastSaved);
+    console.log('Should show auto-save indicator?', !!smartForm.lastSaved);
+
     if (smartForm.formData && Object.keys(smartForm.formData).length > 0) {
       setFormData(prev => ({
         ...prev,
         ...smartForm.formData,
       }));
     }
-  }, [smartForm.formData]);
+  }, [smartForm.formData, smartForm.lastSaved]);
 
   // Notify parent of form data changes
   useEffect(() => {
@@ -192,12 +197,15 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
     const checked = (e.target as HTMLInputElement).checked;
     const newValue = type === 'checkbox' ? checked : value;
 
+    console.log('handleChange called:', name, newValue);
+
     setFormData(prev => ({
       ...prev,
       [name]: newValue,
     }));
 
     // Phase 7: Update Smart Form for auto-save
+    console.log('Calling smartForm.updateField:', name, newValue);
     smartForm.updateField(name, newValue);
 
     // Clear field error on change
@@ -355,7 +363,7 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
       estimatedTime="5-10 Minutes"
     >
         {/* Phase 7: Auto-Save Indicator */}
-        {smartForm.lastSaved && (
+        {smartForm.lastSaved ? (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -370,11 +378,11 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
           }}>
             <Save size={16} />
             <span>
-              Auto-saved {new Date(smartForm.lastSaved).toLocaleTimeString()}
+              Auto-saved at {new Date(smartForm.lastSaved).toLocaleTimeString()}
               {smartForm.isSaving && ' • Saving...'}
             </span>
           </div>
-        )}
+        ) : null}
 
         {/* UPL Disclaimer - Show on first step */}
         {currentStep === 1 && (

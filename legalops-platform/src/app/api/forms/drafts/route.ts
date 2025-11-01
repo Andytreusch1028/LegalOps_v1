@@ -1,18 +1,19 @@
 /**
  * Smart Forms API - Form Drafts
  * Phase 7: Smart + Safe Experience Overhaul
- * 
+ *
  * Persist and retrieve form drafts for Smart Forms auto-fill
  * GET: Retrieve saved draft
  * POST: Save form draft
+ * DELETE: Delete form draft
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { PrismaClient } from '@/generated/prisma';
 
-// In-memory storage for development (replace with database in production)
-const drafts = new Map<string, any>();
+const prisma = new PrismaClient();
 
 /**
  * GET /api/forms/drafts
@@ -43,19 +44,27 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    const draftKey = `${userId}:${formType}`;
-    const draft = drafts.get(draftKey);
-    
+    // Find the most recent draft for this user and form type
+    const draft = await prisma.formDraft.findFirst({
+      where: {
+        userId,
+        formType,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+
     if (!draft) {
       return NextResponse.json(
         { draft: null },
         { status: 200 }
       );
     }
-    
+
     return NextResponse.json({
-      draft: draft.data,
-      savedAt: draft.savedAt,
+      draft: draft.formData,
+      savedAt: draft.updatedAt.toISOString(),
     });
   } catch (error) {
     console.error('Error retrieving form draft:', error);
@@ -63,6 +72,8 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to retrieve form draft' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -94,16 +105,27 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const draftKey = `${userId}:${formType}`;
-    
-    drafts.set(draftKey, {
-      data,
-      savedAt: new Date().toISOString(),
+    // Upsert the draft (create or update)
+    const draft = await prisma.formDraft.upsert({
+      where: {
+        userId_formType: {
+          userId,
+          formType,
+        },
+      },
+      update: {
+        formData: data,
+      },
+      create: {
+        userId,
+        formType,
+        formData: data,
+      },
     });
-    
+
     return NextResponse.json({
       success: true,
-      savedAt: new Date().toISOString(),
+      savedAt: draft.updatedAt.toISOString(),
     });
   } catch (error) {
     console.error('Error saving form draft:', error);
@@ -111,6 +133,8 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to save form draft' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -141,9 +165,14 @@ export async function DELETE(request: NextRequest) {
       );
     }
     
-    const draftKey = `${userId}:${formType}`;
-    drafts.delete(draftKey);
-    
+    // Delete all drafts for this user and form type
+    await prisma.formDraft.deleteMany({
+      where: {
+        userId,
+        formType,
+      },
+    });
+
     return NextResponse.json({
       success: true,
     });
@@ -153,6 +182,8 @@ export async function DELETE(request: NextRequest) {
       { error: 'Failed to delete form draft' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
