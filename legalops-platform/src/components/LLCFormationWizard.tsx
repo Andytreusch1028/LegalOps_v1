@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Info, Check } from 'lucide-react';
+import { Info, Check, Save } from 'lucide-react';
 import { FormWizard, FormInput, FormTextArea, FormSection } from '@/components/forms';
 import { cn } from '@/components/legalops/theme';
 import UPLDisclaimer from '@/components/UPLDisclaimer';
+import { useSmartForm } from '@/hooks/useSmartForm';
+import { SmartFormInput, SmartFormTextarea } from '@/components/phase7';
 
 interface Manager {
   id: string;
@@ -88,6 +90,14 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showRushTooltip, setShowRushTooltip] = useState(false);
 
+  // Phase 7: Smart Forms - Auto-save and auto-fill functionality
+  const smartForm = useSmartForm({
+    formType: 'llc-formation',
+    initialData: initialFormData || {},
+    autoSaveInterval: 5000, // Auto-save every 5 seconds
+    enableAutoFill: true,
+  });
+
   const [formData, setFormData] = useState<FormData>(() => {
     // If we have initial form data, use it and adjust RA fields based on current package
     if (initialFormData) {
@@ -143,6 +153,16 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
     fetchPackages();
   }, []);
 
+  // Phase 7: Sync Smart Form data with local state
+  useEffect(() => {
+    if (smartForm.formData && Object.keys(smartForm.formData).length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        ...smartForm.formData,
+      }));
+    }
+  }, [smartForm.formData]);
+
   // Notify parent of form data changes
   useEffect(() => {
     if (onFormDataChange) {
@@ -170,11 +190,15 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
+    const newValue = type === 'checkbox' ? checked : value;
 
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: newValue,
     }));
+
+    // Phase 7: Update Smart Form for auto-save
+    smartForm.updateField(name, newValue);
 
     // Clear field error on change
     if (fieldErrors[name]) {
@@ -330,6 +354,28 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
       showTrustSignals={true}
       estimatedTime="5-10 Minutes"
     >
+        {/* Phase 7: Auto-Save Indicator */}
+        {smartForm.lastSaved && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '12px 16px',
+            background: '#F0F9FF',
+            border: '1px solid #BAE6FD',
+            borderRadius: '8px',
+            marginBottom: '24px',
+            fontSize: '14px',
+            color: '#0369A1',
+          }}>
+            <Save size={16} />
+            <span>
+              Auto-saved {new Date(smartForm.lastSaved).toLocaleTimeString()}
+              {smartForm.isSaving && ' • Saving...'}
+            </span>
+          </div>
+        )}
+
         {/* UPL Disclaimer - Show on first step */}
         {currentStep === 1 && (
           <UPLDisclaimer variant="form" className="mb-6" />
@@ -341,34 +387,54 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
             title="Business Information"
             description="Tell us about your business"
           >
-            <FormInput
+            <SmartFormInput
               label="Business Name"
               name="businessName"
               value={formData.businessName}
-              onChange={handleChange}
+              onChange={(value) => {
+                setFormData(prev => ({ ...prev, businessName: value }));
+                smartForm.updateField('businessName', value);
+              }}
               placeholder="e.g., Acme LLC"
               required
               error={fieldErrors.businessName}
+              isVerified={smartForm.isFieldVerified('businessName')}
+              verificationSource={
+                smartForm.verifiedFields.find(f => f.fieldName === 'businessName')?.source
+              }
             />
 
-            <FormInput
+            <SmartFormInput
               label="Alternative Business Name"
               name="businessNameAlternative"
               value={formData.businessNameAlternative}
-              onChange={handleChange}
+              onChange={(value) => {
+                setFormData(prev => ({ ...prev, businessNameAlternative: value }));
+                smartForm.updateField('businessNameAlternative', value);
+              }}
               placeholder="If different from above"
+              isVerified={smartForm.isFieldVerified('businessNameAlternative')}
+              verificationSource={
+                smartForm.verifiedFields.find(f => f.fieldName === 'businessNameAlternative')?.source
+              }
             />
 
-            <FormTextArea
+            <SmartFormTextarea
               label="Business Purpose"
               name="businessPurpose"
               value={formData.businessPurpose}
-              onChange={handleChange}
+              onChange={(value) => {
+                setFormData(prev => ({ ...prev, businessPurpose: value }));
+                smartForm.updateField('businessPurpose', value);
+              }}
               placeholder="e.g., Consulting services, retail sales, etc."
-              rows={4}
               required
               error={fieldErrors.businessPurpose}
-              tooltip="Describe the primary activities your business will engage in (e.g., consulting, retail sales, real estate)"
+              helperText="Describe the primary activities your business will engage in (e.g., consulting, retail sales, real estate)"
+              isVerified={smartForm.isFieldVerified('businessPurpose')}
+              verificationSource={
+                smartForm.verifiedFields.find(f => f.fieldName === 'businessPurpose')?.source
+              }
             />
           </FormSection>
         )}
@@ -395,34 +461,55 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
 
               <div className="space-y-8">
 
-                <FormInput
+                <SmartFormInput
                   label="Street Address"
                   name="businessAddress"
                   value={formData.businessAddress}
-                  onChange={handleChange}
+                  onChange={(value) => {
+                    setFormData(prev => ({ ...prev, businessAddress: value }));
+                    smartForm.updateField('businessAddress', value);
+                  }}
                   placeholder="123 Main Street"
                   required
                   error={fieldErrors.businessAddress}
+                  isVerified={smartForm.isFieldVerified('businessAddress')}
+                  verificationSource={
+                    smartForm.verifiedFields.find(f => f.fieldName === 'businessAddress')?.source
+                  }
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <FormInput
+                  <SmartFormInput
                     label="City"
                     name="businessCity"
                     value={formData.businessCity}
-                    onChange={handleChange}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, businessCity: value }));
+                      smartForm.updateField('businessCity', value);
+                    }}
                     placeholder="Miami"
                     required
                     error={fieldErrors.businessCity}
+                    isVerified={smartForm.isFieldVerified('businessCity')}
+                    verificationSource={
+                      smartForm.verifiedFields.find(f => f.fieldName === 'businessCity')?.source
+                    }
                   />
-                  <FormInput
+                  <SmartFormInput
                     label="ZIP Code"
                     name="businessZip"
                     value={formData.businessZip}
-                    onChange={handleChange}
+                    onChange={(value) => {
+                      setFormData(prev => ({ ...prev, businessZip: value }));
+                      smartForm.updateField('businessZip', value);
+                    }}
                     placeholder="33101"
                     required
                     error={fieldErrors.businessZip}
+                    isVerified={smartForm.isFieldVerified('businessZip')}
+                    verificationSource={
+                      smartForm.verifiedFields.find(f => f.fieldName === 'businessZip')?.source
+                    }
                   />
                 </div>
               </div>
