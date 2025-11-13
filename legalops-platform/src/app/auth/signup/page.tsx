@@ -36,13 +36,19 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
+      // Split full name into first and last name
+      const nameParts = name.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
+          firstName,
+          lastName,
           email,
           password,
         }),

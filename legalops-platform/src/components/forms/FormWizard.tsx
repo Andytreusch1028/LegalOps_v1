@@ -37,6 +37,7 @@ export interface FormWizardProps {
   onSubmit: () => void;
   loading?: boolean;
   error?: string | null;
+  submitButtonText?: string;
   children: ReactNode;
   showTrustSignals?: boolean;
   estimatedTime?: string;
@@ -50,6 +51,7 @@ export const FormWizard = ({
   onSubmit,
   loading = false,
   error = null,
+  submitButtonText = 'Submit & Continue to Checkout',
   children,
   showTrustSignals = true,
   estimatedTime = '5-10 Minutes',
@@ -92,6 +94,28 @@ export const FormWizard = ({
 
   return (
     <div className="w-full">
+      {/* Progress Percentage Indicator */}
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '16px',
+      }}>
+        <div style={{
+          display: 'inline-block',
+          padding: '8px 16px',
+          background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+          border: '1px solid #BFDBFE',
+          borderRadius: '20px',
+        }}>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#0369A1',
+          }}>
+            {Math.round(progress)}% Complete
+          </span>
+        </div>
+      </div>
+
       {/* Progress Bar - Dashboard Style with Enhanced Visual Hierarchy */}
       <div
         className="mb-8 bg-white rounded-xl"
@@ -102,25 +126,13 @@ export const FormWizard = ({
           padding: '20px 24px',
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="font-semibold text-slate-900" style={{ fontSize: '18px', marginBottom: '6px' }}>
-              Step {currentStep} of {steps.length}
-            </h3>
-            <p className="text-slate-600" style={{ fontSize: '14px', lineHeight: '1.5' }}>
-              {steps[currentStep - 1].name} - {steps[currentStep - 1].description}
-            </p>
-          </div>
-          <div
-            className="font-semibold text-sky-600 bg-sky-50 rounded-full flex-shrink-0"
-            style={{
-              fontSize: '14px',
-              border: '2px solid #e0f2fe',
-              padding: '8px 16px',
-            }}
-          >
-            {Math.round(progress)}% Complete
-          </div>
+        <div className="mb-4">
+          <h3 className="font-semibold text-slate-900" style={{ fontSize: '18px', marginBottom: '6px' }}>
+            Step {currentStep} of {steps.length}
+          </h3>
+          <p className="text-slate-600" style={{ fontSize: '14px', lineHeight: '1.5' }}>
+            {steps[currentStep - 1].name} - {steps[currentStep - 1].description}
+          </p>
         </div>
 
         {/* Progress bar - Enhanced Dashboard style */}
@@ -175,6 +187,27 @@ export const FormWizard = ({
           ))}
         </div>
       </div>
+
+      {/* Social Proof Banner */}
+      {showTrustSignals && (
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '24px',
+          padding: '12px 24px',
+          background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+          border: '1px solid #86EFAC',
+          borderRadius: '12px',
+        }}>
+          <p style={{
+            fontSize: '14px',
+            color: '#166534',
+            margin: 0,
+            fontWeight: '500',
+          }}>
+            ✓ Join <strong>1,200+ Florida businesses</strong> who successfully filed their DBA with LegalOps
+          </p>
+        </div>
+      )}
 
       {/* Trust Signals - Liquid Glass Style */}
       {showTrustSignals && (
@@ -334,7 +367,7 @@ export const FormWizard = ({
                 padding: '16px 32px',
               }}
             >
-              {loading ? 'Processing...' : 'Submit & Continue to Checkout'}
+              {loading ? 'Processing...' : submitButtonText}
             </button>
           )}
         </div>
@@ -478,3 +511,83 @@ export function FormSection({ title, description, children }: FormSectionProps) 
   );
 }
 
+/**
+ * FormSelect - Standardized select dropdown following design guidelines
+ */
+export interface FormSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label: string;
+  error?: string;
+  tooltip?: string;
+}
+
+export function FormSelect({ label, error, tooltip, required, className, children, ...props }: FormSelectProps) {
+  return (
+    <div className="mb-6">
+      <label className="block text-base font-medium text-gray-900 mb-3 flex items-center gap-2">
+        {label} {required && <span className="text-red-500">*</span>}
+        {tooltip && (
+          <div className="group relative">
+            <div className="cursor-help">
+              <Info className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-4 bg-slate-900 text-white text-sm rounded-lg shadow-lg z-10">
+              {tooltip}
+            </div>
+          </div>
+        )}
+      </label>
+      <select
+        className={cn(
+          "w-full border-2 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-base transition-all",
+          error ? "border-red-500" : "border-gray-300",
+          className
+        )}
+        style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '16px', paddingBottom: '16px' }}
+        {...props}
+      >
+        {children}
+      </select>
+      {error && (
+        <p className="mt-3 text-sm text-red-600 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * FormCheckbox - Standardized checkbox following design guidelines
+ */
+export interface FormCheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+
+export function FormCheckbox({ label, error, className, ...props }: FormCheckboxProps) {
+  return (
+    <div className="mb-6">
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          className={cn(
+            "mt-1 w-5 h-5 border-2 rounded text-sky-600 focus:ring-2 focus:ring-sky-500 transition-all",
+            error ? "border-red-500" : "border-gray-300",
+            className
+          )}
+          {...props}
+        />
+        <span className="text-base text-gray-900 select-none">
+          {label}
+        </span>
+      </label>
+      {error && (
+        <p className="mt-3 text-sm text-red-600 flex items-center gap-2 ml-8">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}

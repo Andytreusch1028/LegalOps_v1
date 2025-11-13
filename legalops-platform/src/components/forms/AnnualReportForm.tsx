@@ -4,31 +4,33 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Building2, MapPin, Mail, User, Users, FileText } from 'lucide-react';
 
 interface AnnualReportFormData {
-  // Business Information
-  fein?: string;
-  
-  // Principal Address
+  // Business Information (REQUIRED)
+  documentNumber: string; // 6-12 digit number
+  entityName: string; // Official/legal name
+  fein?: string; // 9-digit FEIN (optional unless "Applied For" was previously marked)
+
+  // Principal Address (REQUIRED)
   principalStreet: string;
   principalCity: string;
   principalState: string;
   principalZip: string;
-  
+
   // Mailing Address (optional)
   mailingIsDifferent: boolean;
   mailingStreet?: string;
   mailingCity?: string;
   mailingState?: string;
   mailingZip?: string;
-  
-  // Registered Agent
+
+  // Registered Agent (REQUIRED)
   registeredAgentName: string;
-  registeredAgentStreet: string;
+  registeredAgentStreet: string; // Must be FL street address, no P.O. Box
   registeredAgentCity: string;
   registeredAgentState: string;
   registeredAgentZip: string;
-  registeredAgentSignature: string;
-  
-  // Principals (Officers/Directors/Managers)
+  registeredAgentSignature: string; // Electronic signature
+
+  // Principals (Officers/Directors/Managers) - At least one required
   principals: Array<{
     title: string;
     name: string;
@@ -37,7 +39,7 @@ interface AnnualReportFormData {
     state: string;
     zip: string;
   }>;
-  
+
   // Certificate of Status (optional)
   requestCertificate: boolean;
   certificateEmail?: string;
@@ -51,6 +53,8 @@ interface AnnualReportFormProps {
 }
 
 const defaultFormData: AnnualReportFormData = {
+  documentNumber: '',
+  entityName: '',
   fein: '',
   principalStreet: '',
   principalCity: '',
@@ -162,6 +166,85 @@ export default function AnnualReportForm({
         </div>
       )}
 
+      {/* Document Number - REQUIRED */}
+      <div
+        className="rounded-lg border-2 border-gray-200 bg-white shadow-sm"
+        style={{ padding: '24px', marginTop: '32px' }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-purple-600" />
+          <h3 className="text-lg font-bold text-gray-900">
+            Document Number <span className="text-red-500">*</span>
+          </h3>
+        </div>
+
+        {/* Helper Text */}
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-900 mb-2">
+            <strong>Need to find your Document Number?</strong>
+          </p>
+          <p className="text-sm text-blue-800 mb-3">
+            Your Florida Document Number is a 6- or 12-digit number assigned when your business was formed.
+          </p>
+          <div className="flex flex-col gap-2">
+            <a
+              href="http://search.sunbiz.org/Inquiry/CorporationSearch/ByName"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              → Search for your business on Sunbiz.org
+            </a>
+            <a
+              href="/services/llc-formation"
+              className="text-sm text-purple-600 hover:text-purple-800 underline"
+            >
+              → Don't have a Florida business yet? Form an LLC with us
+            </a>
+          </div>
+        </div>
+
+        <input
+          type="text"
+          placeholder="Enter 6- or 12-digit document number"
+          value={formData.documentNumber}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 12);
+            setFormData({ ...formData, documentNumber: value });
+          }}
+          className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          style={{ padding: '12px 16px' }}
+          maxLength={12}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          The 6- or 12-digit number assigned when your business was filed with the Division of Corporations.
+        </p>
+      </div>
+
+      {/* Entity Name - REQUIRED */}
+      <div
+        className="rounded-lg border-2 border-gray-200 bg-white shadow-sm"
+        style={{ padding: '24px', marginTop: '32px' }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Building2 className="w-5 h-5 text-purple-600" />
+          <h3 className="text-lg font-bold text-gray-900">
+            Entity Name <span className="text-red-500">*</span>
+          </h3>
+        </div>
+        <input
+          type="text"
+          placeholder="Official/legal business name"
+          value={formData.entityName}
+          onChange={(e) => setFormData({ ...formData, entityName: e.target.value })}
+          className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          style={{ padding: '12px 16px' }}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          The official/legal name of your business on our records. The annual report does not allow name changes.
+        </p>
+      </div>
+
       {/* Federal EIN */}
       <div
         className="rounded-lg border-2 border-gray-200 bg-white shadow-sm"
@@ -175,9 +258,18 @@ export default function AnnualReportForm({
           type="text"
           placeholder="XX-XXXXXXX"
           value={formData.fein || ''}
-          onChange={(e) => setFormData({ ...formData, fein: e.target.value })}
+          onChange={(e) => {
+            // Allow only digits and format as XX-XXXXXXX
+            const digits = e.target.value.replace(/\D/g, '').slice(0, 9);
+            let formatted = digits;
+            if (digits.length > 2) {
+              formatted = digits.slice(0, 2) + '-' + digits.slice(2);
+            }
+            setFormData({ ...formData, fein: formatted });
+          }}
           className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
           style={{ padding: '12px 16px' }}
+          maxLength={10}
         />
         <p className="text-xs text-gray-500 mt-1">
           Enter your 9-digit FEIN. Do not enter a Social Security Number.
@@ -223,9 +315,13 @@ export default function AnnualReportForm({
               type="text"
               placeholder="ZIP Code"
               value={formData.principalZip}
-              onChange={(e) => setFormData({ ...formData, principalZip: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                setFormData({ ...formData, principalZip: value });
+              }}
               className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               style={{ padding: '12px 16px' }}
+              maxLength={5}
             />
           </div>
         </div>
@@ -281,9 +377,13 @@ export default function AnnualReportForm({
                 type="text"
                 placeholder="ZIP Code"
                 value={formData.mailingZip || ''}
-                onChange={(e) => setFormData({ ...formData, mailingZip: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                  setFormData({ ...formData, mailingZip: value });
+                }}
                 className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 style={{ padding: '12px 16px' }}
+                maxLength={5}
               />
             </div>
           </div>
@@ -340,9 +440,13 @@ export default function AnnualReportForm({
               type="text"
               placeholder="ZIP Code"
               value={formData.registeredAgentZip}
-              onChange={(e) => setFormData({ ...formData, registeredAgentZip: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                setFormData({ ...formData, registeredAgentZip: value });
+              }}
               className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
               style={{ padding: '12px 16px' }}
+              maxLength={5}
             />
           </div>
           <div>
@@ -469,9 +573,13 @@ export default function AnnualReportForm({
                     type="text"
                     placeholder="ZIP Code"
                     value={principal.zip}
-                    onChange={(e) => updatePrincipal(index, 'zip', e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                      updatePrincipal(index, 'zip', value);
+                    }}
                     className="w-full border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     style={{ padding: '12px 16px' }}
+                    maxLength={5}
                   />
                 </div>
               </div>
@@ -530,4 +638,130 @@ export default function AnnualReportForm({
       </div>
     </div>
   );
+}
+
+/**
+ * Validation function for Annual Report form
+ * Returns an object with { isValid: boolean, errors: string[] }
+ */
+export function validateAnnualReportForm(formData: Partial<AnnualReportFormData>): {
+  isValid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  // Document Number - REQUIRED (6-12 digits)
+  if (!formData.documentNumber || formData.documentNumber.trim() === '') {
+    errors.push('Document Number is required');
+  } else if (!/^\d{6,12}$/.test(formData.documentNumber.replace(/\s/g, ''))) {
+    errors.push('Document Number must be 6-12 digits');
+  }
+
+  // Entity Name - REQUIRED
+  if (!formData.entityName || formData.entityName.trim() === '') {
+    errors.push('Entity Name is required');
+  }
+
+  // FEIN - Optional, but if provided must be 9 digits
+  if (formData.fein && formData.fein.trim() !== '') {
+    const feinDigits = formData.fein.replace(/\D/g, '');
+    if (feinDigits.length !== 9) {
+      errors.push('FEIN must be 9 digits (format: XX-XXXXXXX)');
+    }
+  }
+
+  // Principal Address - REQUIRED
+  if (!formData.principalStreet || formData.principalStreet.trim() === '') {
+    errors.push('Principal Address Street is required');
+  }
+  if (!formData.principalCity || formData.principalCity.trim() === '') {
+    errors.push('Principal Address City is required');
+  }
+  if (!formData.principalState || formData.principalState.trim() === '') {
+    errors.push('Principal Address State is required');
+  }
+  if (!formData.principalZip || formData.principalZip.trim() === '') {
+    errors.push('Principal Address ZIP is required');
+  } else if (!/^\d{5}$/.test(formData.principalZip.trim())) {
+    errors.push('Principal Address ZIP must be 5 digits');
+  }
+
+  // Mailing Address - Only validate if different from principal
+  if (formData.mailingIsDifferent) {
+    if (!formData.mailingStreet || formData.mailingStreet.trim() === '') {
+      errors.push('Mailing Address Street is required when different from principal address');
+    }
+    if (!formData.mailingCity || formData.mailingCity.trim() === '') {
+      errors.push('Mailing Address City is required when different from principal address');
+    }
+    if (!formData.mailingState || formData.mailingState.trim() === '') {
+      errors.push('Mailing Address State is required when different from principal address');
+    }
+    if (!formData.mailingZip || formData.mailingZip.trim() === '') {
+      errors.push('Mailing Address ZIP is required when different from principal address');
+    } else if (!/^\d{5}$/.test(formData.mailingZip.trim())) {
+      errors.push('Mailing Address ZIP must be 5 digits');
+    }
+  }
+
+  // Registered Agent - REQUIRED
+  if (!formData.registeredAgentName || formData.registeredAgentName.trim() === '') {
+    errors.push('Registered Agent Name is required');
+  }
+  if (!formData.registeredAgentStreet || formData.registeredAgentStreet.trim() === '') {
+    errors.push('Registered Agent Street Address is required');
+  } else if (/p\.?o\.?\s*box/i.test(formData.registeredAgentStreet)) {
+    errors.push('Registered Agent address cannot be a P.O. Box - must be a Florida street address');
+  }
+  if (!formData.registeredAgentCity || formData.registeredAgentCity.trim() === '') {
+    errors.push('Registered Agent City is required');
+  }
+  if (!formData.registeredAgentState || formData.registeredAgentState.trim() === '') {
+    errors.push('Registered Agent State is required');
+  } else if (formData.registeredAgentState !== 'FL') {
+    errors.push('Registered Agent must have a Florida address');
+  }
+  if (!formData.registeredAgentZip || formData.registeredAgentZip.trim() === '') {
+    errors.push('Registered Agent ZIP is required');
+  } else if (!/^\d{5}$/.test(formData.registeredAgentZip.trim())) {
+    errors.push('Registered Agent ZIP must be 5 digits');
+  }
+  if (!formData.registeredAgentSignature || formData.registeredAgentSignature.trim() === '') {
+    errors.push('Registered Agent Signature is required');
+  }
+
+  // Principals - At least one required
+  if (!formData.principals || formData.principals.length === 0) {
+    errors.push('At least one Principal/Officer is required');
+  } else {
+    // Check if at least one principal has all required fields with valid ZIP
+    const validPrincipals = formData.principals.filter(
+      (p) =>
+        p.title?.trim() !== '' &&
+        p.name?.trim() !== '' &&
+        p.street?.trim() !== '' &&
+        p.city?.trim() !== '' &&
+        p.state?.trim() !== '' &&
+        p.zip?.trim() !== '' &&
+        /^\d{5}$/.test(p.zip.trim())
+    );
+
+    if (validPrincipals.length === 0) {
+      errors.push('At least one Principal/Officer must have all fields completed (Title, Name, Address with valid 5-digit ZIP)');
+    }
+  }
+
+  // Certificate of Status - If requested, email is required
+  if (formData.requestCertificate) {
+    if (!formData.certificateEmail || formData.certificateEmail.trim() === '') {
+      errors.push('Email address is required when requesting Certificate of Status');
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.certificateEmail)) {
+      errors.push('Please enter a valid email address for Certificate of Status');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
 }

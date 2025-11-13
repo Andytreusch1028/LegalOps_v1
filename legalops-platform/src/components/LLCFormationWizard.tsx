@@ -232,12 +232,17 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
   };
 
   const handleManagerChange = (id: string, field: keyof Manager, value: string) => {
+    const updatedManagers = formData.managers.map(m =>
+      m.id === id ? { ...m, [field]: value } : m
+    );
+
     setFormData(prev => ({
       ...prev,
-      managers: prev.managers.map(m =>
-        m.id === id ? { ...m, [field]: value } : m
-      ),
+      managers: updatedManagers,
     }));
+
+    // Phase 7: Update Smart Form for auto-save
+    smartForm.updateField('managers', updatedManagers);
   };
 
   const handleAddManager = () => {
@@ -247,10 +252,15 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
     }
     setError(null);
     const newId = Date.now().toString();
+    const updatedManagers = [...formData.managers, { id: newId, name: '', email: '', phone: '' }];
+
     setFormData(prev => ({
       ...prev,
-      managers: [...prev.managers, { id: newId, name: '', email: '', phone: '' }],
+      managers: updatedManagers,
     }));
+
+    // Phase 7: Update Smart Form for auto-save
+    smartForm.updateField('managers', updatedManagers);
   };
 
   const handleRemoveManager = (id: string) => {
@@ -259,10 +269,15 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
       return;
     }
     setError(null);
+    const updatedManagers = formData.managers.filter(m => m.id !== id);
+
     setFormData(prev => ({
       ...prev,
-      managers: prev.managers.filter(m => m.id !== id),
+      managers: updatedManagers,
     }));
+
+    // Phase 7: Update Smart Form for auto-save
+    smartForm.updateField('managers', updatedManagers);
   };
 
   const validateStep = (step: number): boolean => {
@@ -270,7 +285,7 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
 
     if (step === 1) {
       if (!formData.businessName.trim()) errors.businessName = 'Business name is required';
-      if (!formData.businessPurpose.trim()) errors.businessPurpose = 'Business purpose is required';
+      // Business purpose is optional - no validation required
     }
 
     if (step === 2) {
@@ -428,17 +443,17 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
             />
 
             <SmartFormTextarea
-              label="Business Purpose"
+              label="Business Purpose (Optional)"
               name="businessPurpose"
               value={formData.businessPurpose}
               onChange={(value) => {
                 setFormData(prev => ({ ...prev, businessPurpose: value }));
                 smartForm.updateField('businessPurpose', value);
               }}
-              placeholder="e.g., Consulting services, retail sales, etc."
-              required
+              placeholder='e.g., "Any legitimate business purpose"'
+              required={false}
               error={fieldErrors.businessPurpose}
-              helperText="Describe the primary activities your business will engage in (e.g., consulting, retail sales, real estate)"
+              helperText='Optional but recommended. 80% of our customers use "Any legitimate business purpose" - this provides maximum flexibility for your LLC.'
               isVerified={smartForm.isFieldVerified('businessPurpose')}
               verificationSource={
                 smartForm.verifiedFields.find(f => f.fieldName === 'businessPurpose')?.source
@@ -627,42 +642,85 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
                 </div>
               </div>
             ) : (
-              // Package doesn't include RA - show warning and upgrade option
+              // Package doesn't include RA - show education and upgrade option
               <div
-                className="mb-10 bg-amber-50 rounded-xl flex items-start gap-5"
+                className="mb-10 bg-amber-50 rounded-xl"
                 style={{
                   border: '1px solid #fde68a',
                   borderLeft: '4px solid #f59e0b',
-                  padding: '28px',
+                  padding: '32px',
                 }}
               >
-                <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <Info className="w-6 h-6 text-amber-600" />
-                </div>
-                <div className="flex-1 text-slate-700" style={{ fontSize: '16px', lineHeight: '1.8', paddingTop: '4px' }}>
-                  <p style={{ marginBottom: '20px' }}>
-                    <strong>Florida law requires</strong> every LLC to have a registered agent - a person or business authorized to receive legal documents on behalf of your LLC.
-                  </p>
-
-                  <p className="text-amber-800" style={{ marginBottom: '24px' }}>
-                    ⚠️ Your Basic package does not include registered agent service. You must provide your own registered agent information below.
-                  </p>
-
-                  <div className="bg-emerald-50 rounded-lg" style={{ border: '1px solid #a7f3d0', padding: '20px' }}>
-                    <p className="font-medium text-emerald-700" style={{ marginBottom: '16px' }}>
-                      💡 <strong>Want us to handle this?</strong> Upgrade to Standard package for FREE registered agent service (first year) + Operating Agreement - only $149!
+                <div className="flex items-start gap-5 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1 text-slate-700" style={{ fontSize: '16px', lineHeight: '1.8', paddingTop: '4px' }}>
+                    <p style={{ marginBottom: '20px' }}>
+                      <strong>Florida law requires</strong> every LLC to have a registered agent - a person or business authorized to receive legal documents, lawsuits, and official state correspondence on behalf of your LLC.
                     </p>
-                    <button
-                      type="button"
-                      onClick={handleUpgradeToStandard}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                      style={{ fontSize: '16px', padding: '14px 24px' }}
-                    >
-                      <span>✓</span>
-                      <span>Upgrade to Standard Package - $149</span>
-                    </button>
+
+                    <p className="text-amber-800 font-semibold" style={{ marginBottom: '24px' }}>
+                      ⚠️ Your Basic package does not include registered agent service. You have two options:
+                    </p>
                   </div>
                 </div>
+
+                {/* Option 1: Be Your Own RA */}
+                <div className="bg-white rounded-lg mb-4" style={{ border: '1px solid #fde68a', padding: '20px' }}>
+                  <p className="font-semibold text-slate-900 mb-3" style={{ fontSize: '16px' }}>
+                    Option 1: Be Your Own Registered Agent (Free)
+                  </p>
+                  <div className="text-slate-700" style={{ fontSize: '14px', lineHeight: '1.7' }}>
+                    <p className="mb-2"><strong>Requirements:</strong></p>
+                    <ul style={{ paddingLeft: '20px', marginBottom: '12px' }}>
+                      <li>✓ Must have a physical Florida street address (no P.O. boxes)</li>
+                      <li>✓ Must be available at that address during business hours (9am-5pm)</li>
+                      <li>✓ Must be able to receive legal documents in person</li>
+                    </ul>
+                    <p className="mb-2"><strong className="text-red-600">Downsides:</strong></p>
+                    <ul style={{ paddingLeft: '20px' }}>
+                      <li>❌ Your home/business address becomes public record (searchable online)</li>
+                      <li>❌ You could be served with lawsuits at home in front of family/neighbors</li>
+                      <li>❌ Must be available during business hours or risk missing important legal deadlines</li>
+                      <li>❌ If you move, you must update with the state immediately</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Option 2: Upgrade to LegalOps RA */}
+                <div className="bg-emerald-50 rounded-lg" style={{ border: '2px solid #10b981', padding: '20px' }}>
+                  <p className="font-semibold text-emerald-900 mb-3" style={{ fontSize: '16px' }}>
+                    💡 Option 2: Let LegalOps Be Your Registered Agent (Recommended)
+                  </p>
+                  <div className="text-slate-700 mb-4" style={{ fontSize: '14px', lineHeight: '1.7' }}>
+                    <p className="mb-2"><strong className="text-emerald-700">Benefits:</strong></p>
+                    <ul style={{ paddingLeft: '20px', marginBottom: '12px' }}>
+                      <li>✅ <strong>Privacy protection</strong> - Your home address stays private</li>
+                      <li>✅ <strong>Professional image</strong> - No process servers showing up at your door</li>
+                      <li>✅ <strong>Never miss a deadline</strong> - We scan and email all documents immediately</li>
+                      <li>✅ <strong>Move anytime</strong> - No need to update the state when you relocate</li>
+                      <li>✅ <strong>Compliance peace of mind</strong> - We handle all state correspondence</li>
+                      <li>✅ <strong>Dedicated support team</strong> - Access via secure online portal in your dashboard</li>
+                    </ul>
+                    <p className="font-semibold text-emerald-800">
+                      Upgrade to Standard Package: Only $149 (includes FREE 1st year RA service + Operating Agreement)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleUpgradeToStandard}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    style={{ fontSize: '16px', padding: '14px 24px' }}
+                  >
+                    <span>⬆️</span>
+                    <span>Upgrade to Standard Package ($149)</span>
+                  </button>
+                </div>
+
+                <p className="text-slate-600 text-center mt-4" style={{ fontSize: '13px' }}>
+                  Or continue below to provide your own registered agent information
+                </p>
               </div>
             )}
 
@@ -855,7 +913,9 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
                   )}
                   <div className="flex">
                     <span className="text-slate-600 w-48 font-medium">Purpose:</span>
-                    <span className="text-slate-900 font-semibold">{formData.businessPurpose}</span>
+                    <span className="text-slate-900 font-semibold">
+                      {formData.businessPurpose || '(Not specified - optional)'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1007,22 +1067,19 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
                   Pricing Summary
                 </h3>
                 <div className="space-y-4" style={{ fontSize: '18px', lineHeight: '1.6' }}>
+                  {/* Show package price or service fee */}
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-700 font-medium">LLC Formation Service</span>
+                    <span className="text-slate-700 font-medium">
+                      {selectedPackage ? `${selectedPackage.name} Package` : 'LLC Formation Service'}
+                    </span>
                     <span className="text-slate-900 font-semibold">
-                      ${service?.serviceFee?.toFixed(2) || '100.00'}
+                      ${selectedPackage ? Number(selectedPackage.price).toFixed(2) : (service?.serviceFee?.toFixed(2) || '100.00')}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-700 font-medium">State Filing Fee</span>
                     <span className="text-slate-900 font-semibold">
                       ${service?.stateFee?.toFixed(2) || '125.00'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-700 font-medium">Registered Agent Fee (1st Year)</span>
-                    <span className="text-emerald-600 font-semibold">
-                      ${service?.registeredAgentFee?.toFixed(2) || '0.00'}
                     </span>
                   </div>
                   {formData.rushProcessing && service?.rushFeeAvailable && (
@@ -1040,11 +1097,12 @@ export default function LLCFormationWizard({ serviceId, service, selectedPackage
                     <span className="text-slate-900 font-bold" style={{ fontSize: '20px' }}>Total</span>
                     <span className="text-sky-600 font-bold" style={{ fontSize: '24px' }}>
                       ${(() => {
-                        const baseTotal = service?.totalPrice || 250;
+                        const packagePrice = selectedPackage ? Number(selectedPackage.price) : (service?.serviceFee || 100);
+                        const stateFee = service?.stateFee || 125;
                         const rushFee = (formData.rushProcessing && service?.rushFeeAvailable)
                           ? (service?.rushFee || 50)
                           : 0;
-                        return (baseTotal + rushFee).toFixed(2);
+                        return (packagePrice + stateFee + rushFee).toFixed(2);
                       })()}
                     </span>
                   </div>

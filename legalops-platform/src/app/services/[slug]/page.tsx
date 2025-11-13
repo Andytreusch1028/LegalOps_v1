@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Check, Clock, Tag, ShoppingCart, Lock } from 'lucide-react';
 import LLCFormationWizard from '@/components/LLCFormationWizard';
+import FictitiousNameWizard from '@/components/FictitiousNameWizard';
 import PackageSelector from '@/components/PackageSelector';
 import CheckoutUpsell from '@/components/CheckoutUpsell';
 import { cn, cardBase } from '@/components/legalops/theme';
@@ -49,6 +51,7 @@ interface Package {
 export default function ServiceDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const slug = params.slug as string;
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,7 +107,7 @@ export default function ServiceDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           serviceId: service?.id,
-          orderType: 'LLC_FORMATION',
+          orderType: service?.orderType || 'LLC_FORMATION',
           orderData: formData,
           packageId: selectedPackage?.id || null,
         }),
@@ -119,6 +122,92 @@ export default function ServiceDetailPage() {
     } catch (error) {
       console.error('Error creating order:', error);
       alert('Failed to create order. Please try again.');
+    }
+  };
+
+  // Handle Buy Now button click
+  const handleBuyNow = async () => {
+    console.log('handleBuyNow called');
+    console.log('service:', service);
+    console.log('session:', session);
+
+    if (!service) {
+      console.log('No service found, returning');
+      return;
+    }
+
+    // If user is authenticated
+    if (session) {
+      console.log('User is authenticated');
+      console.log('service.orderType:', service.orderType);
+
+      // For services with forms on this page (LLC Formation, DBA), show the form
+      if (service.orderType === 'LLC_FORMATION' || service.orderType === 'FICTITIOUS_NAME_REGISTRATION') {
+        console.log('Showing form for LLC/DBA');
+        setShowForm(true);
+        // Scroll to form
+        setTimeout(() => {
+          const formElement = document.getElementById('service-form');
+          if (formElement) {
+            formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      } else {
+        // For other services (Annual Report, etc.), create order and redirect to appropriate page
+        console.log('Creating order for other service type');
+        try {
+          console.log('Sending request to /api/orders with:', {
+            serviceId: service.id,
+            orderType: service.orderType,
+            orderData: { rushProcessing: false },
+          });
+
+          const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              serviceId: service.id,
+              orderType: service.orderType,
+              orderData: {
+                // Minimal data to satisfy API requirements
+                // Actual data will be collected on the dedicated form page
+                rushProcessing: false,
+              },
+            }),
+          });
+
+          console.log('Response status:', response.status);
+          console.log('Response ok:', response.ok);
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Order creation failed:', errorData);
+            throw new Error(errorData.error || 'Failed to create order');
+          }
+
+          const data = await response.json();
+          console.log('Order created successfully:', data);
+          const orderId = data.orderId || data.order?.id;
+          console.log('Order ID:', orderId);
+
+          // Redirect based on service type
+          if (service.orderType === 'LLC_ANNUAL_REPORT' || service.orderType === 'CORP_ANNUAL_REPORT' || service.orderType === 'ANNUAL_REPORT') {
+            console.log('Redirecting to annual report form');
+            router.push(`/orders/${orderId}/annual-report`);
+          } else {
+            // Default to checkout page
+            console.log('Redirecting to checkout');
+            router.push(`/checkout/${orderId}`);
+          }
+        } catch (error) {
+          console.error('Error creating order:', error);
+          alert('Failed to create order. Please try again.');
+        }
+      }
+    } else {
+      console.log('User not authenticated, routing to checkout-router');
+      // If not authenticated, route to checkout-router
+      router.push(`/checkout-router?service=${service.orderType}&name=${encodeURIComponent(service.name)}&price=${service.totalPrice}`);
     }
   };
 
@@ -202,11 +291,11 @@ export default function ServiceDetailPage() {
         </div>
       </div>
 
-      {/* Main Content - Different for LLC Formation vs Other Services */}
+      {/* Main Content - Different for LLC Formation, Corporation Formation, DBA, vs Other Services */}
       <div className="flex items-center justify-center" style={{ padding: '0 24px 64px' }}>
         <div className="max-w-4xl mx-auto w-full">
-          {service.orderType === 'LLC_FORMATION' ? (
-            /* LLC Formation - Show Package Selector and Form Wizard */
+          {(service.orderType === 'LLC_FORMATION' || service.orderType === 'CORP_FORMATION') ? (
+            /* LLC/Corporation Formation - Show Package Selector and Form Wizard */
             <>
               {!showForm ? (
                 /* Package Selection */
@@ -221,7 +310,7 @@ export default function ServiceDetailPage() {
                 </div>
               ) : (
                 /* Form Wizard */
-                <div className="bg-white rounded-xl" style={{
+                <div id="service-form" className="bg-white rounded-xl" style={{
                   border: '1px solid #e2e8f0',
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
                 }}>
@@ -286,27 +375,61 @@ export default function ServiceDetailPage() {
                         Fill out the form below to get started with your {service.name.toLowerCase()}
                       </p>
                     </div>
-                    <LLCFormationWizard
-                      serviceId={service.id}
-                      service={{
-                        id: service.id,
-                        serviceFee: service.serviceFee,
-                        stateFee: service.stateFee,
-                        registeredAgentFee: service.registeredAgentFee || 0,
-                        totalPrice: service.totalPrice,
-                        rushFee: service.rushFee || 0,
-                        rushFeeAvailable: service.rushFeeAvailable || false,
-                      }}
-                      selectedPackage={selectedPackage}
-                      onSubmit={handleFormSubmit}
-                      onPackageChange={setSelectedPackage}
-                      initialFormData={preservedFormData}
-                      onFormDataChange={setPreservedFormData}
-                    />
+
+                    {service.orderType === 'LLC_FORMATION' ? (
+                      <LLCFormationWizard
+                        serviceId={service.id}
+                        service={{
+                          id: service.id,
+                          serviceFee: service.serviceFee,
+                          stateFee: service.stateFee,
+                          registeredAgentFee: service.registeredAgentFee || 0,
+                          totalPrice: service.totalPrice,
+                          rushFee: service.rushFee || 0,
+                          rushFeeAvailable: service.rushFeeAvailable || false,
+                        }}
+                        selectedPackage={selectedPackage}
+                        onSubmit={handleFormSubmit}
+                        onPackageChange={setSelectedPackage}
+                        initialFormData={preservedFormData}
+                        onFormDataChange={setPreservedFormData}
+                      />
+                    ) : service.orderType === 'CORP_FORMATION' ? (
+                      <div className="text-center" style={{ padding: '48px 24px' }}>
+                        <div className="bg-sky-50 border-2 border-sky-300 rounded-xl" style={{ padding: '32px', marginBottom: '24px' }}>
+                          <h3 className="text-2xl font-semibold text-slate-900" style={{ marginBottom: '16px' }}>
+                            Corporation Formation Wizard Coming Soon
+                          </h3>
+                          <p className="text-slate-600" style={{ fontSize: '16px', lineHeight: '1.6' }}>
+                            You've selected the <strong>{selectedPackage?.name} Package</strong> for Corporation Formation.
+                            Our comprehensive formation wizard is currently under development.
+                          </p>
+                          <p className="text-slate-600" style={{ fontSize: '16px', lineHeight: '1.6', marginTop: '16px' }}>
+                            In the meantime, please contact us at <a href="mailto:support@legalops.com" className="text-sky-600 hover:text-sky-800 underline">support@legalops.com</a> to complete your corporation formation.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setShowForm(false)}
+                          className="text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all"
+                          style={{
+                            padding: '12px 24px',
+                            background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+                          }}
+                        >
+                          ← Back to Package Selection
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               )}
             </>
+          ) : service.orderType === 'FICTITIOUS_NAME_REGISTRATION' ? (
+            /* Fictitious Name (DBA) - Show Form Wizard */
+            <FictitiousNameWizard
+              onSubmit={createOrder}
+              initialData={preservedFormData}
+            />
           ) : (
             /* All Other Services - Show Buy Now Button */
             /* Pricing Card */
@@ -346,7 +469,7 @@ export default function ServiceDetailPage() {
 
               {/* Buy Now Button */}
               <button
-                onClick={() => router.push(`/checkout-router?service=${service.orderType}&name=${encodeURIComponent(service.name)}&price=${service.totalPrice}`)}
+                onClick={handleBuyNow}
                 className="w-full relative overflow-hidden bg-gradient-to-r from-sky-500 to-sky-600 text-white font-bold rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-3"
                 style={{
                   padding: '16px 32px',

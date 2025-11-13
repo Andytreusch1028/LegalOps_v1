@@ -43,10 +43,11 @@ export async function GET(request: NextRequest) {
               email: true,
             },
           },
-          // `documents` is represented by Filing/FilingDocument models; exclude if not present on Order
-          statusUpdates: {
-            orderBy: {
-              createdAt: 'desc',
+          orderItems: {
+            select: {
+              serviceType: true,
+              description: true,
+              additionalData: true,
             },
           },
         },
@@ -61,13 +62,11 @@ export async function GET(request: NextRequest) {
           userId: user.id,
         },
         include: {
-          documents: true,
-          statusUpdates: {
-            where: {
-              isPublic: true,
-            },
-            orderBy: {
-              createdAt: 'desc',
+          orderItems: {
+            select: {
+              serviceType: true,
+              description: true,
+              additionalData: true,
             },
           },
         },
@@ -128,14 +127,46 @@ export async function POST(request: NextRequest) {
     // Generate unique order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
+    // Map orderType to ServiceType enum
+    const mapOrderTypeToServiceType = (orderType: string): string => {
+      // Map specific order types to ServiceType enum values
+      const mapping: Record<string, string> = {
+        'LLC_ANNUAL_REPORT': 'ANNUAL_REPORT',
+        'CORP_ANNUAL_REPORT': 'ANNUAL_REPORT',
+        'NONPROFIT_ANNUAL_REPORT': 'ANNUAL_REPORT',
+        'LP_ANNUAL_REPORT': 'ANNUAL_REPORT',
+        'LLC_FORMATION': 'LLC_FORMATION',
+        'CORP_FORMATION': 'CORP_FORMATION',
+        'NONPROFIT_FORMATION': 'CORP_FORMATION',
+        'REGISTERED_AGENT': 'REGISTERED_AGENT',
+        'EIN_APPLICATION': 'EIN_APPLICATION',
+        'OPERATING_AGREEMENT': 'OPERATING_AGREEMENT',
+        'CORPORATE_BYLAWS': 'CORPORATE_BYLAWS',
+        'CERTIFICATE_OF_STATUS': 'CERTIFICATE_OF_STATUS',
+        'FICTITIOUS_NAME_REGISTRATION': 'FICTITIOUS_NAME_REGISTRATION',
+        'DISSOLUTION': 'DISSOLUTION',
+        'REINSTATEMENT': 'REINSTATEMENT',
+        'NAME_RESERVATION': 'NAME_RESERVATION',
+      };
+      return mapping[orderType] || orderType;
+    };
+
+    const serviceType = mapOrderTypeToServiceType(orderType || 'LLC_FORMATION');
+
     // Handle new service-based orders (with serviceId)
     if (serviceId && orderData) {
+      console.log('[API /api/orders] Creating order with serviceId:', serviceId);
+      console.log('[API /api/orders] orderData:', orderData);
+
       // Fetch service to get pricing
       const service = await prisma.service.findUnique({
         where: { id: serviceId },
       });
 
+      console.log('[API /api/orders] Service found:', service?.name);
+
       if (!service) {
+        console.error('[API /api/orders] Service not found for ID:', serviceId);
         return NextResponse.json(
           { error: "Service not found" },
           { status: 404 }
@@ -196,17 +227,18 @@ export async function POST(request: NextRequest) {
 
         // Build order items for individual service
         orderItems = [
-          // LegalOps Service Fee
+          // LegalOps Service Fee (store form data here)
           {
-            serviceType: orderType || "LLC_FORMATION",
+            serviceType: serviceType,
             description: "LegalOps Service Fee",
             quantity: 1,
             unitPrice: Number(service.serviceFee),
             totalPrice: Number(service.serviceFee),
+            additionalData: orderData, // Store the complete form data
           },
           // Florida State Filing Fee
           {
-            serviceType: orderType || "LLC_FORMATION",
+            serviceType: serviceType,
             description: "Florida State Filing Fee",
             quantity: 1,
             unitPrice: Number(service.stateFee),
@@ -231,10 +263,31 @@ export async function POST(request: NextRequest) {
         ];
       }
 
+      // Calculate RA renewal tracking
+      const includesRA = selectedPackage?.includesRA || false;
+      const raRenewalDate = includesRA ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) : null; // 1 year from now
+      const raRenewalPrice = includesRA ? 125.00 : null; // $125/year renewal
+
+      console.log('[API /api/orders] About to create order with:', {
+        userId: user.id,
+        packageId,
+        orderNumber,
+        orderTotal,
+        includesRA,
+        orderItemsCount: orderItems.length,
+      });
+
       // Create order with new schema AND order items for proper breakdown
       const order = await prisma.order.create({
         data: {
-          userId: user.id,
+          user: {
+            connect: { id: user.id },
+          },
+          ...(packageId && {
+            package: {
+              connect: { id: packageId },
+            },
+          }),
           orderNumber,
           orderStatus: "PENDING",
           subtotal: orderTotal,
@@ -242,12 +295,18 @@ export async function POST(request: NextRequest) {
           total: orderTotal,
           paymentStatus: "PENDING",
           isRushOrder: orderData.rushProcessing || false,
-          packageId: packageId || null,
+          includesRegisteredAgent: includesRA,
+          raRenewalDate: raRenewalDate,
+          raAutoRenew: includesRA, // Default to true if RA is included
+          raRenewalPrice: raRenewalPrice,
+          raRenewalNotificationSent: false,
           orderItems: {
             create: orderItems,
           },
         },
       });
+
+      console.log('[API /api/orders] Order created successfully with ID:', order.id);
 
       // Convert Decimal fields to numbers for JSON serialization
       const orderResponse = {
@@ -315,9 +374,17 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("[API /api/orders] Error creating order:", error);
+    console.error("[API /api/orders] Error details:", {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      error,
+    });
     return NextResponse.json(
-      { error: "Failed to create order" },
+      {
+        error: "Failed to create order",
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

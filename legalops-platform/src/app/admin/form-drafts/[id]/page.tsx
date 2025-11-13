@@ -13,10 +13,11 @@ const prisma = new PrismaClient();
 export default async function FormDraftDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const draft = await prisma.formDraft.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       user: {
         select: {

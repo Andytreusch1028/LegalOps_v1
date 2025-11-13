@@ -6,17 +6,8 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { 
-  Users, 
-  Building2, 
-  ShoppingCart, 
-  AlertTriangle, 
-  MessageSquare, 
-  FileText,
-  LayoutDashboard,
-  Settings
-} from 'lucide-react';
+import AdminNavLink from './AdminNavLink';
+import SignOutButton from './SignOutButton';
 
 export default async function AdminLayout({
   children,
@@ -31,14 +22,14 @@ export default async function AdminLayout({
   }
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/customers', label: 'Customers', icon: Users },
-    { href: '/admin/entities', label: 'Business Entities', icon: Building2 },
-    { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
-    { href: '/admin/risk', label: 'Risk Assessments', icon: AlertTriangle },
-    { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
-    { href: '/admin/form-drafts', label: 'Form Drafts', icon: FileText },
-    { href: '/admin/settings', label: 'Settings', icon: Settings },
+    { href: '/admin', label: 'Dashboard', iconName: 'LayoutDashboard' },
+    { href: '/admin/customers', label: 'Customers', iconName: 'Users' },
+    { href: '/admin/entities', label: 'Business Entities', iconName: 'Building2' },
+    { href: '/admin/orders', label: 'Orders', iconName: 'ShoppingCart' },
+    { href: '/admin/risk', label: 'Risk Assessments', iconName: 'AlertTriangle' },
+    { href: '/admin/feedback', label: 'Feedback', iconName: 'MessageSquare' },
+    { href: '/admin/form-drafts', label: 'Form Drafts', iconName: 'FileText' },
+    { href: '/admin/settings', label: 'Settings', iconName: 'Settings' },
   ];
 
   return (
@@ -71,72 +62,24 @@ export default async function AdminLayout({
 
         {/* Navigation */}
         <nav>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '14px 24px',
-                  color: 'white',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s',
-                  fontSize: '15px',
-                  fontWeight: '500',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                  e.currentTarget.style.borderLeft = '4px solid white';
-                  e.currentTarget.style.paddingLeft = '20px';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.borderLeft = 'none';
-                  e.currentTarget.style.paddingLeft = '24px';
-                }}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          {navItems.map((item) => (
+            <AdminNavLink
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              iconName={item.iconName}
+            />
+          ))}
         </nav>
 
         {/* Logout */}
-        <div style={{ 
-          position: 'absolute', 
-          bottom: '32px', 
-          left: '24px', 
-          right: '24px' 
+        <div style={{
+          position: 'absolute',
+          bottom: '32px',
+          left: '24px',
+          right: '24px'
         }}>
-          <Link
-            href="/api/auth/signout"
-            style={{
-              display: 'block',
-              padding: '12px 16px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '8px',
-              color: 'white',
-              textDecoration: 'none',
-              textAlign: 'center',
-              fontSize: '14px',
-              fontWeight: '500',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-            }}
-          >
-            Sign Out
-          </Link>
+          <SignOutButton />
         </div>
       </aside>
 

@@ -266,10 +266,29 @@ export default function OrderConfirmationPage() {
                 <p className="text-blue-900 font-semibold" style={{ fontSize: '16px', marginBottom: '8px' }}>
                   🎉 FREE Registered Agent Service Included!
                 </p>
-                <p className="text-blue-800" style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                <p className="text-blue-800" style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: '12px' }}>
                   Your package includes {order.package.raYears} year{order.package.raYears > 1 ? 's' : ''} of registered agent service
                   (${125 * order.package.raYears} value). We'll handle all legal correspondence on behalf of your business.
                 </p>
+
+                {/* Renewal Terms */}
+                <div
+                  className="rounded-lg"
+                  style={{
+                    marginTop: '12px',
+                    padding: '16px',
+                    background: 'rgba(255, 255, 255, 0.6)',
+                    border: '1px solid #93c5fd',
+                  }}
+                >
+                  <p className="text-blue-900 font-semibold" style={{ fontSize: '14px', marginBottom: '6px' }}>
+                    📅 Renewal Terms
+                  </p>
+                  <p className="text-blue-800" style={{ fontSize: '13px', lineHeight: '1.6' }}>
+                    After your first year, this service will automatically renew at $125/year to ensure continuous compliance.
+                    You can cancel anytime from your dashboard with 30 days notice. We'll send you a reminder 60 days before renewal.
+                  </p>
+                </div>
               </div>
             )}
 

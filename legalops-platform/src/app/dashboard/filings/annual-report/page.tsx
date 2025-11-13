@@ -91,27 +91,32 @@ export default function AnnualReportPage() {
   useEffect(() => {
     async function loadEntities() {
       try {
-        // For testing: using test-client-001
-        // TODO: Get clientId from session in production
-        const clientId = 'test-client-001';
-
-        const response = await fetch(`/api/filings/annual-report?clientId=${clientId}`);
+        // Fetch businesses for the logged-in user
+        const response = await fetch('/api/businesses');
         const data = await response.json();
-        
-        if (data.success) {
-          setEntities(data.entities);
-          if (data.entities.length > 0) {
-            setSelectedEntityId(data.entities[0].id);
-            setSelectedEntity(data.entities[0]);
+
+        if (data.success && data.businesses) {
+          // Filter for active entities only
+          const activeEntities = data.businesses.filter(
+            (entity: BusinessEntity) => entity.status === 'ACTIVE'
+          );
+
+          setEntities(activeEntities);
+          if (activeEntities.length > 0) {
+            setSelectedEntityId(activeEntities[0].id);
+            setSelectedEntity(activeEntities[0]);
           }
+        } else {
+          setError(data.error || 'Failed to load your businesses');
         }
       } catch (err) {
+        console.error('Error loading businesses:', err);
         setError('Failed to load your businesses');
       } finally {
         setLoading(false);
       }
     }
-    
+
     loadEntities();
   }, []);
 
@@ -216,41 +221,192 @@ export default function AnnualReportPage() {
 
   if (entities.length === 0) {
     return (
-      <div style={{ 
+      <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(to bottom, #f9fafb, #e5e7eb)',
-        padding: '2rem'
+        background: 'linear-gradient(to bottom, #f9fafb, #e5e7eb)'
       }}>
-        <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          background: 'white',
-          borderRadius: '12px',
-          padding: '3rem',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-            No Businesses Found
-          </h1>
-          <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-            You don't have any active businesses that need annual reports.
-          </p>
-          <button
-            onClick={() => router.push('/dashboard/filings/llc')}
-            style={{
-              background: '#0ea5e9',
-              color: 'white',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              fontWeight: '500'
+        <div className="flex items-center justify-center" style={{ padding: '32px 24px' }}>
+          <div className="max-w-4xl mx-auto w-full">
+            {/* Header */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '2.5rem',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              textAlign: 'center',
+              marginBottom: '2rem'
+            }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.5rem'
+            }}>
+              <svg style={{ width: '32px', height: '32px', color: 'white' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.75rem', color: '#0f172a' }}>
+              No Businesses Found
+            </h1>
+            <p style={{ color: '#64748b', fontSize: '1.125rem', lineHeight: '1.6' }}>
+              You don't have any businesses in your account yet. Choose an option below to get started.
+            </p>
+          </div>
+
+          {/* Options Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            {/* Option 1: Import Existing Business */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '2rem',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              border: '2px solid #e5e7eb',
+              transition: 'all 0.2s'
             }}
-          >
-            Form a New LLC
-          </button>
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#0ea5e9';
+              e.currentTarget.style.boxShadow = '0 8px 12px rgba(14,165,233,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#e5e7eb';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#dbeafe',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.25rem'
+              }}>
+                <svg style={{ width: '24px', height: '24px', color: '#0ea5e9' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: '#0f172a' }}>
+                I Have an Existing Business
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '0.9375rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Import your business from Florida Sunbiz using your Document Number or Entity Name
+              </p>
+              <button
+                onClick={() => router.push('/dashboard/businesses/import')}
+                style={{
+                  width: '100%',
+                  background: '#0ea5e9',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#0284c7';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#0ea5e9';
+                }}
+              >
+                Import Existing Business
+              </button>
+            </div>
+
+            {/* Option 2: Form New Business */}
+            <div style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '2rem',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              border: '2px solid #e5e7eb',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#10b981';
+              e.currentTarget.style.boxShadow = '0 8px 12px rgba(16,185,129,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#e5e7eb';
+              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: '#d1fae5',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1.25rem'
+              }}>
+                <svg style={{ width: '24px', height: '24px', color: '#10b981' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem', color: '#0f172a' }}>
+                Form a New Business
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '0.9375rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Start a new LLC, Corporation, or other business entity in Florida
+              </p>
+              <button
+                onClick={() => router.push('/services')}
+                style={{
+                  width: '100%',
+                  background: '#10b981',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#059669';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#10b981';
+                }}
+              >
+                Browse Formation Services
+              </button>
+            </div>
+          </div>
+
+          {/* Help Text */}
+          <div style={{
+            background: '#f0f9ff',
+            border: '2px solid #bae6fd',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#0369a1', fontSize: '0.9375rem', lineHeight: '1.6', margin: 0 }}>
+              <strong>Need help?</strong> If you're not sure which option to choose, contact us at{' '}
+              <a href="mailto:support@legalops.com" style={{ color: '#0284c7', textDecoration: 'underline' }}>
+                support@legalops.com
+              </a>
+              {' '}or call <strong>(555) 123-4567</strong>
+            </p>
+          </div>
+          </div>
         </div>
       </div>
     );

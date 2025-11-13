@@ -199,10 +199,14 @@ model BusinessEntity {
 
   // Status
   status            EntityStatus @default(PENDING)
-  
+
   // Business Purpose
   purpose           String?
-  
+
+  // Health Score (0-100)
+  healthScore       Int?         // Calculated score based on compliance, documents, payments
+  lastHealthCheck   DateTime?    // When health score was last calculated
+
   // Timestamps
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -506,6 +510,13 @@ model Order {
   userAgent       String?
   isRushOrder     Boolean  @default(false)
 
+  // Registered Agent Renewal Tracking
+  includesRegisteredAgent Boolean  @default(false)  // Does this order include RA service?
+  raRenewalDate          DateTime?  // When RA service renews (1 year from order)
+  raAutoRenew            Boolean   @default(true)   // Auto-renew RA service?
+  raRenewalPrice         Decimal?  @db.Decimal(10, 2)  // Price for renewal ($125/year)
+  raRenewalNotificationSent Boolean @default(false)  // Have we sent renewal reminder?
+
   // Timestamps
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -572,12 +583,14 @@ enum ServiceType {
   OPERATING_AGREEMENT
   CORPORATE_BYLAWS
   CERTIFICATE_OF_STATUS
+  FICTITIOUS_NAME_REGISTRATION // DBA registration
   AMENDMENT // Deprecated - use ENTITY_INFORMATION_UPDATE or BUSINESS_AMENDMENT
   ENTITY_INFORMATION_UPDATE // Free updates: email, FEIN, addresses
   OFFICER_ADDRESS_UPDATE // Free update for officer/manager addresses
   REGISTERED_AGENT_CHANGE // $25 fee - requires mailing
   BUSINESS_AMENDMENT // $25 fee - name, purpose, management, stock changes
   DISSOLUTION
+  REINSTATEMENT // Reinstate administratively dissolved entity
   NAME_RESERVATION
   EXPEDITED_PROCESSING
 }
@@ -1015,13 +1028,46 @@ model FormDraft {
   userId      String   // Required - use session ID for guests
   user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  formType    String   // 'LLC_FORMATION', 'ANNUAL_REPORT', etc.
+  formType    String   // 'DBA_REGISTRATION', 'LLC_FORMATION', 'ANNUAL_REPORT', etc.
   formData    Json     // The actual form data
+  currentStep Int      @default(1) // Current step in wizard
+  totalSteps  Int      @default(5) // Total steps in wizard
+
+  // Metadata for display
+  displayName String?  // e.g., "ABC Services" for DBA, "My LLC" for LLC
+
+  // Reminder settings
+  emailRemindersEnabled Boolean @default(false)
+  lastReminderSent      DateTime?
+  reminderCount         Int      @default(0)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, formType])
   @@index([createdAt])
+  @@index([updatedAt])
+  @@index([emailRemindersEnabled])
   @@map("form_drafts")
+}
+
+// ============================================================================
+// DBA DRAFTS - GUEST WORKFLOW
+// Purpose: Store DBA form data for guests who pause at newspaper publication step
+// ============================================================================
+
+model DBADraft {
+  id          String   @id @default(cuid())
+  email       String   // Guest email address
+  formData    String   // JSON string of form data
+  token       String   @unique // Magic link token
+  expiresAt   DateTime // Link expiration (7 days)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+  @@map("dba_drafts")
 }

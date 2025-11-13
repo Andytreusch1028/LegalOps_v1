@@ -9,19 +9,42 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import UPLDisclaimer from '@/components/UPLDisclaimer';
 import { Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function CreateAccountPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const { data: session, status } = useSession();
+
   // Get service info from URL params
   const serviceType = searchParams.get('service') || '';
   const serviceName = searchParams.get('name') || '';
   const servicePrice = parseFloat(searchParams.get('price') || '0');
   const orderId = searchParams.get('orderId') || ''; // If order already created
+
+  // Redirect authenticated users to service page
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      // User is already signed in, redirect to service page
+      if (serviceType === 'LLC_FORMATION') {
+        router.push('/services/llc-formation');
+      } else if (serviceType === 'CORP_FORMATION') {
+        router.push('/services/corporation-formation');
+      } else if (serviceType === 'LLC_ANNUAL_REPORT') {
+        router.push('/services/llc-annual-report');
+      } else if (serviceType === 'CORP_ANNUAL_REPORT') {
+        router.push('/services/corporation-annual-report');
+      } else if (serviceType === 'ANNUAL_REPORT') {
+        router.push('/services/annual-report');
+      } else if (serviceType === 'REGISTERED_AGENT') {
+        router.push('/services/registered-agent');
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  }, [status, session, serviceType, router]);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -137,6 +160,10 @@ export default function CreateAccountPage() {
         router.push('/services/llc-formation');
       } else if (serviceType === 'CORP_FORMATION') {
         router.push('/services/corporation-formation');
+      } else if (serviceType === 'LLC_ANNUAL_REPORT') {
+        router.push('/services/llc-annual-report');
+      } else if (serviceType === 'CORP_ANNUAL_REPORT') {
+        router.push('/services/corporation-annual-report');
       } else if (serviceType === 'ANNUAL_REPORT') {
         router.push('/services/annual-report');
       } else if (serviceType === 'REGISTERED_AGENT') {
@@ -149,6 +176,18 @@ export default function CreateAccountPage() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom, #e8f0f7 0%, #f5f8fb 100%)' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto mb-4"></div>
+          <p className="text-slate-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom, #e8f0f7 0%, #f5f8fb 100%)', padding: '48px 24px' }}>

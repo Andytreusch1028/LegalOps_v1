@@ -66,11 +66,6 @@ export default function CheckoutPage() {
   const [updatingOrder, setUpdatingOrder] = useState(false);
 
   useEffect(() => {
-    if (!session) {
-      router.push(`/auth/signin?callbackUrl=/checkout/${orderId}`);
-      return;
-    }
-
     if (!orderId) {
       setError('Order ID not found');
       setLoading(false);
@@ -83,6 +78,13 @@ export default function CheckoutPage() {
         if (response.ok) {
           const data = await response.json();
           setOrder(data);
+
+          // For authenticated orders, verify the user owns the order
+          if (data.userId && session?.user?.id && data.userId !== session.user.id) {
+            setError('Unauthorized access to this order');
+            setLoading(false);
+            return;
+          }
 
           // Create payment intent
           const paymentResponse = await fetch('/api/stripe/create-payment-intent', {

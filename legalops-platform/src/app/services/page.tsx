@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Building2, FileText, RefreshCw, XCircle, Award, Grid3x3 } from 'lucide-react';
 import { ServiceCard } from '@/components/legalops/cards/ServiceCard';
 import { EmptyState } from '@/components/legalops/layout/EmptyState';
@@ -25,9 +25,18 @@ interface Service {
 
 export default function ServicesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // Read category from URL parameter on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Fetch services from API

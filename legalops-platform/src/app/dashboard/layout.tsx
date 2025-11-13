@@ -4,6 +4,10 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import NoticesBadge from "@/components/NoticesBadge";
 import UserInfo from "@/components/UserInfo";
+import DashboardSidebar from "@/components/DashboardSidebar";
+import { PrismaClient } from "@/generated/prisma";
+
+const prisma = new PrismaClient();
 
 export default async function DashboardLayout({
   children,
@@ -16,11 +20,16 @@ export default async function DashboardLayout({
     redirect("/auth/signin");
   }
 
+  // Get user role for sidebar
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true }
+  });
+
+  await prisma.$disconnect();
+
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)' }}
-    >
+    <div className="min-h-screen" style={{ background: '#f8fafc' }}>
       {/* Top Navigation Bar - Professional */}
       <nav
         className="bg-white"
@@ -138,12 +147,16 @@ export default async function DashboardLayout({
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main style={{ padding: '48px 0' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+      {/* Main Layout with Sidebar */}
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 72px)' }}>
+        {/* Left Sidebar */}
+        <DashboardSidebar userRole={user?.role || 'INDIVIDUAL_CUSTOMER'} />
+
+        {/* Main Content Area */}
+        <main style={{ flex: 1, padding: '48px 24px 80px 24px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Footer */}
       <footer

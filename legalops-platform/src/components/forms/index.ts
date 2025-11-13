@@ -15,10 +15,13 @@ export {
   FormInput,
   FormTextArea,
   FormSection,
+  FormSelect,
+  FormCheckbox,
   type FormWizardProps,
   type FormInputProps,
   type FormTextAreaProps,
   type FormSectionProps,
+  type FormSelectProps,
+  type FormCheckboxProps,
   type WizardStep,
 } from './FormWizard';
-

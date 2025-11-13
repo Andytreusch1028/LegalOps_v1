@@ -335,22 +335,76 @@ export interface AmendmentFormData {
 export interface DissolutionFormData {
   // ===== ENTITY SELECTION =====
   businessEntityId: string;
-  
+
   // ===== DISSOLUTION DETAILS =====
   dissolutionReason: string;
   effectiveDate?: string;
-  
+
   // ===== AUTHORIZATION =====
   authorizedBy: {
     name: string;
     title: string;
     date: string;
   };
-  
+
   // ===== FINAL DETAILS =====
   allDebtsSettled: boolean;
   allAssetsDistributed: boolean;
-  
+
+  // ===== CORRESPONDENCE =====
+  correspondenceEmail: string;
+}
+
+// ============================================================================
+// FICTITIOUS NAME (DBA) REGISTRATION FORM
+// ============================================================================
+
+export interface FictitiousNameFormData {
+  // ===== FICTITIOUS NAME =====
+  fictitiousName: string; // The DBA name to register
+
+  // ===== MAILING ADDRESS =====
+  mailingAddress: AddressFormData;
+
+  // ===== PRINCIPAL PLACE OF BUSINESS =====
+  principalCounty: string; // Florida county where business operates
+
+  // ===== FEDERAL EMPLOYER ID =====
+  hasFEIN: boolean;
+  fein?: string; // Optional - Federal Employer Identification Number
+
+  // ===== OWNER INFORMATION =====
+  ownerType: 'INDIVIDUAL' | 'BUSINESS_ENTITY';
+
+  // For Individual Owners
+  individualOwners?: Array<{
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    address: AddressFormData;
+  }>;
+
+  // For Business Entity Owners
+  businessEntityOwners?: Array<{
+    entityName: string;
+    entityAddress: AddressFormData;
+    floridaDocumentNumber?: string; // If registered with FL Division of Corporations
+    fein?: string; // Federal Employer ID
+    feinStatus?: 'HAS_FEIN' | 'APPLIED_FOR' | 'NOT_APPLICABLE';
+  }>;
+
+  // ===== NEWSPAPER ADVERTISEMENT =====
+  newspaperAdvertised: boolean; // Certification that name was advertised
+  newspaperName?: string; // Name of newspaper (optional)
+  advertisementDate?: string; // Date of advertisement (optional)
+
+  // ===== PAYMENT TIMING =====
+  paymentTiming?: 'PAY_NOW' | 'PAY_AFTER_PUBLICATION'; // When customer wants to pay
+
+  // ===== ADDITIONAL OPTIONS =====
+  certificateOfStatus: boolean; // $10 additional fee
+  certifiedCopy: boolean; // $30 additional fee
+
   // ===== CORRESPONDENCE =====
   correspondenceEmail: string;
 }

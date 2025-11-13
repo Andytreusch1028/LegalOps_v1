@@ -1,11 +1,9 @@
 import { NextAuthOptions } from "next-auth";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -15,8 +13,11 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+          console.log("[AUTH] Missing credentials");
+          return null;
         }
+
+        console.log("[AUTH] Attempting login for:", credentials.email);
 
         const user = await prisma.user.findUnique({
           where: {
@@ -25,7 +26,8 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.passwordHash) {
-          throw new Error("Invalid credentials");
+          console.log("[AUTH] User not found or no password hash");
+          return null;
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -34,9 +36,11 @@ export const authOptions: NextAuthOptions = {
         );
 
         if (!isPasswordValid) {
-          throw new Error("Invalid credentials");
+          console.log("[AUTH] Invalid password");
+          return null;
         }
 
+        console.log("[AUTH] Login successful for:", user.email);
         return {
           id: user.id,
           email: user.email,
@@ -81,5 +85,6 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/signin",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: true, // Enable debug logging
 };
 

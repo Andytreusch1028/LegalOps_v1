@@ -121,6 +121,46 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
     guestCheckoutAllowed: false,
   },
 
+  LLC_ANNUAL_REPORT: {
+    serviceType: 'LLC_ANNUAL_REPORT',
+    requiresAdditionalData: true,
+    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
+    estimatedTimeToComplete: '3 minutes',
+    fieldsNeeded: [
+      'Principal office address (may have changed)',
+      'Mailing address (may have changed)',
+      'Manager/Member names (may have changed)',
+      'Registered agent information (may have changed)',
+    ],
+    canPreFill: true,
+    preFilledMessage: 'We\'ll pre-fill from your LLC record - just review and update any changes',
+    requiresAccount: true,
+    accountRequiredReason: 'Requires access to your LLC information and compliance tracking',
+    dashboardFeatures: ['Compliance tracking', 'Filing history', 'Deadline reminders', 'Pre-filled forms'],
+    deliveryMethod: 'dashboard',
+    guestCheckoutAllowed: false,
+  },
+
+  CORP_ANNUAL_REPORT: {
+    serviceType: 'CORP_ANNUAL_REPORT',
+    requiresAdditionalData: true,
+    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
+    estimatedTimeToComplete: '3 minutes',
+    fieldsNeeded: [
+      'Principal office address (may have changed)',
+      'Mailing address (may have changed)',
+      'Officer/Director names (may have changed)',
+      'Registered agent information (may have changed)',
+    ],
+    canPreFill: true,
+    preFilledMessage: 'We\'ll pre-fill from your corporation record - just review and update any changes',
+    requiresAccount: true,
+    accountRequiredReason: 'Requires access to your corporation information and compliance tracking',
+    dashboardFeatures: ['Compliance tracking', 'Filing history', 'Deadline reminders', 'Pre-filled forms'],
+    deliveryMethod: 'dashboard',
+    guestCheckoutAllowed: false,
+  },
+
   CERTIFICATE_OF_STATUS: {
     serviceType: 'CERTIFICATE_OF_STATUS',
     requiresAdditionalData: true,

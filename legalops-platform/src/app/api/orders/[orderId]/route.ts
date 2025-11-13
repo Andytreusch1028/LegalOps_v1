@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/orders/[orderId]
- * Fetch a single order
+ * Fetch a single order (supports both authenticated and guest orders)
  */
 export async function GET(
   request: NextRequest,
@@ -13,14 +13,6 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
     const { orderId } = await params;
 
     const order = await prisma.order.findUnique({
@@ -40,12 +32,25 @@ export async function GET(
       );
     }
 
-    // Check if user owns this order
-    if (order.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
+    // For guest orders, allow access without authentication
+    if (order.isGuestOrder) {
+      // Guest orders can be accessed by anyone with the order ID
+      // (This is acceptable since the order ID is a secure random string)
+    } else {
+      // For authenticated user orders, verify ownership
+      if (!session) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+
+      if (order.userId !== session.user.id) {
+        return NextResponse.json(
+          { error: 'Forbidden' },
+          { status: 403 }
+        );
+      }
     }
 
     // Convert Decimal fields to numbers for JSON serialization

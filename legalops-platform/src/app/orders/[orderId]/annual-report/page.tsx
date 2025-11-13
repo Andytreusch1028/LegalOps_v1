@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
-import AnnualReportForm from '@/components/forms/AnnualReportForm';
+import AnnualReportForm, { validateAnnualReportForm } from '@/components/forms/AnnualReportForm';
 
 interface OrderItem {
   id: string;
@@ -62,9 +62,16 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
           (item: OrderItem) => item.serviceType === 'ANNUAL_REPORT'
         );
 
+        console.log('[Annual Report Page] Order items:', data.orderItems);
+        console.log('[Annual Report Page] Annual report item:', annualReportItem);
+        console.log('[Annual Report Page] Additional data:', annualReportItem?.additionalData);
+
         if (annualReportItem?.additionalData) {
+          console.log('[Annual Report Page] Loading saved form data');
           setFormData(annualReportItem.additionalData);
           lastSavedDataRef.current = JSON.stringify(annualReportItem.additionalData);
+        } else {
+          console.log('[Annual Report Page] No saved data found, using empty form');
         }
       } catch (error) {
         console.error('Error fetching order:', error);
@@ -97,7 +104,13 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
           (item) => item.serviceType === 'ANNUAL_REPORT'
         );
 
-        if (!annualReportItem) return;
+        if (!annualReportItem) {
+          console.log('[Auto-save] No annual report item found');
+          return;
+        }
+
+        console.log('[Auto-save] Saving form data to order item:', annualReportItem.id);
+        console.log('[Auto-save] Form data:', formData);
 
         const response = await fetch(`/api/orders/${orderId}/items/${annualReportItem.id}`, {
           method: 'PATCH',
@@ -108,14 +121,21 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to save');
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('[Auto-save] Failed to save:', errorData);
+          throw new Error('Failed to save');
+        }
+
+        const savedData = await response.json();
+        console.log('[Auto-save] Successfully saved:', savedData);
 
         lastSavedDataRef.current = currentData;
         setSaveStatus('saved');
 
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (error) {
-        console.error('Error saving:', error);
+        console.error('[Auto-save] Error saving:', error);
         setSaveStatus('error');
       }
     }, 1000);
@@ -129,6 +149,16 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
 
   const handleSubmit = async () => {
     try {
+      // Validate form before submission
+      const validation = validateAnnualReportForm(formData);
+
+      if (!validation.isValid) {
+        // Show all validation errors
+        const errorMessage = 'Please fix the following errors:\n\n' + validation.errors.join('\n');
+        alert(errorMessage);
+        return;
+      }
+
       const annualReportItem = order?.orderItems.find(
         (item) => item.serviceType === 'ANNUAL_REPORT'
       );
@@ -147,8 +177,8 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
 
       if (!response.ok) throw new Error('Failed to submit');
 
-      // Redirect to order confirmation or dashboard
-      router.push(`/orders/${orderId}`);
+      // Redirect to checkout page
+      router.push(`/checkout/${orderId}`);
     } catch (error) {
       console.error('Error submitting:', error);
       alert('Failed to submit form. Please try again.');

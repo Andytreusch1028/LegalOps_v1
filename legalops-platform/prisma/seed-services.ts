@@ -63,7 +63,7 @@ const services = [
     orderType: 'FICTITIOUS_NAME_REGISTRATION',
     category: 'FORMATION',
     shortDescription: 'Register a "Doing Business As" name',
-    longDescription: 'Register a fictitious name (DBA) to operate your business under a different name than your legal entity name.',
+    longDescription: 'Register a fictitious name (DBA) to operate your business under a different name than your legal entity name. Florida entrepreneurs regularly file multiple DBAs because it\'s affordable, flexible, and legally unlimited — making it one of the most popular strategies for small business growth.',
     serviceFee: 50,
     stateFee: 50,
     totalPrice: 100,

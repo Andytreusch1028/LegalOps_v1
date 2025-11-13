@@ -13,10 +13,11 @@ const prisma = new PrismaClient();
 export default async function CustomerDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const customer = await prisma.user.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       clients: {
         include: {

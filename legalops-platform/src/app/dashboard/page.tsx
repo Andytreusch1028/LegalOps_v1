@@ -7,7 +7,7 @@
  * - FULFILLMENT_STAFF → /dashboard/fulfillment
  * - MANAGER → /dashboard/operations
  * - EXECUTIVE → /dashboard/executive
- * - ADMIN → /dashboard/admin
+ * - ADMIN → /admin
  */
 
 import { getServerSession } from "next-auth";
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
       redirect('/dashboard/executive');
 
     case 'ADMIN':
-      redirect('/dashboard/admin');
+      redirect('/admin');
 
     default:
       // Default to customer dashboard

@@ -9,14 +9,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication (optional for guest orders)
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
 
     const { orderId, amount, description } = await request.json();
 
@@ -41,8 +35,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user owns this order
-    if (order.userId !== session.user.id) {
+    // Verify ownership: either user owns the order OR it's a guest order
+    const isGuestOrder = !order.userId;
+    const isUserOrder = session?.user?.id && order.userId === session.user.id;
+
+    if (!isGuestOrder && !isUserOrder) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -50,15 +47,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe payment intent
+    const metadata: Record<string, string> = {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+    };
+
+    // Add userId to metadata only if it exists
+    if (order.userId) {
+      metadata.userId = order.userId;
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'usd',
       description: description || `Order ${order.orderNumber}`,
-      metadata: {
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-        userId: session.user.id,
-      },
+      metadata,
       automatic_payment_methods: {
         enabled: true,
       },

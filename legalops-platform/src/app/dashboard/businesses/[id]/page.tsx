@@ -45,6 +45,26 @@ interface Filing {
   createdAt: string;
 }
 
+interface HealthScoreBreakdown {
+  totalScore: number;
+  compliance: {
+    score: number;
+    maxScore: number;
+    factors: any[];
+  };
+  documents: {
+    score: number;
+    maxScore: number;
+    factors: any[];
+  };
+  payments: {
+    score: number;
+    maxScore: number;
+    factors: any[];
+  };
+  recommendations: string[];
+}
+
 interface Business {
   id: string;
   legalName: string;
@@ -69,20 +89,29 @@ export default function BusinessDetailPage() {
   const businessId = params.id as string;
 
   const [business, setBusiness] = useState<Business | null>(null);
+  const [healthScore, setHealthScore] = useState<HealthScoreBreakdown | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!businessId) return;
 
-    fetch(`/api/businesses/${businessId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setBusiness(data.business);
+    // Fetch business details and health score in parallel
+    Promise.all([
+      fetch(`/api/businesses/${businessId}`).then(res => res.json()),
+      fetch(`/api/health-score/${businessId}`).then(res => res.json())
+    ])
+      .then(([businessData, healthData]) => {
+        if (businessData.success) {
+          setBusiness(businessData.business);
         } else {
-          setError(data.error || 'Failed to load business');
+          setError(businessData.error || 'Failed to load business');
         }
+
+        if (healthData.success) {
+          setHealthScore(healthData.breakdown);
+        }
+
         setLoading(false);
       })
       .catch(err => {
@@ -270,57 +299,363 @@ export default function BusinessDetailPage() {
 
         {/* Quick Actions */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <Link
-            href="/dashboard/filings/annual-report"
-            style={{
-              background: '#0ea5e9',
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '500',
-              textDecoration: 'none',
-              display: 'inline-block'
-            }}
-          >
-            File Annual Report
-          </Link>
-          <button
-            style={{
-              background: 'white',
-              border: '1px solid #e2e8f0',
-              color: '#0f172a',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            Amend Business
-          </button>
-          <button
-            style={{
-              background: 'white',
-              border: '1px solid #e2e8f0',
-              color: '#0f172a',
-              padding: '10px 20px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            Change Agent
-          </button>
+          {/* CRITICAL: Reinstatement (if revoked and can be reinstated) - ONLY show this, nothing else */}
+          {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Administratively Dissolved') ? (
+            <Link
+              href={`/dashboard/services/reinstatement?businessId=${businessId}`}
+              style={{
+                background: '#7c2d12',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                boxShadow: '0 4px 12px rgba(124, 45, 18, 0.4)'
+              }}
+            >
+              <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              REINSTATE BUSINESS NOW
+            </Link>
+          ) : (
+            <>
+              {/* Show normal actions only if NOT revoked */}
+
+              {/* CRITICAL: Imminent Revocation */}
+              {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Imminent Revocation Risk') && (
+                <Link
+                  href="/dashboard/filings/annual-report"
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }}
+                >
+                  <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  FILE NOW - REVOCATION IMMINENT
+                </Link>
+              )}
+
+              {/* CRITICAL: Annual Report Late */}
+              {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue') && !healthScore.compliance.factors.some((f: any) => f.name === 'Imminent Revocation Risk') && (
+                <Link
+                  href="/dashboard/filings/annual-report"
+                  style={{
+                    background: '#dc2626',
+                    color: 'white',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }}
+                >
+                  <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  File Annual Report ($400 Late Fee)
+                </Link>
+              )}
+
+              {/* Normal: File Annual Report */}
+              {healthScore && !healthScore.compliance.factors.some((f: any) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue' || f.name === 'Imminent Revocation Risk') && (
+                <Link
+                  href="/dashboard/filings/annual-report"
+                  style={{
+                    background: '#0ea5e9',
+                    color: 'white',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    textDecoration: 'none',
+                    display: 'inline-block'
+                  }}
+                >
+                  File Annual Report
+                </Link>
+              )}
+
+              {/* Upsell: Apply for EIN if missing */}
+              {healthScore && healthScore.documents.factors.some((f: any) => f.name === 'Missing EIN') && (
+                <Link
+                  href="/dashboard/services"
+                  style={{
+                    background: '#d97706',
+                    color: 'white',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    textDecoration: 'none',
+                    display: 'inline-block'
+                  }}
+                >
+                  Apply for EIN
+                </Link>
+              )}
+
+              {/* Standard Actions */}
+              <button
+                style={{
+                  background: 'white',
+                  border: '1px solid #e2e8f0',
+                  color: '#0f172a',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Amend Business
+              </button>
+              <button
+                style={{
+                  background: 'white',
+                  border: '1px solid #e2e8f0',
+                  color: '#0f172a',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Change Agent
+              </button>
+            </>
+          )}
         </div>
+
+        <style jsx>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: .8;
+            }
+          }
+        `}</style>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: '24px' }}>
         {/* Left Column - Main Info */}
         <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
+
+          {/* Data Accuracy Warning */}
+          <div style={{
+            background: '#fef3c7',
+            border: '1px solid #fbbf24',
+            borderRadius: '8px',
+            padding: '16px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <svg style={{ width: '20px', height: '20px', color: '#d97706', flexShrink: 0, marginTop: '2px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: '14px', fontWeight: '600', color: '#92400e', marginBottom: '8px' }}>
+                Verify Your Business Status
+              </p>
+              <p style={{ fontSize: '13px', color: '#78350f', lineHeight: '1.5', marginBottom: '12px' }}>
+                Our database may not reflect recent changes you made directly with the State of Florida or through another service.
+                Always verify your official business status on Sunbiz.org before making important decisions.
+              </p>
+              <a
+                href={`https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResultDetail?inquirytype=DocumentNumber&aggregateId=domp-${business?.documentNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background: '#d97706',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Verify on Sunbiz.org
+                <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Health Score Card */}
+          {healthScore && (
+            <div
+              className="bg-white rounded-xl"
+              style={{
+                padding: '24px',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #e2e8f0'
+              }}
+            >
+              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#0f172a', marginBottom: '20px' }}>
+                Business Health Score
+              </h2>
+
+              {/* Health Score Overview */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
+                {/* Score Circle */}
+                <div
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    background: healthScore.totalScore >= 90 ? '#d1fae5' : healthScore.totalScore >= 75 ? '#dbeafe' : healthScore.totalScore >= 60 ? '#fef3c7' : '#fee2e2',
+                    border: `3px solid ${healthScore.totalScore >= 90 ? '#059669' : healthScore.totalScore >= 75 ? '#0284c7' : healthScore.totalScore >= 60 ? '#d97706' : '#dc2626'}`,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <span style={{ fontSize: '32px', fontWeight: '700', color: healthScore.totalScore >= 90 ? '#059669' : healthScore.totalScore >= 75 ? '#0284c7' : healthScore.totalScore >= 60 ? '#d97706' : '#dc2626', lineHeight: '1' }}>
+                    {healthScore.totalScore}
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: '500', color: '#64748b', marginTop: '4px' }}>
+                    out of 100
+                  </span>
+                </div>
+
+                {/* Score Description */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '18px', fontWeight: '600', color: healthScore.totalScore >= 90 ? '#059669' : healthScore.totalScore >= 75 ? '#0284c7' : healthScore.totalScore >= 60 ? '#d97706' : '#dc2626', marginBottom: '4px' }}>
+                    {healthScore.totalScore >= 90 ? 'Excellent Health' : healthScore.totalScore >= 75 ? 'Good Health' : healthScore.totalScore >= 60 ? 'Needs Attention' : 'Critical Issues'}
+                  </div>
+                  <p style={{ fontSize: '14px', color: '#64748b', lineHeight: '1.5' }}>
+                    {healthScore.totalScore >= 90 && 'Your business is in excellent standing with all compliance requirements met.'}
+                    {healthScore.totalScore >= 75 && healthScore.totalScore < 90 && 'Your business is in good health with minor improvements recommended.'}
+                    {healthScore.totalScore >= 60 && healthScore.totalScore < 75 && 'Your business needs attention in some areas to maintain compliance.'}
+                    {healthScore.totalScore < 60 && 'Your business has critical issues that require immediate attention.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Score Breakdown */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                {/* Compliance */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Compliance</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: healthScore.compliance.score / healthScore.compliance.maxScore >= 0.75 ? '#059669' : '#dc2626' }}>
+                      {healthScore.compliance.score}/{healthScore.compliance.maxScore}
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${(healthScore.compliance.score / healthScore.compliance.maxScore) * 100}%`,
+                        height: '100%',
+                        background: healthScore.compliance.score / healthScore.compliance.maxScore >= 0.75 ? '#059669' : '#dc2626',
+                        transition: 'width 0.3s ease-out'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Documents */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Documents</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: healthScore.documents.score / healthScore.documents.maxScore >= 0.75 ? '#059669' : '#d97706' }}>
+                      {healthScore.documents.score}/{healthScore.documents.maxScore}
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${(healthScore.documents.score / healthScore.documents.maxScore) * 100}%`,
+                        height: '100%',
+                        background: healthScore.documents.score / healthScore.documents.maxScore >= 0.75 ? '#059669' : '#d97706',
+                        transition: 'width 0.3s ease-out'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Payments */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Payments</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: healthScore.payments.score / healthScore.payments.maxScore >= 0.75 ? '#059669' : '#dc2626' }}>
+                      {healthScore.payments.score}/{healthScore.payments.maxScore}
+                    </span>
+                  </div>
+                  <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${(healthScore.payments.score / healthScore.payments.maxScore) * 100}%`,
+                        height: '100%',
+                        background: healthScore.payments.score / healthScore.payments.maxScore >= 0.75 ? '#059669' : '#dc2626',
+                        transition: 'width 0.3s ease-out'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations */}
+              {healthScore.recommendations.length > 0 && (
+                <div
+                  style={{
+                    marginTop: '20px',
+                    padding: '16px',
+                    background: '#f0f9ff',
+                    border: '1px solid #0ea5e9',
+                    borderRadius: '8px'
+                  }}
+                >
+                  <div style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a', marginBottom: '8px' }}>
+                    📈 Recommendations to Improve
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                    {healthScore.recommendations.slice(0, 3).map((rec, index) => (
+                      <li key={index} style={{ fontSize: '13px', color: '#334155', marginBottom: '4px', lineHeight: '1.5' }}>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Business Information Card */}
           <div
             className="bg-white rounded-xl"
