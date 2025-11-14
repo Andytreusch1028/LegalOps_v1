@@ -2,7 +2,7 @@
 
 /**
  * LegalOps v1 - Health Score Details Modal
- * 
+ *
  * Displays detailed breakdown of business health score with:
  * - Overall score with visual indicator
  * - Compliance, Documents, and Payments breakdowns
@@ -10,6 +10,7 @@
  * - Actionable recommendations to improve score
  */
 
+import React from 'react';
 import { X, CheckCircle, AlertCircle, XCircle, TrendingUp } from 'lucide-react';
 
 interface HealthFactor {

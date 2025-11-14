@@ -1,6 +1,6 @@
 # 🔍 LegalOps v1 - Automated Code Review Report
 
-**Generated:** 11/14/2025, 7:47:00 AM
+**Generated:** 11/14/2025, 8:17:50 AM
 **Overall Health:** FAIR
 
 ## 📊 Summary
@@ -11,7 +11,7 @@
 
 ## 🚨 Critical Issues (Requires Immediate Attention)
 
-1. Found 47 TypeScript type errors
+1. Found 40 TypeScript type errors
 2. Found 1097 ESLint errors
 
 ## ⚠️ Warnings
@@ -26,7 +26,7 @@
 
 ### TypeScript Errors
 
-**Total Issues:** 47
+**Total Issues:** 40
 
 ```
 .next/types/validator.ts(810,31): error TS2344: Type 'typeof import("C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/dba/get-draft/[token]">'.

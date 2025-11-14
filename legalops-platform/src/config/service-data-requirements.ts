@@ -103,7 +103,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   ANNUAL_REPORT: {
     serviceType: 'ANNUAL_REPORT',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
     estimatedTimeToComplete: '3 minutes',
     fieldsNeeded: [
       'Principal office address (may have changed)',
@@ -124,7 +124,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   LLC_ANNUAL_REPORT: {
     serviceType: 'LLC_ANNUAL_REPORT',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
     estimatedTimeToComplete: '3 minutes',
     fieldsNeeded: [
       'Principal office address (may have changed)',
@@ -144,7 +144,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   CORP_ANNUAL_REPORT: {
     serviceType: 'CORP_ANNUAL_REPORT',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/annual-report page, not complete-documents wizard
     estimatedTimeToComplete: '3 minutes',
     fieldsNeeded: [
       'Principal office address (may have changed)',
@@ -237,7 +237,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   ENTITY_INFORMATION_UPDATE: {
     serviceType: 'ENTITY_INFORMATION_UPDATE',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/entity-information-update page
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/entity-information-update page
     estimatedTimeToComplete: '2 minutes',
     fieldsNeeded: [
       'Email address (optional)',
@@ -257,7 +257,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   OFFICER_ADDRESS_UPDATE: {
     serviceType: 'OFFICER_ADDRESS_UPDATE',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/officer-address-update page
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/officer-address-update page
     estimatedTimeToComplete: '1 minute',
     fieldsNeeded: [
       'Officer/Director/Manager name',
@@ -276,7 +276,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   REGISTERED_AGENT_CHANGE: {
     serviceType: 'REGISTERED_AGENT_CHANGE',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/registered-agent-change page
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/registered-agent-change page
     estimatedTimeToComplete: '3 minutes',
     fieldsNeeded: [
       'Current registered agent information',
