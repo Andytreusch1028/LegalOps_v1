@@ -1,6 +1,6 @@
 # 🔍 LegalOps v1 - Automated Code Review Report
 
-**Generated:** 11/14/2025, 7:25:24 AM
+**Generated:** 11/14/2025, 7:47:00 AM
 **Overall Health:** FAIR
 
 ## 📊 Summary
@@ -11,7 +11,7 @@
 
 ## 🚨 Critical Issues (Requires Immediate Attention)
 
-1. Found 63 TypeScript type errors
+1. Found 47 TypeScript type errors
 2. Found 1097 ESLint errors
 
 ## ⚠️ Warnings
@@ -26,7 +26,7 @@
 
 ### TypeScript Errors
 
-**Total Issues:** 63
+**Total Issues:** 47
 
 ```
 .next/types/validator.ts(810,31): error TS2344: Type 'typeof import("C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/dba/get-draft/[token]">'.
@@ -37,8 +37,8 @@ src/app/api/filing/pending/route.ts(32,34): error TS2339: Property 'filingSubmis
 src/app/api/filings/annual-report/route.ts(58,7): error TS2322: Type 'Omit<Filing, "id" | "createdAt" | "updatedAt">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.
 src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | null; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.
 src/app/api/orders/create-with-risk-check/route.ts(256,9): error TS2322: Type 'RiskFactor[]' is not assignable to type 'JsonNull | InputJsonValue'.
-src/app/api/staff/filings/[id]/review/route.ts(81,7): error TS2783: 'success' is specified more than once, so this usage will be overwritten.
-src/app/api/stripe/create-payment-intent/route.ts(7,3): error TS2322: Type '"2024-10-28.acacia"' is not assignable to type '"2025-09-30.clover"'.
+src/app/dashboard/filings/annual-report/page.tsx(101,48): error TS2339: Property 'status' does not exist on type 'BusinessEntity'.
+src/app/orders/[orderId]/ein-application/page.tsx(206,13): error TS2322: Type '{ formData: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & EINApplicationFormProps'.
 ... and 10 more
 ```
 

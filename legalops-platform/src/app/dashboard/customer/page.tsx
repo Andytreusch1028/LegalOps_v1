@@ -163,7 +163,7 @@ export default async function CustomerDashboard() {
       });
       if (!fullBusiness) return { score: null, actions: 0 };
 
-      const healthScore = calculateHealthScore(fullBusiness);
+      const healthScore = await calculateHealthScore(fullBusiness.id);
 
       // Count pending actions for this business
       let businessActions = 0;
