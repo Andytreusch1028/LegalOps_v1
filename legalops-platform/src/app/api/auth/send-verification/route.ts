@@ -15,11 +15,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // TODO: Implement VerificationToken model in Prisma schema
+    // For now, this endpoint is disabled until the model is added
 
     // Delete any existing verification tokens for this email
-    await prisma.verificationToken.deleteMany({
-      where: { identifier: session.user.email },
-    });
+    // await prisma.verificationToken.deleteMany({
+    //   where: { identifier: session.user.email },
+    // });
 
     // Generate a random token
     const token = crypto.randomBytes(32).toString("hex");
@@ -28,13 +30,13 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    await prisma.verificationToken.create({
-      data: {
-        identifier: session.user.email,
-        token,
-        expires: expiresAt,
-      },
-    });
+    // await prisma.verificationToken.create({
+    //   data: {
+    //     identifier: session.user.email,
+    //     token,
+    //     expires: expiresAt,
+    //   },
+    // });
 
     // In a real app, you would send an email here
     // For now, we'll return the verification link
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Verification email sent successfully",
+      message: "Verification email feature is currently disabled - VerificationToken model needs to be added to Prisma schema",
       // In production, remove this - only for development
       verificationUrl,
     });
@@ -56,17 +58,5 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-      // Remove emailVerified usage - verify flow handled via tokens
-      await (prisma as any).verificationToken.deleteMany({ where: { email: session.user.email } });
-
-      const token = crypto.randomBytes(32).toString("hex");
-
-      await (prisma as any).verificationToken.create({
-        data: {
-          identifier: session.user.email,
-          token,
-          expires: expiresAt,
-        },
-      });
 }
 

@@ -249,20 +249,20 @@ export default async function AdminDashboard() {
                         borderRadius: '6px',
                         fontSize: '12px',
                         fontWeight: '500',
-                        background: order.status === 'COMPLETED' ? '#D1FAE5' : '#FEF3C7',
-                        color: order.status === 'COMPLETED' ? '#065F46' : '#92400E',
+                        background: order.orderStatus === 'COMPLETED' ? '#D1FAE5' : '#FEF3C7',
+                        color: order.orderStatus === 'COMPLETED' ? '#065F46' : '#92400E',
                       }}>
-                        {order.status}
+                        {order.orderStatus}
                       </span>
                     </td>
-                    <td style={{ 
+                    <td style={{
                       padding: '16px 12px',
                       fontSize: '14px',
                       fontWeight: '600',
                       color: '#1E293B',
                       textAlign: 'right',
                     }}>
-                      ${(order.totalAmount / 100).toFixed(2)}
+                      ${Number(order.total).toFixed(2)}
                     </td>
                     <td style={{ 
                       padding: '16px 12px',

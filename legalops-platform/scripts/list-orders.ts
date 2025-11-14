@@ -38,9 +38,9 @@ async function listOrders() {
     console.log('─'.repeat(100));
 
     orders.forEach((order, index) => {
-      const userName = order.user.firstName && order.user.lastName
+      const userName = order.user?.firstName && order.user?.lastName
         ? `${order.user.firstName} ${order.user.lastName}`
-        : order.user.email;
+        : order.user?.email || 'Unknown User';
 
       console.log(`\n${index + 1}. Order #${order.orderNumber}`);
       console.log(`   ID: ${order.id}`);

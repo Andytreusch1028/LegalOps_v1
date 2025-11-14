@@ -174,7 +174,6 @@ export async function DELETE(
         where: { id },
         data: {
           status: 'DISSOLVED',
-          dissolutionDate: new Date(),
         },
       });
 

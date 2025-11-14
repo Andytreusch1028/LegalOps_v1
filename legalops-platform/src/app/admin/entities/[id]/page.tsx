@@ -45,8 +45,8 @@ export default async function AdminEntityDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const principalAddress = entity.addresses.find(a => a.type === 'PRINCIPAL');
-  const mailingAddress = entity.addresses.find(a => a.type === 'MAILING');
+  const principalAddress = entity.addresses.find(a => a.addressType === 'PRINCIPAL');
+  const mailingAddress = entity.addresses.find(a => a.addressType === 'MAILING');
 
   return (
     <div style={{ padding: '32px' }}>
