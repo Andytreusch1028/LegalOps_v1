@@ -35,7 +35,7 @@ echo ========================================
 echo.
 
 echo 💡 Pro Tips:
-echo    - Run 'npm run dev' to start the development server
+echo    - Development server will start automatically
 echo    - Run '.\save-session.bat' at the end of your session
 echo    - Use 'git pull' if there are updates from GitHub
 echo.
@@ -43,5 +43,18 @@ echo.
 REM Optional: Uncomment the line below to auto-open VS Code
 REM code .
 
-pause
+echo.
+echo ========================================
+echo   🚀 STARTING DEVELOPMENT SERVER
+echo ========================================
+echo.
+echo Starting Qoder (Next.js with Turbopack)...
+echo Server will be available at: http://localhost:3000
+echo.
+echo Press Ctrl+C to stop the server when done.
+echo.
+
+REM Navigate to legalops-platform directory and start dev server
+cd legalops-platform
+npm run dev
 
