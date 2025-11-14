@@ -1,60 +1,77 @@
 @echo off
 echo ========================================
-echo   LegalOps v1 - Start of Session
+echo   LegalOps v1 - Complete Session Startup
+echo   Automated Code Review + Dev Environment
 echo ========================================
 echo.
 
 REM Navigate to project directory (in case you're not there)
 cd /d "%~dp0"
 
-echo [1/5] Checking Git status...
+echo ========================================
+echo   STEP 1: GIT SYNC
+echo ========================================
+echo.
+
+echo [1/3] Checking Git status...
 git status
 echo.
 
-echo [2/5] Fetching latest changes from GitHub...
-git fetch
+echo [2/3] Pulling latest changes from GitHub...
+git pull origin main
 echo.
 
-echo [3/5] Checking if there are updates...
-git status
-echo.
-
-echo [4/5] Recent commit history (last 5 commits):
+echo [3/3] Recent commit history (last 5 commits):
 git log --oneline -5
 echo.
 
-echo [5/5] Current branch information:
-git branch -v
-echo.
-
 echo ========================================
-echo   ✅ SESSION STARTED!
-echo   Project: LegalOps v1
-echo   Location: %CD%
+echo   STEP 2: AUTOMATED CODE REVIEW
+echo   (Senior Programmer Analysis)
 echo ========================================
 echo.
 
-echo 💡 Pro Tips:
-echo    - Development server will start automatically
-echo    - Run '.\save-session.bat' at the end of your session
-echo    - Use 'git pull' if there are updates from GitHub
+echo Running comprehensive code analysis...
+echo This will check:
+echo   - TypeScript type errors
+echo   - ESLint code quality issues
+echo   - Database schema validation
+echo   - Security vulnerabilities
+echo   - Dependency updates
 echo.
 
-REM Optional: Uncomment the line below to auto-open VS Code
-REM code .
+cd legalops-platform
+node scripts/code-review.js
 
 echo.
 echo ========================================
-echo   🚀 STARTING DEVELOPMENT SERVER
+echo   STEP 3: OPENING VS CODE
 echo ========================================
 echo.
+
+echo Opening Visual Studio Code...
+start code .
+timeout /t 3 /nobreak >nul
+echo.
+
+echo ========================================
+echo   STEP 4: STARTING DEVELOPMENT SERVER
+echo ========================================
+echo.
+
 echo Starting Qoder (Next.js with Turbopack)...
-echo Server will be available at: http://localhost:3000
+echo.
+echo 🌐 Server will be available at: http://localhost:3000
+echo 📄 Code review report: logs/SONNET_CODE_REVIEW.md
+echo.
+echo 💡 NEXT STEPS:
+echo    1. Review logs/SONNET_CODE_REVIEW.md for issues
+echo    2. Copy the report and paste into Sonnet 4.5
+echo    3. Ask Sonnet to fix the critical issues
+echo    4. Start coding!
 echo.
 echo Press Ctrl+C to stop the server when done.
 echo.
 
-REM Navigate to legalops-platform directory and start dev server
-cd legalops-platform
 npm run dev
 
