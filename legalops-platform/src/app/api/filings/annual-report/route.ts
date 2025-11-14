@@ -36,12 +36,13 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Update business entity if FEI/EIN changed
-    if (formData.feiNumberChanged && formData.newFeiNumber !== undefined) {
+    // Update business entity if FEI/EIN changed (if provided in changes)
+    const feiNumber = (formData.changes as any)?.feiNumber;
+    if (feiNumber !== undefined) {
       await prisma.businessEntity.update({
         where: { id: formData.businessEntityId },
         data: {
-          feiNumber: formData.newFeiNumber || null,
+          feiNumber: feiNumber || null,
         },
       });
     }

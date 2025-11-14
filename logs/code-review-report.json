@@ -1,35 +1,35 @@
 {
-  "timestamp": "2025-11-14T04:34:44.300Z",
+  "timestamp": "2025-11-14T12:25:24.612Z",
   "sections": [
     {
       "name": "TypeScript Errors",
-      "count": 75,
+      "count": 63,
       "issues": [
         ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r",
         "prisma/seed-notices.ts(112,7): error TS2322: Type '{ userId: string; type: string; priority: string; title: string; message: string; filingId: string | undefined; actionUrl: string | null; actionLabel: string; } | { userId: string; type: string; ... 5 more ...; filingId?: undefined; }' is not assignable to type '(Without<NoticeCreateInput, NoticeUncheckedCreateInput> & NoticeUncheckedCreateInput) | (Without<...> & NoticeCreateInput)'.\r",
         "src/app/api/filing/approve/route.ts(59,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
         "src/app/api/filing/approve/route.ts(79,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
         "src/app/api/filing/pending/route.ts(32,34): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
-        "src/app/api/filing/submit/route.ts(47,13): error TS2353: Object literal may only specify known properties, and 'customerProfile' does not exist in type 'UserInclude<DefaultArgs>'.\r",
-        "src/app/api/filing/submit/route.ts(103,33): error TS2339: Property 'orderData' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.\r",
-        "src/app/api/filing/submit/route.ts(109,37): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.\r",
-        "src/app/api/filing/submit/route.ts(129,24): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.\r",
-        "src/app/api/filing/submit/route.ts(129,52): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.\r",
-        "src/app/api/filing/submit/route.ts(134,37): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.\r",
-        "src/app/api/filings/[id]/route.ts(79,24): error TS2339: Property 'status' does not exist on type '{ businessEntity: { client: { user: { email: string; firstName: string | null; lastName: string | null; }; } & { id: string; userId: string; createdAt: Date; email: string; firstName: string; lastName: string; phone: string | null; updatedAt: Date; clientType: ClientType; }; addresses: { ...; }[]; registeredAgent: (...'.\r",
-        "src/app/api/filings/annual-report/route.ts(40,18): error TS2339: Property 'feiNumberChanged' does not exist on type 'AnnualReportFormData'.\r",
-        "src/app/api/filings/annual-report/route.ts(40,47): error TS2339: Property 'newFeiNumber' does not exist on type 'AnnualReportFormData'.\r",
-        "src/app/api/filings/annual-report/route.ts(44,31): error TS2339: Property 'newFeiNumber' does not exist on type 'AnnualReportFormData'.\r",
-        "src/app/api/filings/annual-report/route.ts(57,7): error TS2322: Type 'Omit<Filing, \"id\" | \"createdAt\" | \"updatedAt\">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.\r",
+        "src/app/api/filings/annual-report/route.ts(58,7): error TS2322: Type 'Omit<Filing, \"id\" | \"createdAt\" | \"updatedAt\">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.\r",
         "src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | null; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.\r",
         "src/app/api/orders/create-with-risk-check/route.ts(256,9): error TS2322: Type 'RiskFactor[]' is not assignable to type 'JsonNull | InputJsonValue'.\r",
-        "src/app/api/orders/route.ts(34,9): error TS2367: This comparison appears to be unintentional because the types 'UserRole' and '\"SITE_ADMIN\"' have no overlap.\r",
-        "src/app/api/orders/route.ts(34,39): error TS2367: This comparison appears to be unintentional because the types 'UserRole' and '\"EMPLOYEE\"' have no overlap.\r"
+        "src/app/api/staff/filings/[id]/review/route.ts(81,7): error TS2783: 'success' is specified more than once, so this usage will be overwritten.\r",
+        "src/app/api/stripe/create-payment-intent/route.ts(7,3): error TS2322: Type '\"2024-10-28.acacia\"' is not assignable to type '\"2025-09-30.clover\"'.\r",
+        "src/app/api/stripe/webhook/route.ts(8,3): error TS2322: Type '\"2024-10-28.acacia\"' is not assignable to type '\"2025-09-30.clover\"'.\r",
+        "src/app/api/user/change-password/route.ts(36,9): error TS2353: Object literal may only specify known properties, and 'password' does not exist in type 'UserSelect<DefaultArgs>'.\r",
+        "src/app/api/user/change-password/route.ts(47,15): error TS2339: Property 'password' does not exist on type '{ id: string; createdAt: Date; email: string; passwordHash: string; firstName: string | null; lastName: string | null; phone: string | null; updatedAt: Date; userType: UserType; ... 14 more ...; smsRemindersConsentAt: Date | null; }'.\r",
+        "src/app/api/user/change-password/route.ts(57,12): error TS2339: Property 'password' does not exist on type '{ id: string; createdAt: Date; email: string; passwordHash: string; firstName: string | null; lastName: string | null; phone: string | null; updatedAt: Date; userType: UserType; ... 14 more ...; smsRemindersConsentAt: Date | null; }'.\r",
+        "src/app/api/user/change-password/route.ts(70,12): error TS2339: Property 'password' does not exist on type '{ id: string; createdAt: Date; email: string; passwordHash: string; firstName: string | null; lastName: string | null; phone: string | null; updatedAt: Date; userType: UserType; ... 14 more ...; smsRemindersConsentAt: Date | null; }'.\r",
+        "src/app/api/user/change-password/route.ts(87,9): error TS2353: Object literal may only specify known properties, and 'password' does not exist in type '(Without<UserUpdateInput, UserUncheckedUpdateInput> & UserUncheckedUpdateInput) | (Without<...> & UserUpdateInput)'.\r",
+        "src/app/api/user/profile/route.ts(27,9): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'UserSelect<DefaultArgs>'.\r",
+        "src/app/api/user/profile/route.ts(92,9): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'UserSelect<DefaultArgs>'.\r",
+        "src/app/dashboard/customer/page.tsx(166,48): error TS2345: Argument of type '{ registeredAgent: { id: string; createdAt: Date; email: string | null; firstName: string | null; lastName: string | null; phone: string | null; updatedAt: Date; isActive: boolean; ... 4 more ...; serviceEndDate: Date | null; } | null; managersOfficers: { ...; }[]; } & { ...; }' is not assignable to parameter of type 'string'.\r",
+        "src/app/dashboard/customer/page.tsx(172,23): error TS2339: Property 'compliance' does not exist on type 'Promise<HealthScoreBreakdown>'.\r"
       ]
     },
     {
       "name": "ESLint Issues",
-      "errors": 1100,
+      "errors": 1097,
       "warnings": 2010
     },
     {
@@ -41,8 +41,8 @@
     }
   ],
   "criticalIssues": [
-    "Found 75 TypeScript type errors",
-    "Found 1100 ESLint errors"
+    "Found 63 TypeScript type errors",
+    "Found 1097 ESLint errors"
   ],
   "warnings": [
     "Found 2010 ESLint warnings"

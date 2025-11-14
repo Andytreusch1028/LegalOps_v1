@@ -42,11 +42,7 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        user: {
-          include: {
-            customerProfile: true,
-          },
-        },
+        user: true,
       },
     });
 
@@ -100,13 +96,13 @@ export async function POST(request: NextRequest) {
           zip: '',
         },
         mailingAddress: (orderAny.orderData as any)?.mailingAddress,
-        registeredAgent: (order.orderData as any)?.registeredAgent || {
+        registeredAgent: (orderAny.orderData as any)?.registeredAgent || {
           name: '',
           address: { street: '', city: '', state: 'FL', zip: '' },
         },
         managers: (orderAny.orderData as any)?.managers,
         effectiveDate: (orderAny.orderData as any)?.effectiveDate,
-        correspondenceEmail: (order.user as any).email,
+        correspondenceEmail: order.user?.email || order.guestEmail || '',
       };
 
       result = await agent.fillLLCFormation(formData, false); // headless=false for debugging
@@ -126,12 +122,12 @@ export async function POST(request: NextRequest) {
           address: { street: '', city: '', state: 'FL', zip: '' },
         },
         incorporator: (orderAny.orderData as any)?.incorporator || {
-          name: (order.user as any).name || (order.user as any).email,
+          name: order.user?.email || order.guestEmail || 'Unknown',
         },
         purpose: (orderAny.orderData as any)?.purpose || 'any lawful business',
         officers: (orderAny.orderData as any)?.officers,
         effectiveDate: (orderAny.orderData as any)?.effectiveDate,
-        correspondenceEmail: (order.user as any).email,
+        correspondenceEmail: order.user?.email || order.guestEmail || '',
       };
 
       result = await agent.fillCorporationFormation(formData, false);

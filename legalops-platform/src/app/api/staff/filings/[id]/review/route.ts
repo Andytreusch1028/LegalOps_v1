@@ -77,10 +77,7 @@ export async function POST(
       overallReason
     });
 
-    return NextResponse.json({
-      success: true,
-      ...result
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error submitting review:', error);
     return NextResponse.json(

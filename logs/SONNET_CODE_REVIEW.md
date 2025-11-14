@@ -1,6 +1,6 @@
 # 🔍 LegalOps v1 - Automated Code Review Report
 
-**Generated:** 11/13/2025, 11:34:44 PM
+**Generated:** 11/14/2025, 7:25:24 AM
 **Overall Health:** FAIR
 
 ## 📊 Summary
@@ -11,8 +11,8 @@
 
 ## 🚨 Critical Issues (Requires Immediate Attention)
 
-1. Found 75 TypeScript type errors
-2. Found 1100 ESLint errors
+1. Found 63 TypeScript type errors
+2. Found 1097 ESLint errors
 
 ## ⚠️ Warnings
 
@@ -26,7 +26,7 @@
 
 ### TypeScript Errors
 
-**Total Issues:** 75
+**Total Issues:** 63
 
 ```
 .next/types/validator.ts(810,31): error TS2344: Type 'typeof import("C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/dba/get-draft/[token]">'.
@@ -34,17 +34,17 @@ prisma/seed-notices.ts(112,7): error TS2322: Type '{ userId: string; type: strin
 src/app/api/filing/approve/route.ts(59,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
 src/app/api/filing/approve/route.ts(79,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
 src/app/api/filing/pending/route.ts(32,34): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
-src/app/api/filing/submit/route.ts(47,13): error TS2353: Object literal may only specify known properties, and 'customerProfile' does not exist in type 'UserInclude<DefaultArgs>'.
-src/app/api/filing/submit/route.ts(103,33): error TS2339: Property 'orderData' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.
-src/app/api/filing/submit/route.ts(109,37): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.
-src/app/api/filing/submit/route.ts(129,24): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.
-src/app/api/filing/submit/route.ts(129,52): error TS2339: Property 'user' does not exist on type '{ id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; privacyPolicyAcceptedAt: Date | null; emailRemindersConsent: boolean; ... 32 more ...; packageId: string | null; }'.
+src/app/api/filings/annual-report/route.ts(58,7): error TS2322: Type 'Omit<Filing, "id" | "createdAt" | "updatedAt">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.
+src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | null; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.
+src/app/api/orders/create-with-risk-check/route.ts(256,9): error TS2322: Type 'RiskFactor[]' is not assignable to type 'JsonNull | InputJsonValue'.
+src/app/api/staff/filings/[id]/review/route.ts(81,7): error TS2783: 'success' is specified more than once, so this usage will be overwritten.
+src/app/api/stripe/create-payment-intent/route.ts(7,3): error TS2322: Type '"2024-10-28.acacia"' is not assignable to type '"2025-09-30.clover"'.
 ... and 10 more
 ```
 
 ### ESLint Issues
 
-- **Errors:** 1100
+- **Errors:** 1097
 - **Warnings:** 2010
 
 ### Security Vulnerabilities

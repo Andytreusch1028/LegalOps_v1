@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       where: { id: session.user.id },
       select: {
         id: true,
-        password: true,
+        passwordHash: true,
       },
     });
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!user.password) {
+    if (!user.passwordHash) {
       return NextResponse.json(
         { error: "No password set for this account" },
         { status: 400 }
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     // Verify current password
     const isPasswordValid = await bcrypt.compare(
       validatedData.currentPassword,
-      user.password
+      user.passwordHash
     );
 
     if (!isPasswordValid) {
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // Check if new password is same as current
     const isSamePassword = await bcrypt.compare(
       validatedData.newPassword,
-      user.password
+      user.passwordHash
     );
 
     if (isSamePassword) {
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
-        password: hashedPassword,
+        passwordHash: hashedPassword,
       },
     });
 

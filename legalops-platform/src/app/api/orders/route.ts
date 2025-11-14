@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Get orders based on user role
     let orders;
-    if (user.role === "SITE_ADMIN" || user.role === "EMPLOYEE") {
+    if (user.role === "ADMIN" || user.userType === "EMPLOYEE" || user.userType === "SITE_ADMIN") {
       // Admins and employees can see all orders
       orders = await prisma.order.findMany({
         include: {

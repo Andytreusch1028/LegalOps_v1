@@ -76,7 +76,6 @@ export async function GET(
       filing: {
         id: filing.id,
         filingType: filing.filingType,
-        status: filing.status,
         filingStatus: filing.filingStatus,
         filingData: filing.filingData,
         confirmationNumber: filing.confirmationNumber,
