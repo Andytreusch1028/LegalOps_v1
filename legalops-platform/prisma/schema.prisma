@@ -16,44 +16,44 @@ datasource db {
 // ============================================================================
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String
-  firstName     String?
-  lastName      String?
-  phone         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // User type and permissions
-  userType      UserType @default(CUSTOMER)
-  role          UserRole @default(INDIVIDUAL_CUSTOMER)
-  isActive      Boolean  @default(true)
+  userType UserType @default(CUSTOMER)
+  role     UserRole @default(INDIVIDUAL_CUSTOMER)
+  isActive Boolean  @default(true)
 
   // For Professional Customers (lawyers, accountants managing client businesses)
-  companyName   String?  // "Smith & Associates Law Firm"
-  isWhiteLabel  Boolean  @default(false)
+  companyName  String? // "Smith & Associates Law Firm"
+  isWhiteLabel Boolean @default(false)
 
   // For Internal Staff
-  department    String?  // "Fulfillment", "Operations", "Executive"
-  managerId     String?  // Reports to this manager
-  manager       User?    @relation("ManagerSubordinates", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subordinates  User[]   @relation("ManagerSubordinates")
+  department   String? // "Fulfillment", "Operations", "Executive"
+  managerId    String? // Reports to this manager
+  manager      User?   @relation("ManagerSubordinates", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subordinates User[]  @relation("ManagerSubordinates")
 
   // Filing Preferences
-  autoApproveMinorChanges Boolean @default(false)  // Pre-approve staff to make minor corrections without delay
-  autoApproveGrantedAt    DateTime?                // When customer granted this permission
-  autoApproveAcknowledged Boolean @default(false)  // Customer acknowledged risks
+  autoApproveMinorChanges Boolean   @default(false) // Pre-approve staff to make minor corrections without delay
+  autoApproveGrantedAt    DateTime? // When customer granted this permission
+  autoApproveAcknowledged Boolean   @default(false) // Customer acknowledged risks
 
   // Legal Compliance
-  tosAcceptedAt           DateTime?                // When user accepted Terms of Service
-  privacyPolicyAcceptedAt DateTime?                // When user accepted Privacy Policy
+  tosAcceptedAt           DateTime? // When user accepted Terms of Service
+  privacyPolicyAcceptedAt DateTime? // When user accepted Privacy Policy
 
   // Marketing Consent
-  emailRemindersConsent   Boolean  @default(false) // Opted in to email reminders
-  emailRemindersConsentAt DateTime?                // When they opted in
-  smsRemindersConsent     Boolean  @default(false) // Opted in to SMS reminders
-  smsRemindersConsentAt   DateTime?                // When they opted in
+  emailRemindersConsent   Boolean   @default(false) // Opted in to email reminders
+  emailRemindersConsentAt DateTime? // When they opted in
+  smsRemindersConsent     Boolean   @default(false) // Opted in to SMS reminders
+  smsRemindersConsentAt   DateTime? // When they opted in
 
   // Relationships
   clients       Client[]
@@ -62,19 +62,19 @@ model User {
   notices       Notice[]
 
   // Customer Service Relationships
-  customerInteractions CustomerInteraction[] @relation("CustomerInteractions")
-  agentInteractions    CustomerInteraction[] @relation("AgentInteractions")
+  customerInteractions  CustomerInteraction[]  @relation("CustomerInteractions")
+  agentInteractions     CustomerInteraction[]  @relation("AgentInteractions")
   interactionAccessLogs InteractionAccessLog[] @relation("InteractionAccessLogs")
 
   // Risk Assessment Relationships
-  riskAssessments       RiskAssessment[]
+  riskAssessments         RiskAssessment[]
   reviewedRiskAssessments RiskAssessment[] @relation("RiskReviewer")
 
   // Feedback Relationships
-  feedback              Feedback[]
+  feedback Feedback[]
 
   // Smart Forms Relationships
-  formDrafts            FormDraft[]
+  formDrafts FormDraft[]
 
   @@map("users")
 }
@@ -90,49 +90,49 @@ enum UserType {
 // User Role - Determines dashboard and permissions
 enum UserRole {
   // External Customers
-  INDIVIDUAL_CUSTOMER      // Individual managing their own businesses (default)
-  PROFESSIONAL_CUSTOMER    // Law firm/accountant managing client businesses
+  INDIVIDUAL_CUSTOMER // Individual managing their own businesses (default)
+  PROFESSIONAL_CUSTOMER // Law firm/accountant managing client businesses
 
   // Internal Staff
-  FULFILLMENT_STAFF       // Daily order processing and AI form review
-  MANAGER                 // Mid-level operations manager
-  EXECUTIVE               // C-suite, high-level metrics
+  FULFILLMENT_STAFF // Daily order processing and AI form review
+  MANAGER // Mid-level operations manager
+  EXECUTIVE // C-suite, high-level metrics
 
   // Special
-  ADMIN                   // Full system access
+  ADMIN // Full system access
 }
 
 // Client represents a business owner/customer
 // One User can have multiple Clients (e.g., managing multiple businesses)
 model Client {
-  id                String   @id @default(cuid())
-  userId            String
-  user              User     @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   // Client Information
-  firstName         String
-  lastName          String
-  email             String
-  phone             String?
-  
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+
   // Client Type
-  clientType        ClientType @default(ONE_TIME)
-  
+  clientType ClientType @default(ONE_TIME)
+
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relationships
-  businessEntities  BusinessEntity[]
-  addresses         Address[]
-  
+  businessEntities BusinessEntity[]
+  addresses        Address[]
+
   @@map("clients")
 }
 
 enum ClientType {
-  ONE_TIME          // One-time customer
-  RETURNING         // Returning customer
-  SUBSCRIPTION      // Active subscription customer
+  ONE_TIME // One-time customer
+  RETURNING // Returning customer
+  SUBSCRIPTION // Active subscription customer
 }
 
 // ============================================================================
@@ -140,41 +140,41 @@ enum ClientType {
 // ============================================================================
 
 model Address {
-  id            String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Address Details
-  street        String
-  street2       String?
-  city          String
-  state         String
-  zipCode       String
-  country       String   @default("USA")
-  
+  street  String
+  street2 String?
+  city    String
+  state   String
+  zipCode String
+  country String  @default("USA")
+
   // Address Type
-  addressType   AddressType
-  
+  addressType AddressType
+
   // Ownership (polymorphic - can belong to Client, BusinessEntity, or RegisteredAgent)
-  clientId      String?
-  client        Client?  @relation(fields: [clientId], references: [id])
-  
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
+
   businessEntityId String?
   businessEntity   BusinessEntity? @relation(fields: [businessEntityId], references: [id])
-  
+
   registeredAgentId String?
   registeredAgent   RegisteredAgent? @relation(fields: [registeredAgentId], references: [id])
-  
+
   // Timestamps
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("addresses")
 }
 
 enum AddressType {
-  PRINCIPAL         // Principal business address
-  MAILING           // Mailing address
-  REGISTERED_AGENT  // Registered agent address
-  PERSONAL          // Personal address
+  PRINCIPAL // Principal business address
+  MAILING // Mailing address
+  REGISTERED_AGENT // Registered agent address
+  PERSONAL // Personal address
 }
 
 // ============================================================================
@@ -182,58 +182,58 @@ enum AddressType {
 // ============================================================================
 
 model BusinessEntity {
-  id                String   @id @default(cuid())
-  clientId          String
-  client            Client   @relation(fields: [clientId], references: [id])
-  
+  id       String @id @default(cuid())
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
   // Entity Information
-  legalName         String
-  dbaName           String?  // Doing Business As
-  entityType        EntityType
-  
+  legalName  String
+  dbaName    String? // Doing Business As
+  entityType EntityType
+
   // State Information
-  stateOfFormation  String   @default("FL")
-  documentNumber    String?  // Sunbiz document number
-  filingDate        DateTime?
-  feiNumber         String?  // Federal Employer Identification Number (EIN)
+  stateOfFormation String    @default("FL")
+  documentNumber   String? // Sunbiz document number
+  filingDate       DateTime?
+  feiNumber        String? // Federal Employer Identification Number (EIN)
 
   // Status
-  status            EntityStatus @default(PENDING)
+  status EntityStatus @default(PENDING)
 
   // Business Purpose
-  purpose           String?
+  purpose String?
 
   // Health Score (0-100)
-  healthScore       Int?         // Calculated score based on compliance, documents, payments
-  lastHealthCheck   DateTime?    // When health score was last calculated
+  healthScore     Int? // Calculated score based on compliance, documents, payments
+  lastHealthCheck DateTime? // When health score was last calculated
 
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relationships
-  addresses         Address[]
-  registeredAgent   RegisteredAgent?
-  managersOfficers  ManagerOfficer[]
-  filings           Filing[]
-  
+  addresses        Address[]
+  registeredAgent  RegisteredAgent?
+  managersOfficers ManagerOfficer[]
+  filings          Filing[]
+
   @@map("business_entities")
 }
 
 enum EntityType {
-  LLC                    // Limited Liability Company
-  CORPORATION            // Corporation
-  NONPROFIT_CORPORATION  // Nonprofit Corporation
-  PARTNERSHIP            // Partnership
-  SOLE_PROPRIETORSHIP    // Sole Proprietorship
+  LLC // Limited Liability Company
+  CORPORATION // Corporation
+  NONPROFIT_CORPORATION // Nonprofit Corporation
+  PARTNERSHIP // Partnership
+  SOLE_PROPRIETORSHIP // Sole Proprietorship
 }
 
 enum EntityStatus {
-  PENDING       // Not yet filed
-  FILED         // Filed with state
-  ACTIVE        // Active and in good standing
-  INACTIVE      // Inactive
-  DISSOLVED     // Dissolved
+  PENDING // Not yet filed
+  FILED // Filed with state
+  ACTIVE // Active and in good standing
+  INACTIVE // Inactive
+  DISSOLVED // Dissolved
 }
 
 // ============================================================================
@@ -241,43 +241,43 @@ enum EntityStatus {
 // ============================================================================
 
 model RegisteredAgent {
-  id                String   @id @default(cuid())
-  businessEntityId  String   @unique
-  businessEntity    BusinessEntity @relation(fields: [businessEntityId], references: [id])
-  
+  id               String         @id @default(cuid())
+  businessEntityId String         @unique
+  businessEntity   BusinessEntity @relation(fields: [businessEntityId], references: [id])
+
   // Agent Information
-  agentType         AgentType
-  
+  agentType AgentType
+
   // Individual Agent
-  firstName         String?
-  lastName          String?
-  
+  firstName String?
+  lastName  String?
+
   // Company Agent
-  companyName       String?
-  
+  companyName String?
+
   // Contact
-  email             String?
-  phone             String?
-  
+  email String?
+  phone String?
+
   // Address
-  addresses         Address[]
-  
+  addresses Address[]
+
   // Service Status
-  serviceStartDate  DateTime?
-  serviceEndDate    DateTime?
-  isActive          Boolean  @default(true)
-  
+  serviceStartDate DateTime?
+  serviceEndDate   DateTime?
+  isActive         Boolean   @default(true)
+
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("registered_agents")
 }
 
 enum AgentType {
   INDIVIDUAL
   COMPANY
-  LEGALOPS  // LegalOps providing RA service
+  LEGALOPS // LegalOps providing RA service
 }
 
 // ============================================================================
@@ -285,41 +285,41 @@ enum AgentType {
 // ============================================================================
 
 model ManagerOfficer {
-  id                String   @id @default(cuid())
-  businessEntityId  String
-  businessEntity    BusinessEntity @relation(fields: [businessEntityId], references: [id])
-  
+  id               String         @id @default(cuid())
+  businessEntityId String
+  businessEntity   BusinessEntity @relation(fields: [businessEntityId], references: [id])
+
   // Person Information
-  firstName         String
-  lastName          String
-  title             String?  // Manager, President, Secretary, etc.
-  
+  firstName String
+  lastName  String
+  title     String? // Manager, President, Secretary, etc.
+
   // Role Type
-  roleType          RoleType
-  
+  roleType RoleType
+
   // Contact
-  email             String?
-  phone             String?
-  
+  email String?
+  phone String?
+
   // Address (stored as text for simplicity, or could link to Address table)
-  address           String
-  
+  address String
+
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("managers_officers")
 }
 
 enum RoleType {
-  MANAGER           // LLC Manager
-  MEMBER            // LLC Member
-  PRESIDENT         // Corporation President
-  VICE_PRESIDENT    // Corporation VP
-  SECRETARY         // Corporation Secretary
-  TREASURER         // Corporation Treasurer
-  DIRECTOR          // Corporation Director
-  PARTNER           // Partnership Partner
+  MANAGER // LLC Manager
+  MEMBER // LLC Member
+  PRESIDENT // Corporation President
+  VICE_PRESIDENT // Corporation VP
+  SECRETARY // Corporation Secretary
+  TREASURER // Corporation Treasurer
+  DIRECTOR // Corporation Director
+  PARTNER // Partnership Partner
 }
 
 // ============================================================================
@@ -327,88 +327,88 @@ enum RoleType {
 // ============================================================================
 
 model Filing {
-  id                String   @id @default(cuid())
-  businessEntityId  String
-  businessEntity    BusinessEntity @relation(fields: [businessEntityId], references: [id])
-  
+  id               String         @id @default(cuid())
+  businessEntityId String
+  businessEntity   BusinessEntity @relation(fields: [businessEntityId], references: [id])
+
   // Filing Information
-  filingType        FilingType
-  filingStatus      FilingStatus @default(DRAFT)
-  
+  filingType   FilingType
+  filingStatus FilingStatus @default(DRAFT)
+
   // Filing Data (JSON for flexibility)
-  filingData        Json     // Stores all form-specific data
-  
+  filingData Json // Stores all form-specific data
+
   // State Filing Information
   confirmationNumber String?
-  trackingNumber    String?
-  filedDate         DateTime?
-  approvedDate      DateTime?
-  
+  trackingNumber     String?
+  filedDate          DateTime?
+  approvedDate       DateTime?
+
   // Documents
-  documents         FilingDocument[]
+  documents FilingDocument[]
 
   // Staff Changes & Approval Tracking
-  staffChanges      Json?        // Log of changes made by staff
-  staffChangeReason String?      // Overall reason for changes
-  requiresApproval  Boolean @default(false)  // Does this need customer approval?
-  customerApprovedAt DateTime?   // When customer approved changes
-  customerApprovedBy String?     // Which customer user approved
+  staffChanges       Json? // Log of changes made by staff
+  staffChangeReason  String? // Overall reason for changes
+  requiresApproval   Boolean   @default(false) // Does this need customer approval?
+  customerApprovedAt DateTime? // When customer approved changes
+  customerApprovedBy String? // Which customer user approved
 
   // Notices
-  notices           Notice[]
+  notices Notice[]
 
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  submittedAt       DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  submittedAt DateTime?
 
   @@map("filings")
 }
 
 enum FilingType {
-  LLC_FORMATION              // Articles of Organization
-  CORP_FORMATION             // Articles of Incorporation
-  NONPROFIT_FORMATION        // Nonprofit Articles
-  ANNUAL_REPORT              // Annual Report
-  AMENDMENT                  // Amendment to Articles
-  DISSOLUTION                // Dissolution
-  REINSTATEMENT              // Reinstatement
-  NAME_CHANGE                // Name Change
-  REGISTERED_AGENT_CHANGE    // RA Change
-  ADDRESS_CHANGE             // Address Change
-  EIN_APPLICATION            // IRS EIN (SS-4)
-  FICTITIOUS_NAME            // DBA Registration
+  LLC_FORMATION // Articles of Organization
+  CORP_FORMATION // Articles of Incorporation
+  NONPROFIT_FORMATION // Nonprofit Articles
+  ANNUAL_REPORT // Annual Report
+  AMENDMENT // Amendment to Articles
+  DISSOLUTION // Dissolution
+  REINSTATEMENT // Reinstatement
+  NAME_CHANGE // Name Change
+  REGISTERED_AGENT_CHANGE // RA Change
+  ADDRESS_CHANGE // Address Change
+  EIN_APPLICATION // IRS EIN (SS-4)
+  FICTITIOUS_NAME // DBA Registration
 }
 
 enum FilingStatus {
-  DRAFT                      // Customer creating/editing
-  PENDING_PAYMENT           // Submitted, awaiting payment
-  PAID                      // Payment received, queued for review
-  IN_REVIEW                 // Staff reviewing
+  DRAFT // Customer creating/editing
+  PENDING_PAYMENT // Submitted, awaiting payment
+  PAID // Payment received, queued for review
+  IN_REVIEW // Staff reviewing
   PENDING_CUSTOMER_APPROVAL // Staff made substantive changes, needs customer OK
-  APPROVED_BY_CUSTOMER      // Customer approved staff changes
-  READY_TO_FILE            // Ready to submit to Sunbiz
-  SUBMITTED                // Filed with Sunbiz
-  COMPLETED                // Confirmed by Sunbiz, PDF stored
-  REJECTED                 // Rejected by Sunbiz
-  CANCELLED                // Cancelled by customer/staff
+  APPROVED_BY_CUSTOMER // Customer approved staff changes
+  READY_TO_FILE // Ready to submit to Sunbiz
+  SUBMITTED // Filed with Sunbiz
+  COMPLETED // Confirmed by Sunbiz, PDF stored
+  REJECTED // Rejected by Sunbiz
+  CANCELLED // Cancelled by customer/staff
 }
 
 model FilingDocument {
-  id          String   @id @default(cuid())
-  filingId    String
-  filing      Filing   @relation(fields: [filingId], references: [id])
-  
+  id       String @id @default(cuid())
+  filingId String
+  filing   Filing @relation(fields: [filingId], references: [id])
+
   // Document Information
   documentType DocumentType
-  fileName    String
-  filePath    String
-  fileSize    Int
-  mimeType    String
-  
+  fileName     String
+  filePath     String
+  fileSize     Int
+  mimeType     String
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   @@map("filing_documents")
 }
 
@@ -429,104 +429,104 @@ enum DocumentType {
 
 // Package Model - For bundled service offerings
 model Package {
-  id              String   @id @default(cuid())
-  name            String   // "Basic", "Standard", "Premium"
-  slug            String   @unique // "basic", "standard", "premium"
-  price           Decimal  @db.Decimal(10, 2) // $0, $149, $299
-  description     String?  @db.Text
-  features        Json     // Array of feature strings
-  isActive        Boolean  @default(true)
-  displayOrder    Int      // 1, 2, 3
+  id           String  @id @default(cuid())
+  name         String // "Basic", "Standard", "Premium"
+  slug         String  @unique // "basic", "standard", "premium"
+  price        Decimal @db.Decimal(10, 2) // $0, $149, $299
+  description  String? @db.Text
+  features     Json // Array of feature strings
+  isActive     Boolean @default(true)
+  displayOrder Int // 1, 2, 3
 
   // Included Services
-  includesRA      Boolean  @default(false) // Free RA service?
-  raYears         Int      @default(0) // How many years of RA service
-  includesEIN     Boolean  @default(false) // EIN application included?
-  includesAI      Boolean  @default(false) // AI features included?
+  includesRA                 Boolean @default(false) // Free RA service?
+  raYears                    Int     @default(0) // How many years of RA service
+  includesEIN                Boolean @default(false) // EIN application included?
+  includesAI                 Boolean @default(false) // AI features included?
   includesOperatingAgreement Boolean @default(false)
   includesComplianceCalendar Boolean @default(false)
 
   // Marketing
-  badge           String?  // "Most Popular", "Best Value"
-  highlightColor  String?  // "sky", "green", "purple"
+  badge          String? // "Most Popular", "Best Value"
+  highlightColor String? // "sky", "green", "purple"
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relationships
-  orders          Order[]
+  orders Order[]
 
   @@map("packages")
 }
 
 model Order {
-  id              String   @id @default(cuid())
-  userId          String?  // Optional for guest checkout
-  user            User?    @relation(fields: [userId], references: [id])
+  id     String  @id @default(cuid())
+  userId String? // Optional for guest checkout
+  user   User?   @relation(fields: [userId], references: [id])
 
   // Guest Checkout Information
-  isGuestOrder    Boolean  @default(false)
-  guestEmail      String?
-  guestFirstName  String?
-  guestLastName   String?
-  guestPhone      String?
-  tosAcceptedAt   DateTime?  // For guest orders
-  privacyPolicyAcceptedAt DateTime?  // For guest orders
+  isGuestOrder            Boolean   @default(false)
+  guestEmail              String?
+  guestFirstName          String?
+  guestLastName           String?
+  guestPhone              String?
+  tosAcceptedAt           DateTime? // For guest orders
+  privacyPolicyAcceptedAt DateTime? // For guest orders
 
   // Marketing Consent (for guest orders and follow-up reminders)
-  emailRemindersConsent Boolean @default(false)  // Opted in to email reminders
-  emailRemindersConsentAt DateTime?  // When they opted in
-  smsRemindersConsent Boolean @default(false)  // Opted in to SMS reminders
-  smsRemindersConsentAt DateTime?  // When they opted in
+  emailRemindersConsent   Boolean   @default(false) // Opted in to email reminders
+  emailRemindersConsentAt DateTime? // When they opted in
+  smsRemindersConsent     Boolean   @default(false) // Opted in to SMS reminders
+  smsRemindersConsentAt   DateTime? // When they opted in
 
   // Order Information
-  orderNumber     String   @unique
-  orderStatus     OrderStatus @default(PENDING)
+  orderNumber String      @unique
+  orderStatus OrderStatus @default(PENDING)
 
   // Pricing
-  subtotal        Decimal  @db.Decimal(10, 2)
-  tax             Decimal  @db.Decimal(10, 2)
-  total           Decimal  @db.Decimal(10, 2)
+  subtotal Decimal @db.Decimal(10, 2)
+  tax      Decimal @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
 
   // Payment
-  paymentStatus   PaymentStatus @default(PENDING)
-  paymentMethod   String?
-  stripePaymentId String?
+  paymentStatus         PaymentStatus @default(PENDING)
+  paymentMethod         String?
+  stripePaymentId       String?
   stripePaymentIntentId String?
 
   // Package or Individual Service
-  packageId       String?
-  package         Package? @relation(fields: [packageId], references: [id])
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id])
 
   // Risk Assessment
-  riskScore       Int?     // 0-100 risk score from AI
-  riskLevel       RiskLevel?
-  requiresReview  Boolean  @default(false)
-  reviewedAt      DateTime?
-  reviewedBy      String?  // Admin who reviewed
+  riskScore      Int? // 0-100 risk score from AI
+  riskLevel      RiskLevel?
+  requiresReview Boolean    @default(false)
+  reviewedAt     DateTime?
+  reviewedBy     String? // Admin who reviewed
 
   // Fraud Detection Metadata
-  ipAddress       String?
-  userAgent       String?
-  isRushOrder     Boolean  @default(false)
+  ipAddress   String?
+  userAgent   String?
+  isRushOrder Boolean @default(false)
 
   // Registered Agent Renewal Tracking
-  includesRegisteredAgent Boolean  @default(false)  // Does this order include RA service?
-  raRenewalDate          DateTime?  // When RA service renews (1 year from order)
-  raAutoRenew            Boolean   @default(true)   // Auto-renew RA service?
-  raRenewalPrice         Decimal?  @db.Decimal(10, 2)  // Price for renewal ($125/year)
-  raRenewalNotificationSent Boolean @default(false)  // Have we sent renewal reminder?
+  includesRegisteredAgent   Boolean   @default(false) // Does this order include RA service?
+  raRenewalDate             DateTime? // When RA service renews (1 year from order)
+  raAutoRenew               Boolean   @default(true) // Auto-renew RA service?
+  raRenewalPrice            Decimal?  @db.Decimal(10, 2) // Price for renewal ($125/year)
+  raRenewalNotificationSent Boolean   @default(false) // Have we sent renewal reminder?
 
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  paidAt          DateTime?
-  completedAt     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime?
+  completedAt DateTime?
 
   // Relationships
-  orderItems      OrderItem[]
-  riskAssessment  RiskAssessment?
-  interactions    CustomerInteraction[] @relation("OrderInteractions")
+  orderItems     OrderItem[]
+  riskAssessment RiskAssessment?
+  interactions   CustomerInteraction[] @relation("OrderInteractions")
 
   @@map("orders")
 }
@@ -551,25 +551,25 @@ enum PaymentStatus {
 // RiskLevel enum moved to Phase 7 section (line ~990)
 
 model OrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [id])
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
 
   // Item Information
   serviceType ServiceType
   description String
-  quantity    Int      @default(1)
-  unitPrice   Decimal  @db.Decimal(10, 2)
-  totalPrice  Decimal  @db.Decimal(10, 2)
+  quantity    Int         @default(1)
+  unitPrice   Decimal     @db.Decimal(10, 2)
+  totalPrice  Decimal     @db.Decimal(10, 2)
 
   // Additional Data Collection (for upsells that need customer input)
-  requiresAdditionalData  Boolean  @default(false)
-  additionalDataCollected Boolean  @default(false)
-  additionalData          Json?    // Store collected form data
-  dataCollectionFormType  String?  // "OPERATING_AGREEMENT", "EIN_APPLICATION", etc.
+  requiresAdditionalData  Boolean @default(false)
+  additionalDataCollected Boolean @default(false)
+  additionalData          Json? // Store collected form data
+  dataCollectionFormType  String? // "OPERATING_AGREEMENT", "EIN_APPLICATION", etc.
 
   // Timestamps
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@map("order_items")
 }
@@ -600,22 +600,22 @@ enum ServiceType {
 // ============================================================================
 
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
   // Notification Details
-  type        NotificationType
-  title       String
-  message     String
-  
+  type    NotificationType
+  title   String
+  message String
+
   // Status
-  isRead      Boolean  @default(false)
-  readAt      DateTime?
-  
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
   // Timestamps
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   @@map("notifications")
 }
 
@@ -632,31 +632,31 @@ enum NotificationType {
 // ============================================================================
 
 model Notice {
-  id              String   @id @default(cuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   // Notice Details
-  type            NoticeType
-  priority        NoticePriority
-  title           String
-  message         String
+  type     NoticeType
+  priority NoticePriority
+  title    String
+  message  String
 
   // Related Filing (if applicable)
-  filingId        String?
-  filing          Filing?  @relation(fields: [filingId], references: [id])
+  filingId String?
+  filing   Filing? @relation(fields: [filingId], references: [id])
 
   // Action
-  actionUrl       String?  // Where to go when clicked
-  actionLabel     String?  // Button text (e.g., "Review & Approve")
+  actionUrl   String? // Where to go when clicked
+  actionLabel String? // Button text (e.g., "Review & Approve")
 
   // Status
-  isRead          Boolean  @default(false)
-  isDismissed     Boolean  @default(false)
+  isRead      Boolean @default(false)
+  isDismissed Boolean @default(false)
 
   // Timestamps
-  createdAt       DateTime @default(now())
-  expiresAt       DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
 
   @@map("notices")
 }
@@ -673,9 +673,9 @@ enum NoticeType {
 }
 
 enum NoticePriority {
-  URGENT      // Red/Orange - Action required
-  ATTENTION   // Yellow - Information
-  SUCCESS     // Green - Completed
+  URGENT // Red/Orange - Action required
+  ATTENTION // Yellow - Information
+  SUCCESS // Green - Completed
 }
 
 // ============================================================================
@@ -683,80 +683,80 @@ enum NoticePriority {
 // ============================================================================
 
 model RiskAssessment {
-  id              String   @id @default(cuid())
-  orderId         String   @unique
-  order           Order    @relation(fields: [orderId], references: [id])
-  userId          String?  // Optional for guest orders
-  user            User?    @relation(fields: [userId], references: [id])
+  id      String  @id @default(cuid())
+  orderId String  @unique
+  order   Order   @relation(fields: [orderId], references: [id])
+  userId  String? // Optional for guest orders
+  user    User?   @relation(fields: [userId], references: [id])
 
   // Risk Score
-  riskScore       Int      // 0-100
-  riskLevel       RiskLevel
-  recommendation  RiskRecommendation
+  riskScore      Int // 0-100
+  riskLevel      RiskLevel
+  recommendation RiskRecommendation
 
   // AI Analysis
-  aiReasoning     String   @db.Text  // Why this risk score?
-  aiModel         String   @default("gpt-4-turbo")  // Which AI model was used
+  aiReasoning String @db.Text // Why this risk score?
+  aiModel     String @default("gpt-4-turbo") // Which AI model was used
 
   // Risk Factors (stored as JSON)
-  riskFactors     Json     // Array of RiskFactor objects
+  riskFactors Json // Array of RiskFactor objects
 
   // Customer Data at Time of Assessment
-  customerEmail   String
-  customerName    String?
-  customerPhone   String?
-  accountAge      Int?     // Days since account created
-  previousOrders  Int      @default(0)
-  previousChargebacks Int  @default(0)
+  customerEmail       String
+  customerName        String?
+  customerPhone       String?
+  accountAge          Int? // Days since account created
+  previousOrders      Int     @default(0)
+  previousChargebacks Int     @default(0)
 
   // Order Data at Time of Assessment
-  orderAmount     Decimal  @db.Decimal(10, 2)
-  paymentMethod   String
-  isRushOrder     Boolean  @default(false)
+  orderAmount   Decimal @db.Decimal(10, 2)
+  paymentMethod String
+  isRushOrder   Boolean @default(false)
 
   // Technical Data
-  ipAddress       String?
-  userAgent       String?
-  billingAddress  Json?    // Stored as JSON
+  ipAddress      String?
+  userAgent      String?
+  billingAddress Json? // Stored as JSON
 
   // Review Status
-  requiresReview  Boolean  @default(false)
-  reviewedAt      DateTime?
-  reviewedBy      String?  // Admin user ID
-  reviewer        User?    @relation("RiskReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
-  reviewNotes     String?  @db.Text
-  reviewDecision  ReviewDecision?
+  requiresReview Boolean         @default(false)
+  reviewedAt     DateTime?
+  reviewedBy     String? // Admin user ID
+  reviewer       User?           @relation("RiskReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  reviewNotes    String?         @db.Text
+  reviewDecision ReviewDecision?
 
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("risk_assessments")
   @@index([riskLevel])
   @@index([createdAt])
   @@index([requiresReview])
   @@index([userId])
+  @@map("risk_assessments")
 }
 
 enum RiskLevel {
-  LOW       // 0-25: Trusted customer, normal patterns
-  MEDIUM    // 26-50: Some flags, monitor
-  HIGH      // 51-75: Multiple flags, review required
-  CRITICAL  // 76-100: Severe risk, manual approval required
+  LOW // 0-25: Trusted customer, normal patterns
+  MEDIUM // 26-50: Some flags, monitor
+  HIGH // 51-75: Multiple flags, review required
+  CRITICAL // 76-100: Severe risk, manual approval required
 }
 
 enum RiskRecommendation {
-  APPROVE         // Low risk - process normally
-  REVIEW          // Medium risk - manual review recommended
-  VERIFY          // High risk - require ID verification
-  DECLINE         // Critical risk - decline order
+  APPROVE // Low risk - process normally
+  REVIEW // Medium risk - manual review recommended
+  VERIFY // High risk - require ID verification
+  DECLINE // Critical risk - decline order
 }
 
 enum ReviewDecision {
-  APPROVED        // Admin approved despite risk
-  DECLINED        // Admin declined order
-  VERIFIED        // Customer verified identity
-  MONITORING      // Approved but monitoring
+  APPROVED // Admin approved despite risk
+  DECLINED // Admin declined order
+  VERIFIED // Customer verified identity
+  MONITORING // Approved but monitoring
 }
 
 // ============================================================================
@@ -764,50 +764,50 @@ enum ReviewDecision {
 // ============================================================================
 
 model Service {
-  id                String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Service Identification
-  name              String   // "LLC Formation", "Annual Report - LLC", etc.
-  slug              String   @unique // "llc-formation", "llc-annual-report"
-  orderType         String   // Link to OrderType enum
-  category          String   // FORMATION, ANNUAL_COMPLIANCE, AMENDMENTS, DISSOLUTION, CERTIFICATES
+  name      String // "LLC Formation", "Annual Report - LLC", etc.
+  slug      String @unique // "llc-formation", "llc-annual-report"
+  orderType String // Link to OrderType enum
+  category  String // FORMATION, ANNUAL_COMPLIANCE, AMENDMENTS, DISSOLUTION, CERTIFICATES
 
   // Description
-  shortDescription  String?  // Brief description for listings
-  longDescription   String?  @db.Text // Detailed description
+  shortDescription String? // Brief description for listings
+  longDescription  String? @db.Text // Detailed description
 
   // Pricing
-  serviceFee        Decimal  @db.Decimal(10, 2) // LegalOps service fee
-  stateFee          Decimal  @db.Decimal(10, 2) // Florida state filing fee
-  registeredAgentFee Decimal @db.Decimal(10, 2) @default(0) // Registered agent fee (free first year for formations)
-  totalPrice        Decimal  @db.Decimal(10, 2) // serviceFee + stateFee + registeredAgentFee
-  rushFeeAvailable  Boolean  @default(false)
-  rushFee           Decimal  @db.Decimal(10, 2) @default(0)
+  serviceFee         Decimal @db.Decimal(10, 2) // LegalOps service fee
+  stateFee           Decimal @db.Decimal(10, 2) // Florida state filing fee
+  registeredAgentFee Decimal @default(0) @db.Decimal(10, 2) // Registered agent fee (free first year for formations)
+  totalPrice         Decimal @db.Decimal(10, 2) // serviceFee + stateFee + registeredAgentFee
+  rushFeeAvailable   Boolean @default(false)
+  rushFee            Decimal @default(0) @db.Decimal(10, 2)
 
   // Service Details
-  entityTypes       String[] // ["LLC", "CORPORATION"] - which entities this applies to
-  processingTime    String?  // "1-2 business days", "Instant", "5-7 business days"
-  filingMethod      String   @default("online") // "online", "mail", "both"
+  entityTypes    String[] // ["LLC", "CORPORATION"] - which entities this applies to
+  processingTime String? // "1-2 business days", "Instant", "5-7 business days"
+  filingMethod   String   @default("online") // "online", "mail", "both"
 
   // Requirements (JSON structure)
-  requirements      Json?    // List of required information/documents
-  formFields        Json?    // Dynamic form fields for this service
+  requirements Json? // List of required information/documents
+  formFields   Json? // Dynamic form fields for this service
 
   // Display & Organization
-  isActive          Boolean  @default(true)
-  isPopular         Boolean  @default(false)
-  isFeatured        Boolean  @default(false)
-  displayOrder      Int      @default(0)
-  icon              String?  // Icon name or emoji
+  isActive     Boolean @default(true)
+  isPopular    Boolean @default(false)
+  isFeatured   Boolean @default(false)
+  displayOrder Int     @default(0)
+  icon         String? // Icon name or emoji
 
   // SEO & Marketing
-  metaTitle         String?
-  metaDescription   String?
-  keywords          String[]
+  metaTitle       String?
+  metaDescription String?
+  keywords        String[]
 
   // Timestamps
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([slug])
@@ -822,53 +822,53 @@ model Service {
 // ============================================================================
 
 model CustomerInteraction {
-  id                    String   @id @default(cuid())
-  customerId            String?
-  customer              User?    @relation("CustomerInteractions", fields: [customerId], references: [id])
-  orderId               String?
-  order                 Order?   @relation("OrderInteractions", fields: [orderId], references: [id])
+  id         String  @id @default(cuid())
+  customerId String?
+  customer   User?   @relation("CustomerInteractions", fields: [customerId], references: [id])
+  orderId    String?
+  order      Order?  @relation("OrderInteractions", fields: [orderId], references: [id])
 
   // Interaction Details
-  channel               InteractionChannel
-  direction             InteractionDirection
-  subject               String
-  content               String   @db.Text // Full message/transcript
-  aiSummary             String?  @db.Text // AI-generated summary
+  channel   InteractionChannel
+  direction InteractionDirection
+  subject   String
+  content   String               @db.Text // Full message/transcript
+  aiSummary String?              @db.Text // AI-generated summary
 
   // Agent Info
-  agentId               String?
-  agent                 User?    @relation("AgentInteractions", fields: [agentId], references: [id])
+  agentId String?
+  agent   User?   @relation("AgentInteractions", fields: [agentId], references: [id])
 
   // Categorization
-  category              InteractionCategory
-  tags                  String[] // ["refund", "pricing", "upl_concern"]
-  sentiment             Sentiment?
+  category  InteractionCategory
+  tags      String[] // ["refund", "pricing", "upl_concern"]
+  sentiment Sentiment?
 
   // Resolution Tracking
-  status                InteractionStatus @default(OPEN)
-  priority              Priority @default(NORMAL)
-  resolvedAt            DateTime?
-  resolutionTime        Int?     // Minutes to resolve
+  status         InteractionStatus @default(OPEN)
+  priority       Priority          @default(NORMAL)
+  resolvedAt     DateTime?
+  resolutionTime Int? // Minutes to resolve
 
   // UPL Protection (CRITICAL for legal compliance)
-  uplDisclaimerShown    Boolean  @default(false)
-  uplDisclaimerText     String?  @db.Text
-  containsLegalQuestion Boolean  @default(false)
+  uplDisclaimerShown    Boolean @default(false)
+  uplDisclaimerText     String? @db.Text
+  containsLegalQuestion Boolean @default(false)
 
   // Threading (for email/chat conversations)
-  parentInteractionId   String?
-  parentInteraction     CustomerInteraction? @relation("InteractionThread", fields: [parentInteractionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  childInteractions     CustomerInteraction[] @relation("InteractionThread")
+  parentInteractionId String?
+  parentInteraction   CustomerInteraction?  @relation("InteractionThread", fields: [parentInteractionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  childInteractions   CustomerInteraction[] @relation("InteractionThread")
 
   // Attachments (audio, transcripts, screenshots)
-  attachments           InteractionAttachment[]
+  attachments InteractionAttachment[]
 
   // Access Logging (for compliance)
-  accessLogs            InteractionAccessLog[]
+  accessLogs InteractionAccessLog[]
 
   // Metadata
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([customerId])
   @@index([orderId])
@@ -881,36 +881,36 @@ model CustomerInteraction {
 }
 
 model InteractionAttachment {
-  id            String   @id @default(cuid())
+  id            String              @id @default(cuid())
   interactionId String
   interaction   CustomerInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
 
-  fileType      AttachmentFileType
-  fileUrl       String   // S3 or cloud storage URL
-  fileName      String
-  fileSize      Int      // Bytes
-  mimeType      String
+  fileType AttachmentFileType
+  fileUrl  String // S3 or cloud storage URL
+  fileName String
+  fileSize Int // Bytes
+  mimeType String
 
   // For audio files
-  duration      Int?     // Seconds
-  transcriptUrl String?  // Link to transcript file
+  duration      Int? // Seconds
+  transcriptUrl String? // Link to transcript file
 
-  createdAt     DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([interactionId])
   @@map("interaction_attachments")
 }
 
 model InteractionAccessLog {
-  id             String   @id @default(cuid())
-  interactionId  String
-  interaction    CustomerInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User     @relation("InteractionAccessLogs", fields: [userId], references: [id])
-  action         AccessAction
-  ipAddress      String?
-  userAgent      String?
-  timestamp      DateTime @default(now())
+  id            String              @id @default(cuid())
+  interactionId String
+  interaction   CustomerInteraction @relation(fields: [interactionId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                @relation("InteractionAccessLogs", fields: [userId], references: [id])
+  action        AccessAction
+  ipAddress     String?
+  userAgent     String?
+  timestamp     DateTime            @default(now())
 
   @@index([interactionId])
   @@index([userId])
@@ -929,7 +929,7 @@ enum InteractionChannel {
 }
 
 enum InteractionDirection {
-  INBOUND  // Customer contacted us
+  INBOUND // Customer contacted us
   OUTBOUND // We contacted customer
 }
 
@@ -995,21 +995,21 @@ enum AttachmentFileType {
 // Phase 7 enhances existing risk scoring with Smart Forms and Liquid Glass UI
 
 model Feedback {
-  id          String   @id @default(cuid())
-  feedbackId  String   // e.g., "llc-formation-step-2", "checkout-payment"
-  positive    Boolean  // true = thumbs up, false = thumbs down
-  comment     String?  @db.Text // Optional comment if they said "No"
-  url         String   // What page they were on
+  id         String  @id @default(cuid())
+  feedbackId String // e.g., "llc-formation-step-2", "checkout-payment"
+  positive   Boolean // true = thumbs up, false = thumbs down
+  comment    String? @db.Text // Optional comment if they said "No"
+  url        String // What page they were on
 
   // User tracking (optional - can be null for guest users)
-  userId      String?
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Metadata
-  userAgent   String?  // Browser info
-  ipAddress   String?  // For spam detection
+  userAgent String? // Browser info
+  ipAddress String? // For spam detection
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([feedbackId])
   @@index([createdAt])
@@ -1024,25 +1024,25 @@ model Feedback {
 // ============================================================================
 
 model FormDraft {
-  id          String   @id @default(cuid())
-  userId      String   // Required - use session ID for guests
-  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String // Required - use session ID for guests
+  user   User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  formType    String   // 'DBA_REGISTRATION', 'LLC_FORMATION', 'ANNUAL_REPORT', etc.
-  formData    Json     // The actual form data
-  currentStep Int      @default(1) // Current step in wizard
-  totalSteps  Int      @default(5) // Total steps in wizard
+  formType    String // 'DBA_REGISTRATION', 'LLC_FORMATION', 'ANNUAL_REPORT', etc.
+  formData    Json // The actual form data
+  currentStep Int    @default(1) // Current step in wizard
+  totalSteps  Int    @default(5) // Total steps in wizard
 
   // Metadata for display
-  displayName String?  // e.g., "ABC Services" for DBA, "My LLC" for LLC
+  displayName String? // e.g., "ABC Services" for DBA, "My LLC" for LLC
 
   // Reminder settings
-  emailRemindersEnabled Boolean @default(false)
+  emailRemindersEnabled Boolean   @default(false)
   lastReminderSent      DateTime?
-  reminderCount         Int      @default(0)
+  reminderCount         Int       @default(0)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, formType])
   @@index([createdAt])
@@ -1057,17 +1057,106 @@ model FormDraft {
 // ============================================================================
 
 model DBADraft {
-  id          String   @id @default(cuid())
-  email       String   // Guest email address
-  formData    String   // JSON string of form data
-  token       String   @unique // Magic link token
-  expiresAt   DateTime // Link expiration (7 days)
+  id        String   @id @default(cuid())
+  email     String // Guest email address
+  formData  String // JSON string of form data
+  token     String   @unique // Magic link token
+  expiresAt DateTime // Link expiration (7 days)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([token])
   @@index([email])
   @@index([expiresAt])
   @@map("dba_drafts")
+}
+
+// ============================================================================
+// FLORIDA ENTITY DATA - BUSINESS NAME AVAILABILITY CHECKING
+// Purpose: Store Florida business entity data from Sunbiz.org for real-time name checking
+// ============================================================================
+
+// Florida Entity Data - For Business Name Availability Checking
+model FloridaEntity {
+  id               String    @id @default(cuid())
+  documentNumber   String    @unique // Sunbiz document number (e.g., L12000012345)
+  name             String // Legal business name
+  normalizedName   String // Normalized name for comparison (lowercase, no suffixes, etc.)
+  status           String // ACTIVE, ACT, INACTIVE, INACT, INACTIVE/UA, INACT/UA
+  entityType       String? // LLC, Corporation, LP, etc.
+  filingDate       DateTime?
+  state            String    @default("FL")
+  principalAddress String?
+  mailingAddress   String?
+  registeredAgent  String?
+  lastUpdated      DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("florida_entities")
+}
+
+// Fictitious Names (DBAs) - "Doing Business As" registrations
+model FictitiousName {
+  id               String    @id @default(cuid())
+  documentNumber   String    @unique // Sunbiz document number
+  fictitiousName   String // The DBA name
+  normalizedName   String // Normalized name for comparison
+  county           String? // County of registration
+  status           String // ACTIVE (A), EXPIRED (E), CANCELLED (C)
+  filingDate       DateTime?
+  expirationDate   DateTime?
+  cancellationDate DateTime?
+  principalAddress String?
+  mailingAddress   String?
+  numberOfOwners   Int       @default(0)
+  lastUpdated      DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("fictitious_names")
+}
+
+// General Partnerships
+model GeneralPartnership {
+  id               String    @id @default(cuid())
+  documentNumber   String    @unique // Sunbiz document number
+  name             String // Partnership name
+  normalizedName   String // Normalized name for comparison
+  status           String // Status code
+  filingDate       DateTime?
+  effectiveDate    DateTime?
+  cancellationDate DateTime?
+  expirationDate   DateTime?
+  principalAddress String?
+  mailingAddress   String?
+  numberOfPartners Int       @default(0)
+  lastUpdated      DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+
+  @@index([normalizedName])
+  @@index([status])
+  @@index([documentNumber])
+  @@map("general_partnerships")
+}
+
+// Entity Data Sync Tracking
+model EntityDataSync {
+  id               String    @id @default(cuid())
+  syncType         String // "full" or "incremental"
+  dataType         String // "corporate", "fictitious", "partnership"
+  status           String // "in_progress", "completed", "failed"
+  recordsProcessed Int       @default(0)
+  recordsAdded     Int       @default(0)
+  recordsUpdated   Int       @default(0)
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
+  errorMessage     String?
+
+  @@map("entity_data_syncs")
 }

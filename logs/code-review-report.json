@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-11-14T04:00:11.041Z",
+  "sections": [
+    {
+      "name": "TypeScript Errors",
+      "count": 93,
+      "issues": [
+        ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r",
+        "prisma/seed-notices.ts(112,7): error TS2322: Type '{ userId: string; type: string; priority: string; title: string; message: string; filingId: string | undefined; actionUrl: string | null; actionLabel: string; } | { userId: string; type: string; ... 5 more ...; filingId?: undefined; }' is not assignable to type '(Without<NoticeCreateInput, NoticeUncheckedCreateInput> & NoticeUncheckedCreateInput) | (Without<...> & NoticeCreateInput)'.\r",
+        "scripts/import-florida-entities.ts(150,29): error TS2339: Property 'dataSync' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
+        "scripts/list-orders.ts(41,24): error TS18047: 'order.user' is possibly 'null'.\r",
+        "scripts/list-orders.ts(41,48): error TS18047: 'order.user' is possibly 'null'.\r",
+        "scripts/list-orders.ts(42,14): error TS18047: 'order.user' is possibly 'null'.\r",
+        "scripts/list-orders.ts(42,38): error TS18047: 'order.user' is possibly 'null'.\r",
+        "scripts/list-orders.ts(43,11): error TS18047: 'order.user' is possibly 'null'.\r",
+        "src/app/admin/entities/[id]/page.tsx(48,57): error TS2339: Property 'type' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; clientId: string | null; businessEntityId: string | null; state: string; street: string; street2: string | null; city: string; zipCode: string; country: string; addressType: AddressType; registeredAgentId: string | null; }'.\r",
+        "src/app/admin/entities/[id]/page.tsx(49,55): error TS2339: Property 'type' does not exist on type '{ id: string; createdAt: Date; updatedAt: Date; clientId: string | null; businessEntityId: string | null; state: string; street: string; street2: string | null; city: string; zipCode: string; country: string; addressType: AddressType; registeredAgentId: string | null; }'.\r",
+        "src/app/admin/page.tsx(252,43): error TS2339: Property 'status' does not exist on type '{ user: { email: string; firstName: string | null; lastName: string | null; } | null; } & { id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; ... 34 more ...; packageId: string | null; }'.\r",
+        "src/app/admin/page.tsx(253,38): error TS2339: Property 'status' does not exist on type '{ user: { email: string; firstName: string | null; lastName: string | null; } | null; } & { id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; ... 34 more ...; packageId: string | null; }'.\r",
+        "src/app/admin/page.tsx(255,32): error TS2339: Property 'status' does not exist on type '{ user: { email: string; firstName: string | null; lastName: string | null; } | null; } & { id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; ... 34 more ...; packageId: string | null; }'.\r",
+        "src/app/admin/page.tsx(265,32): error TS2339: Property 'totalAmount' does not exist on type '{ user: { email: string; firstName: string | null; lastName: string | null; } | null; } & { id: string; userId: string | null; createdAt: Date; updatedAt: Date; tosAcceptedAt: Date | null; ... 34 more ...; packageId: string | null; }'.\r",
+        "src/app/api/admin/entities/[id]/route.ts(177,11): error TS2353: Object literal may only specify known properties, and 'dissolutionDate' does not exist in type '(Without<BusinessEntityUpdateInput, BusinessEntityUncheckedUpdateInput> & BusinessEntityUncheckedUpdateInput) | (Without<...> & BusinessEntityUpdateInput)'.\r",
+        "src/app/api/auth/send-verification/route.ts(20,18): error TS2339: Property 'verificationToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
+        "src/app/api/auth/send-verification/route.ts(31,18): error TS2339: Property 'verificationToken' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
+        "src/app/api/auth/send-verification/route.ts(60,76): error TS2304: Cannot find name 'session'.\r",
+        "src/app/api/auth/send-verification/route.ts(66,23): error TS2304: Cannot find name 'session'.\r",
+        "src/app/api/auth/send-verification/route.ts(68,20): error TS2304: Cannot find name 'expiresAt'.\r"
+      ]
+    },
+    {
+      "name": "ESLint Issues",
+      "errors": 1102,
+      "warnings": 2009
+    },
+    {
+      "name": "Security Vulnerabilities",
+      "critical": 0,
+      "high": 0,
+      "moderate": 2,
+      "low": 2
+    }
+  ],
+  "criticalIssues": [
+    "Found 93 TypeScript type errors",
+    "Found 1102 ESLint errors"
+  ],
+  "warnings": [
+    "Found 2009 ESLint warnings"
+  ],
+  "suggestions": [
+    "23 packages have updates available"
+  ],
+  "summary": {
+    "totalCriticalIssues": 2,
+    "totalWarnings": 1,
+    "totalSuggestions": 1,
+    "overallHealth": "FAIR"
+  }
+}
