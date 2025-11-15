@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
         recommendation: riskAssessment.recommendation,
         aiReasoning: riskAssessment.reasoning,
         aiModel: 'gpt-4-turbo',
-        riskFactors: riskAssessment.riskFactors,
+        riskFactors: riskAssessment.riskFactors as any,
         customerEmail: user.email,
         customerName: customerData.name,
         customerPhone: user.phone,

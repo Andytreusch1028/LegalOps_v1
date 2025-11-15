@@ -1,35 +1,24 @@
 {
-  "timestamp": "2025-11-15T01:53:49.249Z",
+  "timestamp": "2025-11-15T02:26:28.555Z",
   "sections": [
     {
       "name": "TypeScript Errors",
-      "count": 19,
+      "count": 8,
       "issues": [
         ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r",
         "prisma/seed-notices.ts(112,7): error TS2322: Type '{ userId: string; type: string; priority: string; title: string; message: string; filingId: string | undefined; actionUrl: string | null; actionLabel: string; } | { userId: string; type: string; ... 5 more ...; filingId?: undefined; }' is not assignable to type '(Without<NoticeCreateInput, NoticeUncheckedCreateInput> & NoticeUncheckedCreateInput) | (Without<...> & NoticeCreateInput)'.\r",
-        "src/app/api/filing/approve/route.ts(59,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
-        "src/app/api/filing/approve/route.ts(79,20): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
-        "src/app/api/filing/pending/route.ts(32,34): error TS2339: Property 'filingSubmission' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.\r",
         "src/app/api/filings/annual-report/route.ts(58,7): error TS2322: Type 'Omit<Filing, \"id\" | \"createdAt\" | \"updatedAt\">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.\r",
-        "src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | null; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.\r",
-        "src/app/api/orders/create-with-risk-check/route.ts(256,9): error TS2322: Type 'RiskFactor[]' is not assignable to type 'JsonNull | InputJsonValue'.\r",
+        "src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | undefined; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.\r",
         "src/app/orders/[orderId]/ein-application/page.tsx(206,13): error TS2322: Type '{ formData: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & EINApplicationFormProps'.\r",
         "src/app/orders/[orderId]/operating-agreement/page.tsx(206,13): error TS2322: Type '{ formData: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & OperatingAgreementFormProps'.\r",
         "src/app/services/[slug]/page.tsx(393,25): error TS2719: Type '(pkg: Package) => void' is not assignable to type '(pkg: Package) => void'. Two different types with this name exist, but they are unrelated.\r",
-        "src/components/HealthScoreModal.tsx(385,38): error TS2503: Cannot find namespace 'JSX'.\r",
-        "src/lib/validation/schemas/business.ts(26,6): error TS2339: Property 'min' does not exist on type 'ZodPipe<ZodString, ZodTransform<string, string>>'.\r",
-        "src/lib/validation/schemas/llc-formation.ts(180,16): error TS2339: Property 'errors' does not exist on type 'ZodError<unknown>'.\r",
-        "src/lib/validation/schemas/llc-formation.ts(180,31): error TS7006: Parameter 'error' implicitly has an 'any' type.\r",
-        "src/lib/validation/schemas/llc-formation.ts(201,16): error TS2339: Property 'errors' does not exist on type 'ZodError<{ businessName: string; businessNameAlternative: string | undefined; businessPurpose: string | undefined; businessAddress: string; businessCity: string; businessState: string; businessZip: string; ... 10 more ...; rushProcessing?: boolean | undefined; }>'.\r",
-        "src/lib/validation/schemas/llc-formation.ts(201,31): error TS7006: Parameter 'error' implicitly has an 'any' type.\r",
-        "src/utils/service-routing.ts(20,3): error TS2322: Type 'null' is not assignable to type 'string'.\r",
-        "src/utils/service-routing.ts(44,3): error TS2322: Type 'null' is not assignable to type 'string'.\r"
+        "src/components/HealthScoreModal.tsx(385,38): error TS2503: Cannot find namespace 'JSX'.\r"
       ]
     },
     {
       "name": "ESLint Issues",
-      "errors": 1097,
-      "warnings": 2010
+      "errors": 1101,
+      "warnings": 2012
     },
     {
       "name": "Security Vulnerabilities",
@@ -40,11 +29,11 @@
     }
   ],
   "criticalIssues": [
-    "Found 19 TypeScript type errors",
-    "Found 1097 ESLint errors"
+    "Found 8 TypeScript type errors",
+    "Found 1101 ESLint errors"
   ],
   "warnings": [
-    "Found 2010 ESLint warnings"
+    "Found 2012 ESLint warnings"
   ],
   "suggestions": [
     "23 packages have updates available"

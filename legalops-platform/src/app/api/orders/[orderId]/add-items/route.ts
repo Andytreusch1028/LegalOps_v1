@@ -75,7 +75,7 @@ export async function POST(
         unitPrice: item.price,
         totalPrice: item.price,
         requiresAdditionalData: dataRequirements?.requiresAdditionalData || false,
-        dataCollectionFormType: dataRequirements?.dataCollectionFormType || null,
+        dataCollectionFormType: dataRequirements?.dataCollectionFormType || undefined,
       };
     });
 

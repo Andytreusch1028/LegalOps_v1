@@ -177,11 +177,11 @@ export function validateLLCFormationStep(
   }
   
   const errors: Record<string, string> = {};
-  result.error.errors.forEach(error => {
+  result.error.issues.forEach((error: any) => {
     const path = error.path.join('.');
     errors[path] = error.message;
   });
-  
+
   return { success: false, errors };
 }
 
@@ -192,13 +192,13 @@ export function validateLLCFormationComplete(
   data: any
 ): { success: boolean; errors: Record<string, string>; data?: LLCFormationCompleteData } {
   const result = llcFormationCompleteSchema.safeParse(data);
-  
+
   if (result.success) {
     return { success: true, errors: {}, data: result.data };
   }
-  
+
   const errors: Record<string, string> = {};
-  result.error.errors.forEach(error => {
+  result.error.issues.forEach((error: any) => {
     const path = error.path.join('.');
     errors[path] = error.message;
   });

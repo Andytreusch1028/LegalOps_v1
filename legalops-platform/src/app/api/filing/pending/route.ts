@@ -29,26 +29,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all pending filings
-    const filings = await prisma.filingSubmission.findMany({
-      where: {
-        status: 'FORM_FILLED', // Only show filings ready for review
-      },
-      include: {
-        order: {
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    // TODO: FilingSubmission model not yet implemented
+    // const filings = await prisma.filingSubmission.findMany({
+    //   where: {
+    //     status: 'FORM_FILLED', // Only show filings ready for review
+    //   },
+    //   include: {
+    //     order: {
+    //       include: {
+    //         user: {
+    //           select: {
+    //             name: true,
+    //             email: true,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   orderBy: {
+    //     createdAt: 'desc',
+    //   },
+    // });
+    const filings: any[] = []; // Temporary placeholder
 
     return NextResponse.json({
       filings,

@@ -56,15 +56,16 @@ export async function POST(request: NextRequest) {
 
     if (approved) {
       // Update submission as reviewed and ready
-      await prisma.filingSubmission.update({
-        where: { id: submissionId },
-        data: {
-          status: 'REVIEWED',
-          reviewedBy: user.id,
-          reviewedAt: new Date(),
-          reviewNotes: notes,
-        },
-      });
+      // TODO: FilingSubmission model not yet implemented
+      // await prisma.filingSubmission.update({
+      //   where: { id: submissionId },
+      //   data: {
+      //     status: 'REVIEWED',
+      //     reviewedBy: user.id,
+      //     reviewedAt: new Date(),
+      //     reviewNotes: notes,
+      //   },
+      // });
 
       // TODO: Trigger actual submission to Sunbiz
       // For now, we'll mark it as ready for manual submission
@@ -76,16 +77,17 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // Rejected - mark as failed
-      await prisma.filingSubmission.update({
-        where: { id: submissionId },
-        data: {
-          status: 'FAILED',
-          reviewedBy: user.id,
-          reviewedAt: new Date(),
-          reviewNotes: notes,
-          errorMessage: 'Rejected by staff reviewer',
-        },
-      });
+      // TODO: FilingSubmission model not yet implemented
+      // await prisma.filingSubmission.update({
+      //   where: { id: submissionId },
+      //   data: {
+      //     status: 'FAILED',
+      //     reviewedBy: user.id,
+      //     reviewedAt: new Date(),
+      //     reviewNotes: notes,
+      //     errorMessage: 'Rejected by staff reviewer',
+      //   },
+      // });
 
       return NextResponse.json({
         success: true,

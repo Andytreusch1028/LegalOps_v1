@@ -22,8 +22,9 @@ export const businessImportSchema = z.object({
  * Business Search Form Schema
  */
 export const businessSearchSchema = z.object({
-  query: requiredStringSchema('Search query')
-    .min(2, 'Search query must be at least 2 characters'),
+  query: z.string()
+    .min(2, 'Search query must be at least 2 characters')
+    .transform(val => val.trim()),
 });
 
 /**

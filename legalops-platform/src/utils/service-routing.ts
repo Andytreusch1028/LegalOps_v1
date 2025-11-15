@@ -8,7 +8,7 @@
 /**
  * Map of service types to their dedicated form page paths
  */
-export const SERVICE_FORM_ROUTES: Record<string, string> = {
+export const SERVICE_FORM_ROUTES: Record<string, string | null> = {
   // Formation Services
   LLC_FORMATION: '/services/llc-formation',
   CORP_FORMATION: '/services/corporation-formation',
