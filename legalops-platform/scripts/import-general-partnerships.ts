@@ -137,7 +137,7 @@ async function importFromFile(filePath: string): Promise<void> {
 
   let recordsProcessed = 0;
   let recordsAdded = 0;
-  let recordsUpdated = 0;
+  const recordsUpdated = 0;
   let errors = 0;
 
   try {

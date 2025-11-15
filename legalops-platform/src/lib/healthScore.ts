@@ -300,7 +300,7 @@ function getNthWeekdayOfMonth(year: number, month: number, dayOfWeek: number, oc
   const firstDayOfWeek = firstDay.getDay();
 
   // Calculate the first occurrence of the target day
-  let firstOccurrence = 1 + ((dayOfWeek - firstDayOfWeek + 7) % 7);
+  const firstOccurrence = 1 + ((dayOfWeek - firstDayOfWeek + 7) % 7);
 
   // Calculate the Nth occurrence
   const targetDate = firstOccurrence + (occurrence - 1) * 7;
