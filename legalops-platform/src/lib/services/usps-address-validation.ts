@@ -54,6 +54,41 @@ export interface USPSMetadata {
   returnText?: string;
 }
 
+// USPS API v3 Response Types
+interface USPSCorrection {
+  text?: string;
+}
+
+interface USPSAPIResponse {
+  error?: {
+    message?: string;
+  };
+  errors?: Array<{
+    message?: string;
+  }>;
+  firm?: string;
+  address?: {
+    secondaryAddress?: string;
+    streetAddress?: string;
+    city?: string;
+    state?: string;
+    ZIPCode?: string;
+    ZIPPlus4?: string;
+    urbanization?: string;
+  };
+  additionalInfo?: {
+    deliveryPoint?: string;
+    carrierRoute?: string;
+    DPVConfirmation?: 'Y' | 'D' | 'S' | 'N';
+    DPVCMRA?: 'Y' | 'N';
+    business?: 'Y' | 'N';
+    centralDeliveryPoint?: 'Y' | 'N';
+    vacant?: 'Y' | 'N';
+  };
+  corrections?: USPSCorrection[];
+  matches?: unknown[];
+}
+
 /**
  * Address Validation Disclaimer Acceptance Record
  * CRITICAL: Must be preserved in customer data file for legal protection
@@ -247,7 +282,7 @@ export class USPSAddressValidationService {
   /**
    * Parse USPS v3 API response
    */
-  private parseAPIResponse(data: any, original: AddressInput): AddressValidationResult {
+  private parseAPIResponse(data: USPSAPIResponse, original: AddressInput): AddressValidationResult {
     try {
       // Check for error in response
       if (data.error || data.errors) {
@@ -281,14 +316,14 @@ export class USPSAddressValidationService {
 
       // Extract metadata
       const metadata: USPSMetadata = {
-        dpvConfirmation: additionalInfo.DPVConfirmation as any,
-        dpvCMRA: additionalInfo.DPVCMRA as any,
+        dpvConfirmation: additionalInfo.DPVConfirmation,
+        dpvCMRA: additionalInfo.DPVCMRA,
         dpvFootnotes: undefined,
-        business: additionalInfo.business as any,
-        centralDeliveryPoint: additionalInfo.centralDeliveryPoint as any,
-        vacant: additionalInfo.vacant as any,
+        business: additionalInfo.business,
+        centralDeliveryPoint: additionalInfo.centralDeliveryPoint,
+        vacant: additionalInfo.vacant,
         footnotes: undefined,
-        returnText: corrections.map((c: any) => c.text).join(' ')
+        returnText: corrections.map((c) => c.text).filter(Boolean).join(' ')
       };
 
       // Determine validation status based on DPV confirmation and match codes
@@ -301,7 +336,7 @@ export class USPSAddressValidationService {
       const warnings: string[] = [];
 
       // Add correction messages
-      corrections.forEach((correction: any) => {
+      corrections.forEach((correction) => {
         if (correction.text) {
           warnings.push(correction.text);
         }
