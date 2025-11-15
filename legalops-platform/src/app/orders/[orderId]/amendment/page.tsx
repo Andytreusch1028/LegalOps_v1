@@ -5,8 +5,19 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft } from 'lucide-react';
 import EntityInformationUpdateForm from '@/components/forms/EntityInformationUpdateForm';
+import { Prisma } from '@/generated/prisma';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+// Type for Order with orderItems relation
+type OrderWithItems = {
+  id: string;
+  orderItems: Array<{
+    id: string;
+    serviceType: string;
+    additionalData?: Prisma.JsonValue;
+  }>;
+};
 
 export default function AmendmentPage() {
   const params = useParams();
@@ -14,8 +25,8 @@ export default function AmendmentPage() {
   const { data: session, status } = useSession();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
 
@@ -38,12 +49,13 @@ export default function AmendmentPage() {
         setOrder(data);
 
         const amendmentItem = data.orderItems.find(
-          (item: any) => item.serviceType === 'ENTITY_INFORMATION_UPDATE'
+          (item: { serviceType: string }) => item.serviceType === 'ENTITY_INFORMATION_UPDATE'
         );
 
         if (amendmentItem?.additionalData) {
-          setFormData(amendmentItem.additionalData);
-          lastSavedDataRef.current = JSON.stringify(amendmentItem.additionalData);
+          const additionalData = amendmentItem.additionalData as Record<string, unknown>;
+          setFormData(additionalData);
+          lastSavedDataRef.current = JSON.stringify(additionalData);
         }
       } catch (error) {
         console.error('Error fetching order:', error);
