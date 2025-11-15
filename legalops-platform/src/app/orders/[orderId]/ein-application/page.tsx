@@ -203,7 +203,7 @@ export default function EINApplicationPage() {
 
           {/* EIN Application Form */}
           <EINApplicationForm
-            formData={formData}
+            initialData={formData}
             onChange={setFormData}
           />
 

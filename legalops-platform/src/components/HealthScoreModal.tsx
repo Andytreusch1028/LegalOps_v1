@@ -382,7 +382,7 @@ function ScoreCategory({
   score: number;
   maxScore: number;
   factors: HealthFactor[];
-  getFactorIcon: (status: string) => JSX.Element | null;
+  getFactorIcon: (status: string) => React.JSX.Element | null;
 }) {
   const percentage = (score / maxScore) * 100;
   const barColor = percentage >= 90 ? '#059669' : percentage >= 75 ? '#0284c7' : percentage >= 60 ? '#d97706' : '#dc2626';

@@ -203,7 +203,7 @@ export default function OperatingAgreementPage() {
 
           {/* Operating Agreement Form */}
           <OperatingAgreementForm
-            formData={formData}
+            initialData={formData}
             onChange={setFormData}
           />
 
