@@ -1,0 +1,654 @@
+{
+  "totalErrors": 193,
+  "filesByPriority": [
+    {
+      "file": "src/app/api/filing/submit/route.ts",
+      "errorCount": 18,
+      "lines": [
+        54,
+        71,
+        74,
+        87,
+        92,
+        98,
+        99,
+        103,
+        104,
+        112,
+        113,
+        119,
+        120,
+        124,
+        127,
+        128,
+        129,
+        148
+      ]
+    },
+    {
+      "file": "src/app/dashboard/businesses/[id]/page.tsx",
+      "errorCount": 9,
+      "lines": [
+        53,
+        58,
+        63,
+        303,
+        331,
+        356,
+        356,
+        381,
+        400
+      ]
+    },
+    {
+      "file": "src/lib/services/usps-address-validation.ts",
+      "errorCount": 8,
+      "lines": [
+        250,
+        284,
+        285,
+        287,
+        288,
+        289,
+        291,
+        304
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/amendment/page.tsx",
+      "errorCount": 7,
+      "lines": [
+        17,
+        18,
+        41,
+        73,
+        111,
+        143,
+        147
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/dissolution/page.tsx",
+      "errorCount": 7,
+      "lines": [
+        17,
+        18,
+        41,
+        73,
+        111,
+        143,
+        147
+      ]
+    },
+    {
+      "file": "src/hooks/useSmartForm.ts",
+      "errorCount": 7,
+      "lines": [
+        20,
+        31,
+        43,
+        133,
+        144,
+        157,
+        182
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/certificate-of-status/page.tsx",
+      "errorCount": 6,
+      "lines": [
+        17,
+        18,
+        41,
+        73,
+        111,
+        143
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/corporate-bylaws/page.tsx",
+      "errorCount": 6,
+      "lines": [
+        17,
+        18,
+        43,
+        76,
+        114,
+        146
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/ein-application/page.tsx",
+      "errorCount": 5,
+      "lines": [
+        15,
+        16,
+        34,
+        69,
+        105
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/name-reservation/page.tsx",
+      "errorCount": 5,
+      "lines": [
+        17,
+        18,
+        41,
+        73,
+        111
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/operating-agreement/page.tsx",
+      "errorCount": 5,
+      "lines": [
+        15,
+        16,
+        34,
+        69,
+        105
+      ]
+    },
+    {
+      "file": "src/app/services/[slug]/page.tsx",
+      "errorCount": 5,
+      "lines": [
+        61,
+        62,
+        90,
+        103,
+        393
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/complete-documents/page.tsx",
+      "errorCount": 4,
+      "lines": [
+        18,
+        39,
+        134,
+        142
+      ]
+    },
+    {
+      "file": "src/components/forms/OperatingAgreementForm.tsx",
+      "errorCount": 4,
+      "lines": [
+        266,
+        290,
+        346,
+        365
+      ]
+    },
+    {
+      "file": "src/lib/validation/schemas/llc-formation.ts",
+      "errorCount": 4,
+      "lines": [
+        149,
+        180,
+        192,
+        201
+      ]
+    },
+    {
+      "file": "src/app/admin/orders/[id]/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        460,
+        551,
+        571
+      ]
+    },
+    {
+      "file": "src/app/api/auth/verify-email/route.ts",
+      "errorCount": 3,
+      "lines": [
+        17,
+        31,
+        60
+      ]
+    },
+    {
+      "file": "src/app/api/orders/create-with-risk-check/route.ts",
+      "errorCount": 3,
+      "lines": [
+        124,
+        189,
+        256
+      ]
+    },
+    {
+      "file": "src/app/dashboard/customer/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        173,
+        182,
+        250
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/business-amendment/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        13,
+        29,
+        54
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/entity-information-update/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        13,
+        29,
+        51
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/officer-address-update/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        13,
+        29,
+        54
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/registered-agent-change/page.tsx",
+      "errorCount": 3,
+      "lines": [
+        13,
+        29,
+        54
+      ]
+    },
+    {
+      "file": "src/components/DocumentWizard.tsx",
+      "errorCount": 3,
+      "lines": [
+        18,
+        20,
+        21
+      ]
+    },
+    {
+      "file": "src/lib/healthScore.ts",
+      "errorCount": 3,
+      "lines": [
+        314,
+        364,
+        372
+      ]
+    },
+    {
+      "file": "src/lib/helpers/create-approval-notice.ts",
+      "errorCount": 3,
+      "lines": [
+        75,
+        118,
+        138
+      ]
+    },
+    {
+      "file": "src/app/admin/risk/[id]/page.tsx",
+      "errorCount": 2,
+      "lines": [
+        47,
+        409
+      ]
+    },
+    {
+      "file": "src/app/api/filings/annual-report/route.ts",
+      "errorCount": 2,
+      "lines": [
+        40,
+        58
+      ]
+    },
+    {
+      "file": "src/app/api/health-score/[businessId]/route.ts",
+      "errorCount": 2,
+      "lines": [
+        65,
+        129
+      ]
+    },
+    {
+      "file": "src/app/dashboard/services/reinstatement/page.tsx",
+      "errorCount": 2,
+      "lines": [
+        34,
+        76
+      ]
+    },
+    {
+      "file": "src/app/design-system/icons/page.tsx",
+      "errorCount": 2,
+      "lines": [
+        38,
+        83
+      ]
+    },
+    {
+      "file": "src/app/orders/[orderId]/annual-report/page.tsx",
+      "errorCount": 2,
+      "lines": [
+        13,
+        32
+      ]
+    },
+    {
+      "file": "src/app/test-risk-scoring/page.tsx",
+      "errorCount": 2,
+      "lines": [
+        7,
+        256
+      ]
+    },
+    {
+      "file": "src/components/forms/CertificateOfStatusForm.tsx",
+      "errorCount": 2,
+      "lines": [
+        172,
+        194
+      ]
+    },
+    {
+      "file": "src/components/phase7/FeedbackBeacon.tsx",
+      "errorCount": 2,
+      "lines": [
+        200,
+        201
+      ]
+    },
+    {
+      "file": "src/lib/sunbiz-agent.ts",
+      "errorCount": 2,
+      "lines": [
+        85,
+        384
+      ]
+    },
+    {
+      "file": "prisma/seed-notices.ts",
+      "errorCount": 1,
+      "lines": [
+        112
+      ]
+    },
+    {
+      "file": "src/app/admin/form-drafts/[id]/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        41
+      ]
+    },
+    {
+      "file": "src/app/api/admin/customers/[id]/route.ts",
+      "errorCount": 1,
+      "lines": [
+        107
+      ]
+    },
+    {
+      "file": "src/app/api/admin/customers/route.ts",
+      "errorCount": 1,
+      "lines": [
+        33
+      ]
+    },
+    {
+      "file": "src/app/api/admin/entities/[id]/route.ts",
+      "errorCount": 1,
+      "lines": [
+        96
+      ]
+    },
+    {
+      "file": "src/app/api/admin/entities/route.ts",
+      "errorCount": 1,
+      "lines": [
+        34
+      ]
+    },
+    {
+      "file": "src/app/api/auth/register/route.ts",
+      "errorCount": 1,
+      "lines": [
+        59
+      ]
+    },
+    {
+      "file": "src/app/api/businesses/route.ts",
+      "errorCount": 1,
+      "lines": [
+        52
+      ]
+    },
+    {
+      "file": "src/app/api/dba/get-draft/[token]/route.ts",
+      "errorCount": 1,
+      "lines": [
+        56
+      ]
+    },
+    {
+      "file": "src/app/api/dba/save-draft-authenticated/route.ts",
+      "errorCount": 1,
+      "lines": [
+        143
+      ]
+    },
+    {
+      "file": "src/app/api/dba/save-draft/route.ts",
+      "errorCount": 1,
+      "lines": [
+        72
+      ]
+    },
+    {
+      "file": "src/app/api/feedback/route.ts",
+      "errorCount": 1,
+      "lines": [
+        36
+      ]
+    },
+    {
+      "file": "src/app/api/filing/approve/route.ts",
+      "errorCount": 1,
+      "lines": [
+        39
+      ]
+    },
+    {
+      "file": "src/app/api/filing/pending/route.ts",
+      "errorCount": 1,
+      "lines": [
+        53
+      ]
+    },
+    {
+      "file": "src/app/api/filings/[id]/request-revision/route.ts",
+      "errorCount": 1,
+      "lines": [
+        116
+      ]
+    },
+    {
+      "file": "src/app/api/form-drafts/delete/route.ts",
+      "errorCount": 1,
+      "lines": [
+        71
+      ]
+    },
+    {
+      "file": "src/app/api/form-drafts/list/route.ts",
+      "errorCount": 1,
+      "lines": [
+        52
+      ]
+    },
+    {
+      "file": "src/app/api/form-drafts/load/route.ts",
+      "errorCount": 1,
+      "lines": [
+        63
+      ]
+    },
+    {
+      "file": "src/app/api/form-drafts/save/route.ts",
+      "errorCount": 1,
+      "lines": [
+        74
+      ]
+    },
+    {
+      "file": "src/app/api/internal/alert-staff-error/route.ts",
+      "errorCount": 1,
+      "lines": [
+        75
+      ]
+    },
+    {
+      "file": "src/app/api/orders/[orderId]/add-items/route.ts",
+      "errorCount": 1,
+      "lines": [
+        84
+      ]
+    },
+    {
+      "file": "src/app/api/orders/guest/route.ts",
+      "errorCount": 1,
+      "lines": [
+        117
+      ]
+    },
+    {
+      "file": "src/app/api/risk/assess/route.ts",
+      "errorCount": 1,
+      "lines": [
+        91
+      ]
+    },
+    {
+      "file": "src/app/api/risk/high-risk-orders/route.ts",
+      "errorCount": 1,
+      "lines": [
+        18
+      ]
+    },
+    {
+      "file": "src/app/checkout-example/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        10
+      ]
+    },
+    {
+      "file": "src/app/checkout/create-account/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        174
+      ]
+    },
+    {
+      "file": "src/app/checkout/guest/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        90
+      ]
+    },
+    {
+      "file": "src/app/dashboard/filings/[id]/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        57
+      ]
+    },
+    {
+      "file": "src/app/dashboard/filings/annual-report/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        137
+      ]
+    },
+    {
+      "file": "src/app/dashboard/staff/filings/[id]/review/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        25
+      ]
+    },
+    {
+      "file": "src/app/services/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        51
+      ]
+    },
+    {
+      "file": "src/app/test-address-validation/page.tsx",
+      "errorCount": 1,
+      "lines": [
+        22
+      ]
+    },
+    {
+      "file": "src/components/AddressValidationModal.tsx",
+      "errorCount": 1,
+      "lines": [
+        77
+      ]
+    },
+    {
+      "file": "src/components/FictitiousNameWizard.tsx",
+      "errorCount": 1,
+      "lines": [
+        505
+      ]
+    },
+    {
+      "file": "src/components/MyBusinessesClient.tsx",
+      "errorCount": 1,
+      "lines": [
+        44
+      ]
+    },
+    {
+      "file": "src/components/forms/AmendmentForm.tsx",
+      "errorCount": 1,
+      "lines": [
+        100
+      ]
+    },
+    {
+      "file": "src/components/forms/BusinessAmendmentForm.tsx",
+      "errorCount": 1,
+      "lines": [
+        115
+      ]
+    },
+    {
+      "file": "src/components/forms/EINApplicationForm.tsx",
+      "errorCount": 1,
+      "lines": [
+        66
+      ]
+    },
+    {
+      "file": "src/components/forms/NameReservationForm.tsx",
+      "errorCount": 1,
+      "lines": [
+        151
+      ]
+    },
+    {
+      "file": "src/types/entities.ts",
+      "errorCount": 1,
+      "lines": [
+        233
+      ]
+    }
+  ]
+}
