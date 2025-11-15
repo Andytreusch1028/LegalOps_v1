@@ -45,22 +45,29 @@ interface Filing {
   createdAt: string;
 }
 
+interface HealthFactor {
+  name: string;
+  impact: number;
+  status: 'good' | 'warning' | 'critical';
+  description: string;
+}
+
 interface HealthScoreBreakdown {
   totalScore: number;
   compliance: {
     score: number;
     maxScore: number;
-    factors: any[];
+    factors: HealthFactor[];
   };
   documents: {
     score: number;
     maxScore: number;
-    factors: any[];
+    factors: HealthFactor[];
   };
   payments: {
     score: number;
     maxScore: number;
-    factors: any[];
+    factors: HealthFactor[];
   };
   recommendations: string[];
 }
@@ -300,7 +307,7 @@ export default function BusinessDetailPage() {
         {/* Quick Actions */}
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
           {/* CRITICAL: Reinstatement (if revoked and can be reinstated) - ONLY show this, nothing else */}
-          {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Administratively Dissolved') ? (
+          {healthScore && healthScore.compliance.factors.some((f) => f.name === 'Administratively Dissolved') ? (
             <Link
               href={`/dashboard/services/reinstatement?businessId=${businessId}`}
               style={{
@@ -328,7 +335,7 @@ export default function BusinessDetailPage() {
               {/* Show normal actions only if NOT revoked */}
 
               {/* CRITICAL: Imminent Revocation */}
-              {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Imminent Revocation Risk') && (
+              {healthScore && healthScore.compliance.factors.some((f) => f.name === 'Imminent Revocation Risk') && (
                 <Link
                   href="/dashboard/filings/annual-report"
                   style={{
@@ -353,7 +360,7 @@ export default function BusinessDetailPage() {
               )}
 
               {/* CRITICAL: Annual Report Late */}
-              {healthScore && healthScore.compliance.factors.some((f: any) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue') && !healthScore.compliance.factors.some((f: any) => f.name === 'Imminent Revocation Risk') && (
+              {healthScore && healthScore.compliance.factors.some((f) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue') && !healthScore.compliance.factors.some((f) => f.name === 'Imminent Revocation Risk') && (
                 <Link
                   href="/dashboard/filings/annual-report"
                   style={{
@@ -378,7 +385,7 @@ export default function BusinessDetailPage() {
               )}
 
               {/* Normal: File Annual Report */}
-              {healthScore && !healthScore.compliance.factors.some((f: any) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue' || f.name === 'Imminent Revocation Risk') && (
+              {healthScore && !healthScore.compliance.factors.some((f) => f.name === 'Annual Report Late' || f.name === 'Annual Report Overdue' || f.name === 'Imminent Revocation Risk') && (
                 <Link
                   href="/dashboard/filings/annual-report"
                   style={{
@@ -397,7 +404,7 @@ export default function BusinessDetailPage() {
               )}
 
               {/* Upsell: Apply for EIN if missing */}
-              {healthScore && healthScore.documents.factors.some((f: any) => f.name === 'Missing EIN') && (
+              {healthScore && healthScore.documents.factors.some((f) => f.name === 'Missing EIN') && (
                 <Link
                   href="/dashboard/services"
                   style={{
