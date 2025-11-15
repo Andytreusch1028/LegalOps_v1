@@ -10,7 +10,7 @@ export default function OfficerAddressUpdatePage() {
   const router = useRouter();
   const orderId = params.orderId as string;
 
-  const [formData, setFormData] = useState<any>(null);
+  const [formData, setFormData] = useState<Record<string, unknown> | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [preFilledBusinessName, setPreFilledBusinessName] = useState<string>('');
   const [preFilledEntityType, setPreFilledEntityType] = useState<'LLC' | 'CORPORATION'>('LLC');
@@ -26,7 +26,7 @@ export default function OfficerAddressUpdatePage() {
           const order = await response.json();
           
           const updateItem = order.items?.find(
-            (item: any) => item.serviceType === 'OFFICER_ADDRESS_UPDATE'
+            (item: { serviceType: string }) => item.serviceType === 'OFFICER_ADDRESS_UPDATE'
           );
 
           if (updateItem?.formData) {

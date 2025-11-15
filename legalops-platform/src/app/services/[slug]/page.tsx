@@ -58,8 +58,8 @@ export default function ServiceDetailPage() {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showUpsell, setShowUpsell] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<any>(null);
-  const [preservedFormData, setPreservedFormData] = useState<any>(null);
+  const [pendingFormData, setPendingFormData] = useState<Record<string, unknown> | null>(null);
+  const [preservedFormData, setPreservedFormData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const fetchService = async () => {

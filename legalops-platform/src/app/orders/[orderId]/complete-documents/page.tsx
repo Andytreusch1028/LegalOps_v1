@@ -8,6 +8,7 @@ import DocumentWizard, { WizardStep } from '@/components/DocumentWizard';
 import OperatingAgreementForm from '@/components/forms/OperatingAgreementForm';
 import EINApplicationForm from '@/components/forms/EINApplicationForm';
 import UPLDisclaimer from '@/components/UPLDisclaimer';
+import { Prisma } from '@/generated/prisma';
 
 interface OrderItem {
   id: string;
@@ -15,7 +16,7 @@ interface OrderItem {
   description: string;
   requiresAdditionalData: boolean;
   additionalDataCollected: boolean;
-  additionalData: any;
+  additionalData: Prisma.JsonValue;
   dataCollectionFormType: string | null;
 }
 
@@ -36,7 +37,7 @@ export default function CompleteDocumentsPage({ params }: { params: Promise<{ or
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   // Unwrap params
   useEffect(() => {

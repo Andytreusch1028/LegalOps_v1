@@ -10,7 +10,7 @@ export default function RegisteredAgentChangePage() {
   const router = useRouter();
   const orderId = params.orderId as string;
 
-  const [formData, setFormData] = useState<any>(null);
+  const [formData, setFormData] = useState<Record<string, unknown> | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [preFilledBusinessName, setPreFilledBusinessName] = useState<string>('');
   const [preFilledEntityType, setPreFilledEntityType] = useState<'LLC' | 'CORPORATION'>('LLC');
@@ -26,7 +26,7 @@ export default function RegisteredAgentChangePage() {
           const order = await response.json();
           
           const changeItem = order.items?.find(
-            (item: any) => item.serviceType === 'REGISTERED_AGENT_CHANGE'
+            (item: { serviceType: string }) => item.serviceType === 'REGISTERED_AGENT_CHANGE'
           );
 
           if (changeItem?.formData) {

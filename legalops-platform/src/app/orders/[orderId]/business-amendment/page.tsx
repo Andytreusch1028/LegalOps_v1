@@ -10,7 +10,7 @@ export default function BusinessAmendmentPage() {
   const router = useRouter();
   const orderId = params.orderId as string;
 
-  const [formData, setFormData] = useState<any>(null);
+  const [formData, setFormData] = useState<Record<string, unknown> | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [preFilledBusinessName, setPreFilledBusinessName] = useState<string>('');
   const [preFilledEntityType, setPreFilledEntityType] = useState<'LLC' | 'CORPORATION'>('LLC');
@@ -26,7 +26,7 @@ export default function BusinessAmendmentPage() {
           const order = await response.json();
           
           const amendmentItem = order.items?.find(
-            (item: any) => item.serviceType === 'BUSINESS_AMENDMENT'
+            (item: { serviceType: string }) => item.serviceType === 'BUSINESS_AMENDMENT'
           );
 
           if (amendmentItem?.formData) {
@@ -51,7 +51,7 @@ export default function BusinessAmendmentPage() {
   }, [orderId]);
 
   // Auto-save with debounce
-  const handleFormChange = useCallback((data: any) => {
+  const handleFormChange = useCallback((data: Record<string, unknown>) => {
     setFormData(data);
 
     if (saveTimeoutRef.current) {

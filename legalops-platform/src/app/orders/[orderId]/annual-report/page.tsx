@@ -5,12 +5,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import AnnualReportForm, { validateAnnualReportForm } from '@/components/forms/AnnualReportForm';
+import { Prisma } from '@/generated/prisma';
 
 interface OrderItem {
   id: string;
   serviceType: string;
   description: string;
-  additionalData: any;
+  additionalData: Prisma.JsonValue;
   additionalDataCollected: boolean;
 }
 
@@ -29,7 +30,7 @@ export default function AnnualReportPage({ params }: { params: Promise<{ orderId
   const [orderId, setOrderId] = useState<string>('');
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedDataRef = useRef<string>('');

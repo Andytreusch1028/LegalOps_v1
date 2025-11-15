@@ -15,10 +15,10 @@ interface DocumentWizardProps {
   steps: WizardStep[];
   currentStepIndex: number;
   onStepChange: (stepIndex: number) => void;
-  onSave: (stepId: string, data: any) => Promise<void>;
+  onSave: (stepId: string, data: Record<string, unknown>) => Promise<void>;
   onComplete: () => void;
-  formData: Record<string, any>;
-  onFormDataChange: (stepId: string, data: any) => void;
+  formData: Record<string, unknown>;
+  onFormDataChange: (stepId: string, data: Record<string, unknown>) => void;
   autoSaveEnabled?: boolean;
 }
 
