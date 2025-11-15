@@ -87,8 +87,8 @@ export default function GuestCheckoutPage() {
 
       // Redirect to checkout page with order ID
       router.push(`/checkout/${data.orderId}`);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
       setLoading(false);
     }
   };

@@ -53,7 +53,7 @@ export async function GET(
       expiresAt: draft.expiresAt,
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('DBA draft retrieval error:', error);
     
     return NextResponse.json(

@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error loading form draft:', error);
     return NextResponse.json(
       { error: 'Failed to load draft. Please try again.' },

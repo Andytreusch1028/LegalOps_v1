@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       count: formattedDrafts.length,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error listing form drafts:', error);
     return NextResponse.json(
       { error: 'Failed to load drafts. Please try again.' },

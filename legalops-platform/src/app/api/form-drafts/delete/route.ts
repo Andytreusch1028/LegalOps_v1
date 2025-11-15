@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest) {
       message: 'Draft deleted successfully',
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting form draft:', error);
     
     // Handle case where draft doesn't exist

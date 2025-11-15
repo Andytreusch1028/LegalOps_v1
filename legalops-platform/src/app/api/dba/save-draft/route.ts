@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       calendarEvent, // Return .ics content for download
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('DBA draft save error:', error);
     
     return NextResponse.json(

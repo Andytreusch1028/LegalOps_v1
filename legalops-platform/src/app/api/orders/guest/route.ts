@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
       message: 'Guest order created successfully',
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Guest order creation error:', error);
     
     return NextResponse.json(

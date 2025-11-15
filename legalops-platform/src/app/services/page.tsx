@@ -48,7 +48,7 @@ export default function ServicesPage() {
         // Handle error responses
         if (Array.isArray(data)) {
           // Convert Decimal strings to numbers
-          const services = data.map((service: any) => ({
+          const services = data.map((service) => ({
             ...service,
             totalPrice: typeof service.totalPrice === 'string' ? parseFloat(service.totalPrice) : service.totalPrice,
             serviceFee: typeof service.serviceFee === 'string' ? parseFloat(service.serviceFee) : service.serviceFee,

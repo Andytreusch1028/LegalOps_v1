@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const positive = searchParams.get('positive');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (feedbackId) where.feedbackId = feedbackId;
     if (positive !== null) where.positive = positive === 'true';
 

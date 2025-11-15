@@ -22,7 +22,7 @@ interface Filing {
   id: string;
   filingType: string;
   filingStatus: string;
-  filingData: any;
+  filingData: Record<string, unknown>;
   businessEntity: {
     legalName: string;
     documentNumber: string | null;

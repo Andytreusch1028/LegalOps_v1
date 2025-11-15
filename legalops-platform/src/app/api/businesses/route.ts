@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       businesses
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching businesses:', error);
     return NextResponse.json(
       { error: 'Failed to fetch businesses' },

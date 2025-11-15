@@ -134,7 +134,7 @@ export default function AnnualReportPage() {
     setSuccess('');
 
     try {
-      const formData: any = {
+      const formData: Record<string, unknown> = {
         businessEntityId: selectedEntityId,
         confirmCurrentInformation: confirmCurrentInfo,
         correspondenceEmail,

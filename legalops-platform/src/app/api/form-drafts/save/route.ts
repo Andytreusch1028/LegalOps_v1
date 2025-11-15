@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       updatedAt: draft.updatedAt,
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error saving form draft:', error);
     return NextResponse.json(
       { error: 'Failed to save draft. Please try again.' },

@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     //     createdAt: 'desc',
     //   },
     // });
-    const filings: any[] = []; // Temporary placeholder
+    const filings: unknown[] = []; // Temporary placeholder
 
     return NextResponse.json({
       filings,

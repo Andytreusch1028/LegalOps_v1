@@ -54,7 +54,7 @@ interface Filing {
   id: string;
   filingType: string;
   status: string;
-  filingData: any;
+  filingData: Record<string, unknown>;
   confirmationNumber?: string;
   submittedAt?: string;
   createdAt: string;

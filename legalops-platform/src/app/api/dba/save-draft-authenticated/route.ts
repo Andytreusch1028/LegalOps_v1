@@ -140,9 +140,11 @@ export async function POST(request: NextRequest) {
       calendarEvent, // Return .ics content for download
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('DBA draft save error (authenticated):', error);
-    console.error('Error details:', error.message, error.stack);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message, error.stack);
+    }
 
     return NextResponse.json(
       { error: `Failed to save draft: ${error.message}` },
