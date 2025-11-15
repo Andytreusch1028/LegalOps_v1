@@ -5,8 +5,19 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft } from 'lucide-react';
 import CertificateOfStatusForm from '@/components/forms/CertificateOfStatusForm';
+import { Prisma } from '@/generated/prisma';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+// Type for Order with orderItems relation
+type OrderWithItems = {
+  id: string;
+  orderItems: Array<{
+    id: string;
+    serviceType: string;
+    additionalData?: Prisma.JsonValue;
+  }>;
+};
 
 export default function CertificateOfStatusPage() {
   const params = useParams();
@@ -14,8 +25,8 @@ export default function CertificateOfStatusPage() {
   const { data: session, status } = useSession();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
 
@@ -38,12 +49,13 @@ export default function CertificateOfStatusPage() {
         setOrder(data);
 
         const certItem = data.orderItems.find(
-          (item: any) => item.serviceType === 'CERTIFICATE_OF_STATUS'
+          (item: { serviceType: string }) => item.serviceType === 'CERTIFICATE_OF_STATUS'
         );
 
         if (certItem?.additionalData) {
-          setFormData(certItem.additionalData);
-          lastSavedDataRef.current = JSON.stringify(certItem.additionalData);
+          const additionalData = certItem.additionalData as Record<string, unknown>;
+          setFormData(additionalData);
+          lastSavedDataRef.current = JSON.stringify(additionalData);
         }
       } catch (error) {
         console.error('Error fetching order:', error);

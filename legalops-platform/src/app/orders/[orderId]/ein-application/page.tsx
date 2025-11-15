@@ -4,16 +4,27 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import EINApplicationForm from '@/components/forms/EINApplicationForm';
+import { Prisma } from '@/generated/prisma';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+// Type for Order with orderItems relation
+type OrderWithItems = {
+  id: string;
+  orderItems: Array<{
+    id: string;
+    serviceType: string;
+    additionalData?: Prisma.JsonValue;
+  }>;
+};
 
 export default function EINApplicationPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
 
@@ -31,12 +42,13 @@ export default function EINApplicationPage() {
 
         // Find EIN Application item and load existing data
         const einItem = data.orderItems.find(
-          (item: any) => item.serviceType === 'EIN_APPLICATION'
+          (item: { serviceType: string }) => item.serviceType === 'EIN_APPLICATION'
         );
 
         if (einItem?.additionalData) {
-          setFormData(einItem.additionalData);
-          lastSavedDataRef.current = JSON.stringify(einItem.additionalData);
+          const additionalData = einItem.additionalData as Record<string, unknown>;
+          setFormData(additionalData);
+          lastSavedDataRef.current = JSON.stringify(additionalData);
         }
       } catch (error) {
         console.error('Error fetching order:', error);
