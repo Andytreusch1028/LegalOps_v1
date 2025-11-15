@@ -77,13 +77,14 @@ export function mapDatabaseToSunbizLLC(
   const principalAddr = businessEntity.addresses?.find(
     (addr) => addr.addressType === 'PRINCIPAL'
   );
-  const mailingAddr = businessEntity.addresses?.find(
-    (addr) => addr.addressType === 'MAILING'
-  ) || principalAddr; // Default to principal if no mailing address
 
   if (!principalAddr) {
     throw new Error('Principal address is required for LLC formation');
   }
+
+  const mailingAddr = businessEntity.addresses?.find(
+    (addr) => addr.addressType === 'MAILING'
+  ) || principalAddr; // Default to principal if no mailing address
 
   // Get registered agent
   const agent = businessEntity.registeredAgent;
@@ -223,13 +224,14 @@ export function mapDatabaseToSunbizCorporation(
   const principalAddr = businessEntity.addresses?.find(
     (addr) => addr.addressType === 'PRINCIPAL'
   );
-  const mailingAddr = businessEntity.addresses?.find(
-    (addr) => addr.addressType === 'MAILING'
-  ) || principalAddr;
 
   if (!principalAddr) {
     throw new Error('Principal address is required for Corporation formation');
   }
+
+  const mailingAddr = businessEntity.addresses?.find(
+    (addr) => addr.addressType === 'MAILING'
+  ) || principalAddr;
 
   // Get registered agent
   const agent = businessEntity.registeredAgent;

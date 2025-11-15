@@ -296,7 +296,7 @@ export const SERVICE_DATA_REQUIREMENTS: Record<string, ServiceDataRequirement> =
   BUSINESS_AMENDMENT: {
     serviceType: 'BUSINESS_AMENDMENT',
     requiresAdditionalData: true,
-    dataCollectionFormType: null, // Uses dedicated /orders/[orderId]/business-amendment page
+    dataCollectionFormType: undefined, // Uses dedicated /orders/[orderId]/business-amendment page
     estimatedTimeToComplete: '3 minutes',
     fieldsNeeded: [
       'Type of amendment (name, purpose, management, stock)',

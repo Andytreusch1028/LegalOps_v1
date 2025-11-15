@@ -18,6 +18,7 @@ interface BusinessEntity {
   documentNumber: string | null;
   feiNumber: string | null;
   entityType: string;
+  status: string;
   addresses: Array<{
     id: string;
     street: string;
