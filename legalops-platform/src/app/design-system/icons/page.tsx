@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 
 export default function IconShowcasePage() {
-  const categories: { name: string; category: IconCategory; description: string; icons: any[] }[] = [
+  const categories: { name: string; category: IconCategory; description: string; icons: React.ComponentType[] }[] = [
     {
       name: 'Business & Entity',
       category: 'business',
@@ -80,7 +80,7 @@ export default function IconShowcasePage() {
     },
   ];
 
-  const statusIcons: { name: string; category: IconCategory; icon: any }[] = [
+  const statusIcons: { name: string; category: IconCategory; icon: React.ComponentType }[] = [
     { name: 'Success', category: 'success', icon: CheckCircle },
     { name: 'Warning', category: 'warning', icon: AlertTriangle },
     { name: 'Error', category: 'error', icon: XCircle },

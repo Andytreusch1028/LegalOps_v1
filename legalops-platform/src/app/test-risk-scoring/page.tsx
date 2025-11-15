@@ -253,7 +253,7 @@ export default function TestRiskScoringPage() {
                       Risk Factors Detected ({result.riskFactors.length})
                     </h3>
                     <div className="space-y-3">
-                      {result.riskFactors.map((factor: any, idx: number) => (
+                      {result.riskFactors.map((factor, idx: number) => (
                         <div key={idx} className="border-l-4 border-gray-300 pl-4 py-2 bg-gray-50 rounded">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-medium text-gray-900">{factor.factor}</span>

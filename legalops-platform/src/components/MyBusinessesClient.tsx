@@ -41,7 +41,7 @@ interface Business {
   filings: Filing[];
   createdAt: Date;
   healthScore?: number | null;
-  healthBreakdown?: any;
+  healthBreakdown?: Record<string, unknown>;
 }
 
 interface MyBusinessesClientProps {

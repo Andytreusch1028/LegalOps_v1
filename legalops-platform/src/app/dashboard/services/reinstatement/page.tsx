@@ -73,7 +73,7 @@ export default function ReinstatementPage() {
     }
   };
 
-  const calculateFees = (businessData: any) => {
+  const calculateFees = (businessData: { entityType?: string }) => {
     // Calculate base fees based on entity type
     let baseFee = 0;
     let annualReportFeePerYear = 0;

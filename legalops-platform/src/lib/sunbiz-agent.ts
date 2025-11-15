@@ -82,7 +82,7 @@ export interface CorporationFormationData {
 export interface FilingResult {
   success: boolean;
   screenshot: Buffer;
-  formData?: any;
+  formData?: Record<string, unknown>;
   confidence: number; // 0.0 to 1.0
   errors?: string[];
   page?: Page;
@@ -381,7 +381,7 @@ export class SunbizFilingAgent {
   /**
    * Calculate confidence score based on data completeness
    */
-  private calculateConfidence(data: any, errors: string[]): number {
+  private calculateConfidence(data: Record<string, unknown>, errors: string[]): number {
     let score = 1.0;
     
     // Reduce confidence for each error

@@ -62,7 +62,7 @@ export async function GET(
       breakdown
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error calculating health score:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to calculate health score' },
@@ -126,7 +126,7 @@ export async function POST(
       message: 'Health score updated successfully'
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating health score:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update health score' },

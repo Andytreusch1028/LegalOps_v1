@@ -170,7 +170,7 @@ export default async function CustomerDashboard() {
 
       // Check compliance factors for critical issues
       if (healthScore.compliance?.factors) {
-        healthScore.compliance.factors.forEach((factor: any) => {
+        healthScore.compliance.factors.forEach((factor) => {
           if (factor.status === 'critical') {
             businessActions++; // Overdue annual report, dissolved, etc.
           }
@@ -179,7 +179,7 @@ export default async function CustomerDashboard() {
 
       // Check document factors for missing critical documents
       if (healthScore.documents?.factors) {
-        healthScore.documents.factors.forEach((factor: any) => {
+        healthScore.documents.factors.forEach((factor) => {
           if (factor.status === 'critical') {
             businessActions++; // Missing EIN, etc.
           }

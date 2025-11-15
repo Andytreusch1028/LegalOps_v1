@@ -502,8 +502,8 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
         // Don't auto-hide the success message - let user dismiss it manually or navigate away
       }
 
-    } catch (err: any) {
-      setError(err.message || 'Failed to save draft. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save draft. Please try again.');
     } finally {
       setSavingDraft(false);
     }

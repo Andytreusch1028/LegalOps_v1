@@ -63,7 +63,7 @@ export default function EINApplicationForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData]);
 
-  const handleChange = (field: keyof EINApplicationData, value: any) => {
+  const handleChange = (field: keyof EINApplicationData, value: unknown) => {
     setFormData({ ...formData, [field]: value });
   };
 

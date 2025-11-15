@@ -406,7 +406,7 @@ export default async function AdminRiskDetailPage({ params }: PageProps) {
           </h2>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {riskFactors.map((factor: any, index: number) => (
+            {riskFactors.map((factor, index: number) => (
               <div 
                 key={index}
                 style={{

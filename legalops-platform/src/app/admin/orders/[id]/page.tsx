@@ -548,7 +548,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                 <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#64748B', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Individual Owners
                 </h3>
-                {formData.individualOwners.map((owner: any, index: number) => (
+                {formData.individualOwners.map((owner, index: number) => (
                   <div key={index} style={{ marginBottom: '16px', padding: '12px', background: '#F8FAFC', borderRadius: '8px' }}>
                     <div style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B', marginBottom: '8px' }}>
                       {owner.firstName} {owner.middleName} {owner.lastName}
@@ -568,7 +568,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
                 <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#64748B', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Business Entity Owners
                 </h3>
-                {formData.businessEntityOwners.map((owner: any, index: number) => (
+                {formData.businessEntityOwners.map((owner, index: number) => (
                   <div key={index} style={{ marginBottom: '16px', padding: '12px', background: '#F8FAFC', borderRadius: '8px' }}>
                     <div style={{ fontSize: '15px', fontWeight: '600', color: '#1E293B', marginBottom: '8px' }}>
                       {owner.entityName}
