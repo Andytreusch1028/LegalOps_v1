@@ -87,7 +87,7 @@ export default function ServiceDetailPage() {
   }, [slug]);
 
   // Handle form submission - show upsell if Basic package selected
-  const handleFormSubmit = async (formData: any) => {
+  const handleFormSubmit = async (formData: Record<string, unknown>) => {
     // If user selected Basic package, show upsell modal
     if (selectedPackage?.slug === 'basic') {
       setPendingFormData(formData);
@@ -100,7 +100,7 @@ export default function ServiceDetailPage() {
   };
 
   // Create order and redirect to checkout
-  const createOrder = async (formData: any) => {
+  const createOrder = async (formData: Record<string, unknown>) => {
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
@@ -390,7 +390,7 @@ export default function ServiceDetailPage() {
                         }}
                         selectedPackage={selectedPackage}
                         onSubmit={handleFormSubmit}
-                        onPackageChange={(pkg: any) => setSelectedPackage(pkg)}
+                        onPackageChange={(pkg) => setSelectedPackage(pkg)}
                         initialFormData={preservedFormData}
                         onFormDataChange={setPreservedFormData}
                       />

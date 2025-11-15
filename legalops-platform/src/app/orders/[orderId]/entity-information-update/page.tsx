@@ -48,7 +48,7 @@ export default function EntityInformationUpdatePage() {
   }, [orderId]);
 
   // Auto-save with debounce
-  const handleFormChange = useCallback((data: any) => {
+  const handleFormChange = useCallback((data: Record<string, unknown>) => {
     setFormData(data);
 
     // Clear existing timeout

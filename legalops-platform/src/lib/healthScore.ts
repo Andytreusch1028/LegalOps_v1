@@ -311,7 +311,11 @@ function getNthWeekdayOfMonth(year: number, month: number, dayOfWeek: number, oc
 /**
  * Check annual report status for a business with Florida-specific compliance rules
  */
-function checkAnnualReportStatus(business: any): {
+function checkAnnualReportStatus(business: {
+  entityType: string;
+  formationDate: Date | null;
+  filings?: Array<{ filingType: string; filingDate: Date | null }>;
+}): {
   isOverdue: boolean;
   isDueSoon: boolean;
   isLate: boolean;
@@ -361,7 +365,7 @@ function checkAnnualReportStatus(business: any): {
   const fourthFridayOfSeptember = getNthWeekdayOfMonth(currentYear, 8, 5, 4); // 4th Friday of September (revocation date)
 
   // Check if we have a recent annual report filing
-  const hasRecentAnnualReport = business.filings?.some((filing: any) => {
+  const hasRecentAnnualReport = business.filings?.some((filing) => {
     return (
       filing.filingType === 'ANNUAL_REPORT' &&
       new Date(filing.createdAt).getFullYear() === currentYear
@@ -369,7 +373,7 @@ function checkAnnualReportStatus(business: any): {
   });
 
   // Check if business was recently reinstated
-  const wasReinstated = business.filings?.some((filing: any) => {
+  const wasReinstated = business.filings?.some((filing) => {
     return (
       filing.filingType === 'REINSTATEMENT' &&
       new Date(filing.createdAt).getFullYear() === currentYear

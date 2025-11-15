@@ -51,7 +51,7 @@ export default function OfficerAddressUpdatePage() {
   }, [orderId]);
 
   // Auto-save with debounce
-  const handleFormChange = useCallback((data: any) => {
+  const handleFormChange = useCallback((data: Record<string, unknown>) => {
     setFormData(data);
 
     if (saveTimeoutRef.current) {
