@@ -390,7 +390,7 @@ export default function ServiceDetailPage() {
                         }}
                         selectedPackage={selectedPackage}
                         onSubmit={handleFormSubmit}
-                        onPackageChange={(pkg: Package) => setSelectedPackage(pkg)}
+                        onPackageChange={(pkg: any) => setSelectedPackage(pkg)}
                         initialFormData={preservedFormData}
                         onFormDataChange={setPreservedFormData}
                       />

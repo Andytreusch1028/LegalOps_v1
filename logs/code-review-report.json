@@ -1,20 +1,16 @@
 {
-  "timestamp": "2025-11-15T02:39:46.343Z",
+  "timestamp": "2025-11-15T02:59:00.514Z",
   "sections": [
     {
       "name": "TypeScript Errors",
-      "count": 5,
+      "count": 1,
       "issues": [
-        ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r",
-        "prisma/seed-notices.ts(112,7): error TS2322: Type '{ userId: string; type: string; priority: string; title: string; message: string; filingId: string | undefined; actionUrl: string | null; actionLabel: string; } | { userId: string; type: string; ... 5 more ...; filingId?: undefined; }' is not assignable to type '(Without<NoticeCreateInput, NoticeUncheckedCreateInput> & NoticeUncheckedCreateInput) | (Without<...> & NoticeCreateInput)'.\r",
-        "src/app/api/filings/annual-report/route.ts(58,7): error TS2322: Type 'Omit<Filing, \"id\" | \"createdAt\" | \"updatedAt\">' is not assignable to type '(Without<FilingCreateInput, FilingUncheckedCreateInput> & FilingUncheckedCreateInput) | (Without<...> & FilingCreateInput)'.\r",
-        "src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ orderId: string; serviceType: string; description: string; quantity: number; unitPrice: number; totalPrice: number; requiresAdditionalData: boolean; dataCollectionFormType: string | undefined; }[]' is not assignable to type 'OrderItemCreateManyInput | OrderItemCreateManyInput[]'.\r",
-        "src/app/services/[slug]/page.tsx(393,25): error TS2719: Type '(pkg: Package) => void' is not assignable to type '(pkg: Package) => void'. Two different types with this name exist, but they are unrelated.\r"
+        ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r"
       ]
     },
     {
       "name": "ESLint Issues",
-      "errors": 1101,
+      "errors": 1105,
       "warnings": 2012
     },
     {
@@ -26,8 +22,8 @@
     }
   ],
   "criticalIssues": [
-    "Found 5 TypeScript type errors",
-    "Found 1101 ESLint errors"
+    "Found 1 TypeScript type errors",
+    "Found 1105 ESLint errors"
   ],
   "warnings": [
     "Found 2012 ESLint warnings"

@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Create the filing record
     const filing = await prisma.filing.create({
-      data: filingData,
+      data: filingData as any,
       include: {
         businessEntity: {
           include: {
