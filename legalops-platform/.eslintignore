@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Prisma generated files
+src/generated/
+prisma/generated/
+
+# Environment files
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Testing
+coverage/
+
+# Misc
+.DS_Store
+*.log
+

@@ -1,6 +1,6 @@
 # 🔍 LegalOps v1 - Automated Code Review Report
 
-**Generated:** 11/14/2025, 10:31:07 PM
+**Generated:** 11/14/2025, 11:04:09 PM
 **Overall Health:** FAIR
 
 ## 📊 Summary
@@ -12,11 +12,11 @@
 ## 🚨 Critical Issues (Requires Immediate Attention)
 
 1. Found 1 TypeScript type errors
-2. Found 1098 ESLint errors
+2. Found 345 ESLint errors
 
 ## ⚠️ Warnings
 
-1. Found 2012 ESLint warnings
+1. Found 122 ESLint warnings
 
 ## 💡 Suggestions for Improvement
 
@@ -34,8 +34,8 @@
 
 ### ESLint Issues
 
-- **Errors:** 1098
-- **Warnings:** 2012
+- **Errors:** 345
+- **Warnings:** 122
 
 ### Security Vulnerabilities
 

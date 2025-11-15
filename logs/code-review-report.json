@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-15T03:31:07.852Z",
+  "timestamp": "2025-11-15T04:04:09.897Z",
   "sections": [
     {
       "name": "TypeScript Errors",
@@ -10,8 +10,8 @@
     },
     {
       "name": "ESLint Issues",
-      "errors": 1098,
-      "warnings": 2012
+      "errors": 345,
+      "warnings": 122
     },
     {
       "name": "Security Vulnerabilities",
@@ -23,10 +23,10 @@
   ],
   "criticalIssues": [
     "Found 1 TypeScript type errors",
-    "Found 1098 ESLint errors"
+    "Found 345 ESLint errors"
   ],
   "warnings": [
-    "Found 2012 ESLint warnings"
+    "Found 122 ESLint warnings"
   ],
   "suggestions": [
     "23 packages have updates available"
