@@ -146,7 +146,7 @@ export type LLCFormationCompleteData = z.infer<typeof llcFormationCompleteSchema
  */
 export function validateLLCFormationStep(
   step: number,
-  data: any,
+  data: Record<string, unknown>,
   sameAsBusinessAddress: boolean = true
 ): { success: boolean; errors: Record<string, string> } {
   let schema: z.ZodSchema;
@@ -177,7 +177,7 @@ export function validateLLCFormationStep(
   }
   
   const errors: Record<string, string> = {};
-  result.error.issues.forEach((error: any) => {
+  result.error.issues.forEach((error) => {
     const path = error.path.join('.');
     errors[path] = error.message;
   });
@@ -189,7 +189,7 @@ export function validateLLCFormationStep(
  * Validate the complete LLC formation form
  */
 export function validateLLCFormationComplete(
-  data: any
+  data: Record<string, unknown>
 ): { success: boolean; errors: Record<string, string>; data?: LLCFormationCompleteData } {
   const result = llcFormationCompleteSchema.safeParse(data);
 
@@ -198,7 +198,7 @@ export function validateLLCFormationComplete(
   }
 
   const errors: Record<string, string> = {};
-  result.error.issues.forEach((error: any) => {
+  result.error.issues.forEach((error) => {
     const path = error.path.join('.');
     errors[path] = error.message;
   });
