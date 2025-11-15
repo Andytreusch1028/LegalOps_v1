@@ -78,7 +78,7 @@ export default function EINApplicationPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const einItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'EIN_APPLICATION'
+          (item) => item.serviceType === 'EIN_APPLICATION'
         );
 
         if (!einItem) return;
@@ -114,7 +114,7 @@ export default function EINApplicationPage() {
   const handleSubmit = async () => {
     try {
       const einItem = order?.orderItems.find(
-        (item: any) => item.serviceType === 'EIN_APPLICATION'
+        (item) => item.serviceType === 'EIN_APPLICATION'
       );
 
       if (!einItem) return;

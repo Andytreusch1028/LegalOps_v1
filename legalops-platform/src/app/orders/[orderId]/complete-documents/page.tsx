@@ -132,7 +132,7 @@ export default function CompleteDocumentsPage({ params }: { params: Promise<{ or
   });
 
   // Handle form data changes
-  const handleFormDataChange = useCallback((itemId: string, data: any) => {
+  const handleFormDataChange = useCallback((itemId: string, data: Record<string, unknown>) => {
     setFormData((prev) => ({
       ...prev,
       [itemId]: data,
@@ -140,7 +140,7 @@ export default function CompleteDocumentsPage({ params }: { params: Promise<{ or
   }, []);
 
   // Handle save
-  const handleSave = async (stepId: string, data: any) => {
+  const handleSave = async (stepId: string, data: Record<string, unknown>) => {
     if (!orderId) return;
 
     const response = await fetch(`/api/orders/${orderId}/save-document-data`, {

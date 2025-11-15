@@ -82,7 +82,7 @@ export default function DissolutionPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const dissolutionItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'DISSOLUTION'
+          (item) => item.serviceType === 'DISSOLUTION'
         );
 
         if (!dissolutionItem) return;
@@ -120,7 +120,7 @@ export default function DissolutionPage() {
 
     try {
       const dissolutionItem = order.orderItems.find(
-        (item: any) => item.serviceType === 'DISSOLUTION'
+        (item) => item.serviceType === 'DISSOLUTION'
       );
 
       if (!dissolutionItem) return;
@@ -152,11 +152,11 @@ export default function DissolutionPage() {
   }
 
   const businessName = order?.orderItems.find(
-    (item: any) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
+    (item) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
   )?.description || 'Your Business';
 
   const entityType = order?.orderItems.find(
-    (item: any) => item.serviceType === 'LLC_FORMATION'
+    (item) => item.serviceType === 'LLC_FORMATION'
   ) ? 'LLC' : 'CORPORATION';
 
   return (

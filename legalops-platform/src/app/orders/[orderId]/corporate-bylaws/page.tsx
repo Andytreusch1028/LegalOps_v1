@@ -85,7 +85,7 @@ export default function CorporateBylawsPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const bylawsItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'CORPORATE_BYLAWS'
+          (item) => item.serviceType === 'CORPORATE_BYLAWS'
         );
 
         if (!bylawsItem) return;
@@ -123,7 +123,7 @@ export default function CorporateBylawsPage() {
 
     try {
       const bylawsItem = order.orderItems.find(
-        (item: any) => item.serviceType === 'CORPORATE_BYLAWS'
+        (item) => item.serviceType === 'CORPORATE_BYLAWS'
       );
 
       if (!bylawsItem) return;
@@ -155,7 +155,7 @@ export default function CorporateBylawsPage() {
   }
 
   const businessName = order?.orderItems.find(
-    (item: any) => item.serviceType === 'CORP_FORMATION'
+    (item) => item.serviceType === 'CORP_FORMATION'
   )?.description || 'Your Corporation';
 
   return (

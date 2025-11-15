@@ -82,7 +82,7 @@ export default function AmendmentPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const amendmentItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'ENTITY_INFORMATION_UPDATE'
+          (item) => item.serviceType === 'ENTITY_INFORMATION_UPDATE'
         );
 
         if (!amendmentItem) return;
@@ -120,7 +120,7 @@ export default function AmendmentPage() {
 
     try {
       const amendmentItem = order.orderItems.find(
-        (item: any) => item.serviceType === 'AMENDMENT'
+        (item) => item.serviceType === 'AMENDMENT'
       );
 
       if (!amendmentItem) return;
@@ -152,11 +152,11 @@ export default function AmendmentPage() {
   }
 
   const businessName = order?.orderItems.find(
-    (item: any) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
+    (item) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
   )?.description || 'Your Business';
 
   const entityType = order?.orderItems.find(
-    (item: any) => item.serviceType === 'LLC_FORMATION'
+    (item) => item.serviceType === 'LLC_FORMATION'
   ) ? 'LLC' : 'CORPORATION';
 
   return (

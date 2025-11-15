@@ -82,7 +82,7 @@ export default function CertificateOfStatusPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const certItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'CERTIFICATE_OF_STATUS'
+          (item) => item.serviceType === 'CERTIFICATE_OF_STATUS'
         );
 
         if (!certItem) return;
@@ -120,7 +120,7 @@ export default function CertificateOfStatusPage() {
 
     try {
       const certItem = order.orderItems.find(
-        (item: any) => item.serviceType === 'CERTIFICATE_OF_STATUS'
+        (item) => item.serviceType === 'CERTIFICATE_OF_STATUS'
       );
 
       if (!certItem) return;
@@ -152,7 +152,7 @@ export default function CertificateOfStatusPage() {
   }
 
   const businessName = order?.orderItems.find(
-    (item: any) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
+    (item) => item.serviceType === 'LLC_FORMATION' || item.serviceType === 'CORP_FORMATION'
   )?.description || 'Your Business';
 
   return (

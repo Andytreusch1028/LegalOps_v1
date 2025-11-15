@@ -78,7 +78,7 @@ export default function OperatingAgreementPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const oaItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'OPERATING_AGREEMENT'
+          (item) => item.serviceType === 'OPERATING_AGREEMENT'
         );
 
         if (!oaItem) return;
@@ -114,7 +114,7 @@ export default function OperatingAgreementPage() {
   const handleSubmit = async () => {
     try {
       const oaItem = order?.orderItems.find(
-        (item: any) => item.serviceType === 'OPERATING_AGREEMENT'
+        (item) => item.serviceType === 'OPERATING_AGREEMENT'
       );
 
       if (!oaItem) return;

@@ -82,7 +82,7 @@ export default function NameReservationPage() {
     saveTimeoutRef.current = setTimeout(async () => {
       try {
         const nameResItem = order.orderItems.find(
-          (item: any) => item.serviceType === 'NAME_RESERVATION'
+          (item) => item.serviceType === 'NAME_RESERVATION'
         );
 
         if (!nameResItem) return;
@@ -120,7 +120,7 @@ export default function NameReservationPage() {
 
     try {
       const nameResItem = order.orderItems.find(
-        (item: any) => item.serviceType === 'NAME_RESERVATION'
+        (item) => item.serviceType === 'NAME_RESERVATION'
       );
 
       if (!nameResItem) return;
