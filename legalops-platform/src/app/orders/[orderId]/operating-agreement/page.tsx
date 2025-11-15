@@ -4,16 +4,27 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import OperatingAgreementForm from '@/components/forms/OperatingAgreementForm';
+import { Prisma } from '@/generated/prisma';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+// Type for Order with orderItems relation
+type OrderWithItems = {
+  id: string;
+  orderItems: Array<{
+    id: string;
+    serviceType: string;
+    additionalData?: Prisma.JsonValue;
+  }>;
+};
 
 export default function OperatingAgreementPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
 
@@ -31,12 +42,13 @@ export default function OperatingAgreementPage() {
 
         // Find Operating Agreement item and load existing data
         const oaItem = data.orderItems.find(
-          (item: any) => item.serviceType === 'OPERATING_AGREEMENT'
+          (item: { serviceType: string }) => item.serviceType === 'OPERATING_AGREEMENT'
         );
 
         if (oaItem?.additionalData) {
-          setFormData(oaItem.additionalData);
-          lastSavedDataRef.current = JSON.stringify(oaItem.additionalData);
+          const additionalData = oaItem.additionalData as Record<string, unknown>;
+          setFormData(additionalData);
+          lastSavedDataRef.current = JSON.stringify(additionalData);
         }
       } catch (error) {
         console.error('Error fetching order:', error);

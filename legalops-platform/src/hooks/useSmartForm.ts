@@ -15,20 +15,20 @@ import { useSession } from 'next-auth/react';
 export interface SmartFormOptions {
   /** Form type identifier (e.g., 'llc-formation', 'annual-report') */
   formType: string;
-  
+
   /** Initial form data */
-  initialData?: Record<string, any>;
-  
+  initialData?: Record<string, unknown>;
+
   /** Auto-save interval in milliseconds (default: 5000) */
   autoSaveInterval?: number;
-  
+
   /** Enable auto-fill from saved records */
   enableAutoFill?: boolean;
 }
 
 export interface VerifiedField {
   fieldName: string;
-  value: any;
+  value: unknown;
   source: 'saved' | 'previous-order' | 'user-profile';
   verifiedAt: string;
 }
@@ -40,7 +40,7 @@ export function useSmartForm({
   enableAutoFill = true,
 }: SmartFormOptions) {
   const { data: session } = useSession();
-  const [formData, setFormData] = useState<Record<string, any>>(initialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>(initialData);
   const [verifiedFields, setVerifiedFields] = useState<VerifiedField[]>([]);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -130,31 +130,31 @@ export function useSmartForm({
   /**
    * Update form field value
    */
-  const updateField = useCallback((fieldName: string, value: any) => {
+  const updateField = useCallback((fieldName: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [fieldName]: value,
     }));
     setIsDirty(true);
   }, []);
-  
+
   /**
    * Update multiple fields at once
    */
-  const updateFields = useCallback((fields: Record<string, any>) => {
+  const updateFields = useCallback((fields: Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
       ...fields,
     }));
     setIsDirty(true);
   }, []);
-  
+
   /**
    * Mark field as verified (from saved record)
    */
   const verifyField = useCallback((
     fieldName: string,
-    value: any,
+    value: unknown,
     source: VerifiedField['source']
   ) => {
     setVerifiedFields(prev => [

@@ -5,8 +5,19 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft } from 'lucide-react';
 import CorporateBylawsForm from '@/components/forms/CorporateBylawsForm';
+import { Prisma } from '@/generated/prisma';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+// Type for Order with orderItems relation
+type OrderWithItems = {
+  id: string;
+  orderItems: Array<{
+    id: string;
+    serviceType: string;
+    additionalData?: Prisma.JsonValue;
+  }>;
+};
 
 export default function CorporateBylawsPage() {
   const params = useParams();
@@ -14,8 +25,8 @@ export default function CorporateBylawsPage() {
   const { data: session, status } = useSession();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [order, setOrder] = useState<OrderWithItems | null>(null);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [loading, setLoading] = useState(true);
 
@@ -40,12 +51,13 @@ export default function CorporateBylawsPage() {
 
         // Find Corporate Bylaws item and load saved data
         const bylawsItem = data.orderItems.find(
-          (item: any) => item.serviceType === 'CORPORATE_BYLAWS'
+          (item: { serviceType: string }) => item.serviceType === 'CORPORATE_BYLAWS'
         );
 
         if (bylawsItem?.additionalData) {
-          setFormData(bylawsItem.additionalData);
-          lastSavedDataRef.current = JSON.stringify(bylawsItem.additionalData);
+          const additionalData = bylawsItem.additionalData as Record<string, unknown>;
+          setFormData(additionalData);
+          lastSavedDataRef.current = JSON.stringify(additionalData);
         }
       } catch (error) {
         console.error('Error fetching order:', error);
