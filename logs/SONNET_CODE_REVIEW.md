@@ -1,6 +1,6 @@
 # 🔍 LegalOps v1 - Automated Code Review Report
 
-**Generated:** 11/14/2025, 8:32:17 AM
+**Generated:** 11/14/2025, 8:53:49 PM
 **Overall Health:** FAIR
 
 ## 📊 Summary
@@ -11,7 +11,7 @@
 
 ## 🚨 Critical Issues (Requires Immediate Attention)
 
-1. Found 28 TypeScript type errors
+1. Found 19 TypeScript type errors
 2. Found 1097 ESLint errors
 
 ## ⚠️ Warnings
@@ -26,7 +26,7 @@
 
 ### TypeScript Errors
 
-**Total Issues:** 28
+**Total Issues:** 19
 
 ```
 .next/types/validator.ts(810,31): error TS2344: Type 'typeof import("C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/dba/get-draft/[token]">'.
@@ -39,7 +39,7 @@ src/app/api/orders/[orderId]/add-items/route.ts(84,7): error TS2322: Type '{ ord
 src/app/api/orders/create-with-risk-check/route.ts(256,9): error TS2322: Type 'RiskFactor[]' is not assignable to type 'JsonNull | InputJsonValue'.
 src/app/orders/[orderId]/ein-application/page.tsx(206,13): error TS2322: Type '{ formData: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & EINApplicationFormProps'.
 src/app/orders/[orderId]/operating-agreement/page.tsx(206,13): error TS2322: Type '{ formData: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & OperatingAgreementFormProps'.
-... and 10 more
+... and 9 more
 ```
 
 ### ESLint Issues
@@ -51,7 +51,7 @@ src/app/orders/[orderId]/operating-agreement/page.tsx(206,13): error TS2322: Typ
 
 - **Critical:** 0
 - **High:** 0
-- **Moderate:** 2
+- **Moderate:** 3
 - **Low:** 2
 
 ---

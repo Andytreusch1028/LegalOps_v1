@@ -140,6 +140,10 @@ export class USPSAddressValidationService {
       // Set expiry to 5 minutes before actual expiry for safety
       this.tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
 
+      if (!this.accessToken) {
+        throw new Error('No access token received from USPS API');
+      }
+
       return this.accessToken;
     } catch (error) {
       console.error('Error getting USPS access token:', error);

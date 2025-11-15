@@ -57,7 +57,7 @@ export interface RiskAssessment {
 // ============================================================================
 
 export class AIRiskScoringService {
-  private openai: OpenAI;
+  private openai: OpenAI | null = null;
 
   constructor() {
     // Only initialize OpenAI if API key is available
@@ -201,7 +201,11 @@ export class AIRiskScoringService {
     order: OrderData,
     basicRiskFactors: RiskFactor[]
   ): Promise<RiskAssessment> {
-    
+    // Check if OpenAI is available
+    if (!this.openai) {
+      throw new Error('OpenAI API key not configured. AI risk scoring is not available.');
+    }
+
     const prompt = `
 You are a fraud detection expert for a legal services company.
 

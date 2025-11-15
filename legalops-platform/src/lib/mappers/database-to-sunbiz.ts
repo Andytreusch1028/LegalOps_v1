@@ -371,13 +371,14 @@ export function mapDatabaseToSunbizAnnualReport(
   const principalAddr = businessEntity.addresses?.find(
     (addr) => addr.addressType === 'PRINCIPAL'
   );
-  const mailingAddr = businessEntity.addresses?.find(
-    (addr) => addr.addressType === 'MAILING'
-  ) || principalAddr;
 
   if (!principalAddr) {
     throw new Error('Principal address is required');
   }
+
+  const mailingAddr = businessEntity.addresses?.find(
+    (addr) => addr.addressType === 'MAILING'
+  ) || principalAddr;
 
   const agent = businessEntity.registeredAgent;
   if (!agent) {
