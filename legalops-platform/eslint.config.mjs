@@ -22,6 +22,13 @@ const eslintConfig = [
       "prisma/generated/**",
     ],
   },
+  {
+    // Disable require() rule for Node.js scripts
+    files: ["scripts/**/*.js"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
