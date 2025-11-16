@@ -263,7 +263,7 @@ export default function OperatingAgreementForm({
               value="MEMBER_MANAGED"
               checked={formData.managementStructure === 'MEMBER_MANAGED'}
               onChange={(e) =>
-                setFormData({ ...formData, managementStructure: e.target.value as any })
+                setFormData({ ...formData, managementStructure: e.target.value as 'MEMBER_MANAGED' | 'MANAGER_MANAGED' })
               }
               className="mr-3"
             />
@@ -287,7 +287,7 @@ export default function OperatingAgreementForm({
               value="MANAGER_MANAGED"
               checked={formData.managementStructure === 'MANAGER_MANAGED'}
               onChange={(e) =>
-                setFormData({ ...formData, managementStructure: e.target.value as any })
+                setFormData({ ...formData, managementStructure: e.target.value as 'MEMBER_MANAGED' | 'MANAGER_MANAGED' })
               }
               className="mr-3"
             />
@@ -343,7 +343,7 @@ export default function OperatingAgreementForm({
           <select
             value={formData.votingRights}
             onChange={(e) =>
-              setFormData({ ...formData, votingRights: e.target.value as any })
+              setFormData({ ...formData, votingRights: e.target.value as 'PROPORTIONAL' | 'EQUAL' })
             }
             className="w-full border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
             style={{ padding: '12px 16px' }}
@@ -362,7 +362,7 @@ export default function OperatingAgreementForm({
         <select
           value={formData.profitDistribution}
           onChange={(e) =>
-            setFormData({ ...formData, profitDistribution: e.target.value as any })
+            setFormData({ ...formData, profitDistribution: e.target.value as 'PROPORTIONAL' | 'CUSTOM' })
           }
           className="w-full border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
           style={{ padding: '12px 16px' }}

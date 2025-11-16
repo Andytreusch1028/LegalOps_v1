@@ -72,7 +72,7 @@ export async function createApprovalNotice({
           where: { id: filingId },
           data: {
             filingStatus: 'READY_TO_FILE',
-            staffChanges: changes as any,
+            staffChanges: changes as Record<string, unknown>,
             staffChangeReason: overallReason,
             requiresApproval: false,
           }
@@ -115,7 +115,7 @@ export async function createApprovalNotice({
           where: { id: filingId },
           data: {
             filingStatus: 'READY_TO_FILE',
-            staffChanges: changes as any,
+            staffChanges: changes as Record<string, unknown>,
             staffChangeReason: overallReason,
             requiresApproval: false,
           }
@@ -135,7 +135,7 @@ export async function createApprovalNotice({
       where: { id: filingId },
       data: {
         filingStatus: 'PENDING_CUSTOMER_APPROVAL',
-          staffChanges: changes as any,
+          staffChanges: changes as Record<string, unknown>,
           staffChangeReason: overallReason,
           requiresApproval: false,
       },
