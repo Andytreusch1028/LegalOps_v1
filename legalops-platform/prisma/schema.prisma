@@ -76,6 +76,9 @@ model User {
   // Smart Forms Relationships
   formDrafts FormDraft[]
 
+  // DBA Relationships
+  fictitiousNames FictitiousName[] @relation("UserFictitiousNames")
+
   @@map("users")
 }
 
@@ -524,9 +527,10 @@ model Order {
   completedAt DateTime?
 
   // Relationships
-  orderItems     OrderItem[]
-  riskAssessment RiskAssessment?
-  interactions   CustomerInteraction[] @relation("OrderInteractions")
+  orderItems      OrderItem[]
+  riskAssessment  RiskAssessment?
+  interactions    CustomerInteraction[] @relation("OrderInteractions")
+  fictitiousNames FictitiousName[]
 
   @@map("orders")
 }
@@ -1116,10 +1120,72 @@ model FictitiousName {
   lastUpdated      DateTime  @default(now())
   createdAt        DateTime  @default(now())
 
+  // NEW FIELDS - Sunbiz Compliance (all optional for backwards compatibility)
+  userId              String? // Link to customer
+  orderId             String? // Link to order
+  fein                String? // Federal Employer ID
+  correspondenceEmail String? // Customer email
+
+  // Advertisement certification
+  advertisementCertified Boolean @default(false)
+  newspaperName          String?
+  publicationDate        String?
+
+  // Electronic signature
+  signatureName String?
+  signatureDate DateTime?
+  signatureIp   String?
+
+  // Structured addresses (JSON for backwards compatibility)
+  principalAddressJson Json?
+  mailingAddressJson   Json?
+
+  // Owner data (JSON for backwards compatibility)
+  ownersData Json?
+
+  // Relationships
+  user   User?                 @relation(fields: [userId], references: [id], name: "UserFictitiousNames")
+  order  Order?                @relation(fields: [orderId], references: [id])
+  owners FictitiousNameOwner[]
+
   @@index([normalizedName])
   @@index([status])
   @@index([documentNumber])
+  @@index([userId])
+  @@index([orderId])
   @@map("fictitious_names")
+}
+
+// NEW MODEL - Fictitious Name Owners
+model FictitiousNameOwner {
+  id               String @id @default(cuid())
+  fictitiousNameId String
+  ownerType        String // INDIVIDUAL or BUSINESS_ENTITY
+
+  // Individual owner fields
+  firstName  String?
+  middleName String?
+  lastName   String?
+
+  // Business entity owner fields
+  entityName            String?
+  floridaDocumentNumber String?
+  fein                  String?
+
+  // Address (all owners)
+  street  String
+  street2 String?
+  city    String
+  state   String  @default("FL")
+  zipCode String
+
+  fictitiousName FictitiousName @relation(fields: [fictitiousNameId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fictitiousNameId])
+  @@map("fictitious_name_owners")
 }
 
 // General Partnerships

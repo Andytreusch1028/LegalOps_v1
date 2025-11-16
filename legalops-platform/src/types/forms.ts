@@ -407,6 +407,9 @@ export interface FictitiousNameFormData {
 
   // ===== CORRESPONDENCE =====
   correspondenceEmail: string;
+
+  // ===== ELECTRONIC SIGNATURE =====
+  signatureName?: string; // Full legal name for electronic signature
 }
 
 // ============================================================================

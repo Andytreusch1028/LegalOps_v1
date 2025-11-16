@@ -5,9 +5,10 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormWizard, FormSection, FormInput, FormSelect, FormCheckbox } from '@/components/forms';
 import { FictitiousNameFormData } from '@/types/forms';
-import { Info, AlertCircle, Newspaper, Building2, User, Mail, CheckCircle, Save, AlertTriangle, Phone, Globe, DollarSign, Clock } from 'lucide-react';
+import { Info, AlertCircle, Newspaper, Building2, User, Mail, CheckCircle, Save, AlertTriangle, Phone, Globe, DollarSign, Clock, FileSignature } from 'lucide-react';
 import { getSuggestedCounty } from '@/lib/geolocation';
 import { getNewspapersByCounty } from '@/lib/florida-newspapers';
+import { validateDBANameSuffixes } from '@/lib/validators/dba-name-validator';
 
 // All 67 Florida counties in alphabetical order
 const FLORIDA_COUNTIES = [
@@ -82,6 +83,7 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
     certificateOfStatus: initialData?.certificateOfStatus || false,
     certifiedCopy: initialData?.certifiedCopy || false,
     correspondenceEmail: initialData?.correspondenceEmail || '',
+    signatureName: initialData?.signatureName || '',
   });
 
   // Check for resumed draft on mount (guest magic link)
@@ -219,6 +221,21 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
     if (step === 1) {
       if (!formData.fictitiousName.trim()) {
         errors.fictitiousName = 'Fictitious name is required';
+      } else {
+        // Entity suffix validation
+        const businessEntityName = formData.ownerType === 'BUSINESS_ENTITY'
+          ? formData.businessEntityOwners?.[0]?.entityName
+          : undefined;
+
+        const suffixValidation = validateDBANameSuffixes(
+          formData.fictitiousName,
+          formData.ownerType,
+          businessEntityName
+        );
+
+        if (!suffixValidation.valid) {
+          errors.fictitiousName = suffixValidation.error || 'Invalid DBA name';
+        }
       }
       if (!formData.correspondenceEmail.trim()) {
         errors.correspondenceEmail = 'Email is required';
@@ -293,6 +310,13 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
         if (formData.paymentTiming === 'PAY_NOW' && !formData.newspaperAdvertised) {
           errors.newspaperAdvertised = 'You must certify publication before paying now. Choose "Pay After Publication" if you haven\'t published yet.';
         }
+      }
+    }
+
+    // Step 5: Validate signature (only when submitting)
+    if (step === 5 && isSubmitting) {
+      if (!formData.signatureName || !formData.signatureName.trim()) {
+        errors.signatureName = 'Electronic signature is required to complete your registration';
       }
     }
 
@@ -1954,6 +1978,49 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
           title="Review Your Information"
           description="Please review all details before submitting"
         >
+          {/* Electronic Signature Section */}
+          <div style={{
+            padding: '24px',
+            background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+            border: '2px solid #F59E0B',
+            borderRadius: '12px',
+            marginBottom: '24px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+              <FileSignature size={24} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
+              <div>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#92400E', marginBottom: '8px' }}>
+                  Electronic Signature Required
+                </h3>
+                <p style={{ fontSize: '14px', color: '#78350F', lineHeight: '1.6', marginBottom: '0' }}>
+                  By typing your full legal name below, you certify under penalty of perjury that all information
+                  provided in this registration is true and correct to the best of your knowledge.
+                </p>
+              </div>
+            </div>
+
+            <FormInput
+              label="Type Your Full Legal Name *"
+              name="signatureName"
+              value={formData.signatureName || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, signatureName: e.target.value }))}
+              placeholder="e.g., John Michael Smith"
+              required
+              error={fieldErrors.signatureName}
+            />
+
+            <p style={{ fontSize: '12px', color: '#92400E', marginTop: '12px', marginBottom: '0' }}>
+              <strong>Signature Date:</strong> {new Date().toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+              })}
+            </p>
+          </div>
+
           <div style={{
             padding: '20px',
             background: 'white',

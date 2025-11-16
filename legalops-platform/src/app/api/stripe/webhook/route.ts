@@ -40,10 +40,17 @@ export async function POST(request: NextRequest) {
       const orderId = paymentIntent.metadata?.orderId;
 
       if (orderId) {
-        // Fetch order with user info
+        // Fetch order with user info and order items
         const order = await prisma.order.findUnique({
           where: { id: orderId },
-          include: { user: true },
+          include: {
+            user: true,
+            orderItems: {
+              include: {
+                service: true,
+              },
+            },
+          },
         });
 
         if (order) {
@@ -57,6 +64,37 @@ export async function POST(request: NextRequest) {
               paidAt: new Date(),
             },
           });
+
+          // Check if order contains DBA service
+          const hasDBAService = order.orderItems.some(
+            item => item.service?.orderType === 'DBA_REGISTRATION'
+          );
+
+          // If DBA service, create FictitiousName record
+          if (hasDBAService && order.orderData) {
+            try {
+              // Call DBA submit endpoint to create FictitiousName record
+              const dbaResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/dba/submit`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  orderId: order.id,
+                  formData: order.orderData,
+                }),
+              });
+
+              if (dbaResponse.ok) {
+                console.log(`✅ DBA record created for order ${orderId}`);
+              } else {
+                console.error(`❌ Failed to create DBA record for order ${orderId}`);
+              }
+            } catch (error) {
+              console.error('Error creating DBA record:', error);
+              // Don't fail the webhook - order is still paid
+            }
+          }
 
           // Send confirmation email
           await sendOrderConfirmationEmail(

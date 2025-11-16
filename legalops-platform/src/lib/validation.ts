@@ -249,8 +249,24 @@ export const businessNameSchema = z.string()
   .transform(val => val.trim());
 
 export const validateBusinessName = (value: string): boolean => {
-  return value.trim().length > 0 && 
-         value.length <= 200 && 
+  return value.trim().length > 0 &&
+         value.length <= 200 &&
+         /^[a-zA-Z0-9\s\-.,&'()]+$/.test(value);
+};
+
+/**
+ * DBA (Fictitious Name) Validation
+ * Similar to business name but with additional suffix restrictions
+ */
+export const dbaNameSchema = z.string()
+  .min(1, 'DBA name is required')
+  .max(120, 'DBA name must be less than 120 characters')
+  .regex(/^[a-zA-Z0-9\s\-.,&'()]+$/, 'DBA name contains invalid characters')
+  .transform(val => val.trim());
+
+export const validateDBAName = (value: string): boolean => {
+  return value.trim().length > 0 &&
+         value.length <= 120 &&
          /^[a-zA-Z0-9\s\-.,&'()]+$/.test(value);
 };
 
