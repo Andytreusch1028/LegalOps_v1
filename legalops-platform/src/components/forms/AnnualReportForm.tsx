@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Building2, MapPin, Mail, User, Users, FileText } from 'lucide-react';
 
 interface AnnualReportFormData {
@@ -195,12 +196,12 @@ export default function AnnualReportForm({
             >
               → Search for your business on Sunbiz.org
             </a>
-            <a
+            <Link
               href="/services/llc-formation"
               className="text-sm text-purple-600 hover:text-purple-800 underline"
             >
-              → Don't have a Florida business yet? Form an LLC with us
-            </a>
+              → Don&apos;t have a Florida business yet? Form an LLC with us
+            </Link>
           </div>
         </div>
 

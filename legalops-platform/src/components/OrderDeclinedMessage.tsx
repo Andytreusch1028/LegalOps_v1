@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface OrderDeclinedMessageProps {
   reason?: 'fraud_risk' | 'verification_required' | 'payment_issue' | 'general';
   orderNumber?: string;
@@ -109,12 +111,12 @@ export default function OrderDeclinedMessage({
             >
               📧 Contact Support
             </button>
-            <a
+            <Link
               href="/"
               className="flex-1 px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold text-center"
             >
               🏠 Return to Home
-            </a>
+            </Link>
           </div>
         </div>
 

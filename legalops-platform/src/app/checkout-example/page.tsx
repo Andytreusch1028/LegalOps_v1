@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import ServiceRefusalDisclaimer from '@/components/ServiceRefusalDisclaimer';
 import OrderDeclinedMessage from '@/components/OrderDeclinedMessage';
 
@@ -291,12 +292,12 @@ export default function CheckoutExamplePage() {
               <p>Risk Score: {orderResult?.riskScore}/100 ({orderResult?.riskLevel})</p>
             </div>
           </div>
-          <a
+          <Link
             href="/"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
           >
             Return to Dashboard
-          </a>
+          </Link>
         </div>
       </div>
     );
