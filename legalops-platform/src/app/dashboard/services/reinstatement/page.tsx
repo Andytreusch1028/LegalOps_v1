@@ -31,7 +31,7 @@ export default function ReinstatementPage() {
   const searchParams = useSearchParams();
   const businessId = searchParams.get('businessId');
 
-  const [business, setBusiness] = useState<any>(null);
+  const [business, setBusiness] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<'basic' | 'standard' | 'premium'>('standard');
   const [fees, setFees] = useState<ReinstatementFees>({

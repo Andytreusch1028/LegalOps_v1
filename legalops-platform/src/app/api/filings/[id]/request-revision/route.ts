@@ -113,7 +113,7 @@ export async function POST(
     const staffUsers = await prisma.user.findMany({
       where: {
         role: {
-          in: ['FULFILLMENT_WORKER', 'MANAGER', 'SITE_ADMIN'] as any
+          in: ['FULFILLMENT_WORKER', 'MANAGER', 'SITE_ADMIN']
         }
       },
       select: {

@@ -38,7 +38,7 @@ export default async function FormDraftDetailPage({
     notFound();
   }
 
-  const formData = draft.formData as Record<string, any>;
+  const formData = draft.formData as Record<string, unknown>;
 
   return (
     <div>

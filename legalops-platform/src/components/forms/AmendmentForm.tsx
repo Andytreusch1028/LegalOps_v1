@@ -97,7 +97,7 @@ export default function AmendmentForm({
           </label>
           <select
             value={formData.amendmentType}
-            onChange={(e) => setFormData({ ...formData, amendmentType: e.target.value as any })}
+            onChange={(e) => setFormData({ ...formData, amendmentType: e.target.value as AmendmentData['amendmentType'] })}
             className="w-full border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
             style={{ padding: '12px 16px' }}
             required

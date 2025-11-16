@@ -195,10 +195,10 @@ export async function saveFeedback(data: {
 }) {
   // TODO: Save to database
   console.log('Feedback received:', data);
-  
+
   // Example: Send to analytics
-  if (typeof window !== 'undefined' && (window as any).gtag) {
-    (window as any).gtag('event', 'feedback', {
+  if (typeof window !== 'undefined' && (window as Record<string, unknown>).gtag) {
+    (window as Record<string, unknown>).gtag('event', 'feedback', {
       feedback_id: data.feedbackId,
       feedback_type: data.positive ? 'positive' : 'negative',
       feedback_comment: data.comment,

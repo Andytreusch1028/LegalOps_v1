@@ -109,7 +109,7 @@ async function main() {
 
   for (const noticeData of notices) {
     const notice = await prisma.notice.create({
-      data: noticeData as any
+      data: noticeData as Record<string, unknown>
     });
     console.log(`✅ Created notice: ${notice.title}`);
   }

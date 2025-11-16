@@ -230,7 +230,7 @@ export interface Filing {
   businessEntityId: string;
   filingType: FilingType;
   filingStatus: FilingStatus;
-  filingData: Record<string, any>; // JSON data
+  filingData: Record<string, unknown>; // JSON data
   confirmationNumber?: string;
   trackingNumber?: string;
   filedDate?: Date;

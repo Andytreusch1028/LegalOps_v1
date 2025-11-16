@@ -19,7 +19,7 @@ export default function TestAddressValidationPage() {
 
   const [finalAddress, setFinalAddress] = useState<AddressInput | null>(null);
   const [disclaimerAcceptances, setDisclaimerAcceptances] = useState<AddressDisclaimerAcceptance[]>([]);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);

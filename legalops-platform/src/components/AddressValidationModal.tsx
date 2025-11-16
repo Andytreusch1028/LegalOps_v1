@@ -74,7 +74,7 @@ export default function AddressValidationModal({
   };
 
   // Format address for display
-  const formatAddress = (addr: AddressInput | any) => {
+  const formatAddress = (addr: AddressInput | Record<string, unknown>) => {
     const parts = [];
     if (addr.address2) parts.push(addr.address2);
     if (addr.address1) parts.push(addr.address1);

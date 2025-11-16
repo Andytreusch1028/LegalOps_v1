@@ -247,7 +247,7 @@ export default async function CustomerDashboard() {
 
         // Try to extract business/fictitious name from additionalData
         if (item.additionalData && typeof item.additionalData === 'object') {
-          const data = item.additionalData as any;
+          const data = item.additionalData as Record<string, unknown>;
 
           // For fictitious name registrations - show entity name and DBA name separately
           if (serviceType === 'FICTITIOUS_NAME_REGISTRATION') {

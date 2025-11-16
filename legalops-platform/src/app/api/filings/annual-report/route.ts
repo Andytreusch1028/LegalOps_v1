@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-    
+
     // Update business entity if FEI/EIN changed (if provided in changes)
-    const feiNumber = (formData.changes as any)?.feiNumber;
+    const feiNumber = (formData.changes as Record<string, unknown>)?.feiNumber;
     if (feiNumber !== undefined) {
       await prisma.businessEntity.update({
         where: { id: formData.businessEntityId },
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Create the filing record
     const filing = await prisma.filing.create({
-      data: filingData as any,
+      data: filingData as Record<string, unknown>,
       include: {
         businessEntity: {
           include: {

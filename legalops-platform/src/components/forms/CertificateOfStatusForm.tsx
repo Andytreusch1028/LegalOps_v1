@@ -169,7 +169,7 @@ export default function CertificateOfStatusForm({
               name="deliveryMethod"
               value="EMAIL"
               checked={formData.deliveryMethod === 'EMAIL'}
-              onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value as 'EMAIL' | 'MAIL' })}
               className="mr-3"
             />
             <span className="font-semibold text-gray-900">Email Delivery (Recommended)</span>
@@ -191,7 +191,7 @@ export default function CertificateOfStatusForm({
               name="deliveryMethod"
               value="MAIL"
               checked={formData.deliveryMethod === 'MAIL'}
-              onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value as 'EMAIL' | 'MAIL' })}
               className="mr-3"
             />
             <span className="font-semibold text-gray-900">Mail Delivery</span>

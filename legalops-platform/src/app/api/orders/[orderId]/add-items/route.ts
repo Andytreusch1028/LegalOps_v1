@@ -81,7 +81,7 @@ export async function POST(
 
     // Create order items
     await prisma.orderItem.createMany({
-      data: newOrderItems as any,
+      data: newOrderItems as Record<string, unknown>[],
     });
 
     // Calculate new totals

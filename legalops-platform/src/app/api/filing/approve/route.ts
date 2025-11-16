@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get submission
-    const submission = await (prisma as any).filingSubmission.findUnique({
+    const submission = await prisma.filingSubmission.findUnique({
       where: { id: submissionId },
       include: {
         order: true,

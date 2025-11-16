@@ -148,7 +148,7 @@ export default function NameReservationForm({
           </label>
           <select
             value={formData.entityType}
-            onChange={(e) => setFormData({ ...formData, entityType: e.target.value as any })}
+            onChange={(e) => setFormData({ ...formData, entityType: e.target.value as 'LLC' | 'CORPORATION' | 'PARTNERSHIP' })}
             className="w-full border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
             style={{ padding: '12px 16px' }}
             required

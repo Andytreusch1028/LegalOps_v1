@@ -179,7 +179,7 @@ export function useSmartForm({
    * Auto-fill from saved record with confirmation
    */
   const autoFillFromRecord = useCallback(async (
-    record: Record<string, any>,
+    record: Record<string, unknown>,
     source: VerifiedField['source']
   ) => {
     // Show confirmation dialog

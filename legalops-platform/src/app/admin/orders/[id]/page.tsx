@@ -457,7 +457,7 @@ export default async function AdminOrderDetailPage({ params }: PageProps) {
       {(() => {
         // Find the order item with additionalData (usually the service fee item)
         const itemWithData = order.orderItems.find(item => item.additionalData);
-        const formData = itemWithData?.additionalData as any;
+        const formData = itemWithData?.additionalData as Record<string, unknown>;
 
         if (!formData) {
           return (

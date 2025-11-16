@@ -44,7 +44,7 @@ export default async function AdminRiskDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const riskFactors = assessment.riskFactors as any[];
+  const riskFactors = assessment.riskFactors as unknown[];
 
   return (
     <div style={{ padding: '32px' }}>

@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Build user response without sensitive fields
-    const { passwordHash: _ph, ...userWithoutPassword } = user as any;
+    const { passwordHash: _ph, ...userWithoutPassword } = user as Record<string, unknown>;
 
     return NextResponse.json(
       { 

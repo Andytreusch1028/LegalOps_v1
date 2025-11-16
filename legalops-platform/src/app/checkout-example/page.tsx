@@ -7,7 +7,7 @@ import OrderDeclinedMessage from '@/components/OrderDeclinedMessage';
 export default function CheckoutExamplePage() {
   const [step, setStep] = useState<'disclaimer' | 'checkout' | 'processing' | 'declined' | 'verification' | 'success'>('disclaimer');
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [orderResult, setOrderResult] = useState<any>(null);
+  const [orderResult, setOrderResult] = useState<Record<string, unknown> | null>(null);
 
   // Example order data
   const orderData = {
