@@ -23,6 +23,22 @@
   // Run open-guides.js when VS Code starts
   "extensions.startupActivationEvents": [
     "workspaceContains:.vscode/open-guides.js"
+  ],
+
+  // 🔒 LegalOps Safety Mode - Custom Actions Toolbar Icon
+  // Requires "Custom Actions" extension (install separately)
+  // Extension ID: ms-vscode.vscode-custom-actions
+  "customActions.actions": [
+    {
+      "name": "🔒 LegalOps Safety Mode",
+      "command": "editor.action.insertSnippet",
+      "args": {
+        "langId": "markdown",
+        "name": "Activate LegalOps Safety Mode"
+      },
+      "tooltip": "Activate LegalOps Auto-Switching Safety Mode (Ctrl+Alt+L)",
+      "icon": "shield"
+    }
   ]
 }
 

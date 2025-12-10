@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { FormWizard, FormSection, FormInput, FormSelect, FormCheckbox } from '@/components/forms';
@@ -39,6 +39,7 @@ interface FictitiousNameWizardProps {
 export default function FictitiousNameWizard({ onSubmit, initialData }: FictitiousNameWizardProps) {
   const { data: session } = useSession();
   const router = useRouter();
+  const signatureRef = useRef<HTMLDivElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -339,6 +340,10 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
   const handleSubmit = async () => {
     // Validate with isSubmitting=true to enforce certification requirement
     if (!validateStep(currentStep, true)) {
+      // If validation failed on signature, scroll to signature field
+      if (currentStep === 5 && (!formData.signatureName || !formData.signatureName.trim())) {
+        signatureRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       return;
     }
 
@@ -1979,7 +1984,7 @@ export default function FictitiousNameWizard({ onSubmit, initialData }: Fictitio
           description="Please review all details before submitting"
         >
           {/* Electronic Signature Section */}
-          <div style={{
+          <div ref={signatureRef} style={{
             padding: '24px',
             background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
             border: '2px solid #F59E0B',

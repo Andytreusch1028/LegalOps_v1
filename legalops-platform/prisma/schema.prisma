@@ -79,6 +79,12 @@ model User {
   // DBA Relationships
   fictitiousNames FictitiousName[] @relation("UserFictitiousNames")
 
+  // Indexes for query optimization
+  @@index([email]) // Already unique, but explicit index for lookups
+  @@index([userType]) // Queried for user type filtering
+  @@index([role]) // Queried for role-based access control
+  @@index([isActive]) // Queried for active user filtering
+  @@index([createdAt]) // Used for user registration analytics
   @@map("users")
 }
 
@@ -220,6 +226,13 @@ model BusinessEntity {
   managersOfficers ManagerOfficer[]
   filings          Filing[]
 
+  // Indexes for query optimization
+  @@index([clientId]) // Foreign key index for joins
+  @@index([entityType]) // Queried for entity type filtering
+  @@index([status]) // Queried for status filtering
+  @@index([documentNumber]) // Queried for Sunbiz lookups
+  @@index([createdAt]) // Used for sorting and date range queries
+  @@index([clientId, status]) // Composite index for client entity queries
   @@map("business_entities")
 }
 
@@ -520,6 +533,9 @@ model Order {
   raRenewalPrice            Decimal?  @db.Decimal(10, 2) // Price for renewal ($125/year)
   raRenewalNotificationSent Boolean   @default(false) // Have we sent renewal reminder?
 
+  // Form Data Storage (for DBA, LLC, Corp, etc.)
+  orderData Json? // Stores complete form data for document generation
+
   // Timestamps
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -532,6 +548,14 @@ model Order {
   interactions    CustomerInteraction[] @relation("OrderInteractions")
   fictitiousNames FictitiousName[]
 
+  // Indexes for query optimization
+  @@index([userId]) // Frequently queried for user's orders
+  @@index([orderStatus]) // Queried for order processing queues
+  @@index([paymentStatus]) // Queried for payment reconciliation
+  @@index([createdAt]) // Used for sorting and date range queries
+  @@index([requiresReview]) // Queried for admin review queue
+  @@index([userId, createdAt]) // Composite index for user order history
+  @@index([orderStatus, createdAt]) // Composite index for status-based queries with sorting
   @@map("orders")
 }
 
@@ -575,6 +599,9 @@ model OrderItem {
   // Timestamps
   createdAt DateTime @default(now())
 
+  // Indexes for query optimization
+  @@index([orderId]) // Foreign key index for joins
+  @@index([serviceType]) // Queried for service analytics
   @@map("order_items")
 }
 

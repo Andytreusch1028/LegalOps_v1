@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Activate LegalOps Safety Mode",
+      "type": "shell",
+      "command": "echo",
+      "args": [
+        "🔒 LegalOps Safety Mode Activated!\n\nUse Ctrl+Alt+L to insert the full safety mode text into your editor.\n\nOr use Command Palette: 'Insert Snippet: Activate LegalOps Safety Mode'"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
+

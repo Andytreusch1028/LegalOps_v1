@@ -8,27 +8,77 @@ import { PrismaClient } from '@/generated/prisma';
 
 const prisma = new PrismaClient();
 
+/**
+ * Represents a single change made to a filing by staff.
+ * Used for tracking and customer approval workflows.
+ */
 interface Change {
+  /** The field that was changed (e.g., 'firstName', 'address.street') */
   field: string;
+  /** The original value before the change */
   oldValue: string;
+  /** The new value after the change */
   newValue: string;
+  /** Classification of the change impact */
   changeType: 'SUBSTANTIVE' | 'MINOR';
+  /** Explanation for why the change was made */
   reason: string;
+  /** ID or name of the staff member who made the change */
   changedBy: string;
+  /** ISO timestamp of when the change was made */
   changedAt: string;
 }
 
+/**
+ * Parameters for creating an approval notice.
+ */
 interface CreateApprovalNoticeParams {
+  /** ID of the filing being modified */
   filingId: string;
+  /** ID of the user who owns the filing */
   userId: string;
+  /** Array of changes made to the filing */
   changes: Change[];
+  /** Overall explanation for all changes */
   overallReason: string;
 }
 
 /**
- * Creates an approval notice for a filing with staff changes
- * Updates the filing status to PENDING_CUSTOMER_APPROVAL
- * Creates a notice for the customer to review and approve
+ * Creates an approval notice for a filing with staff changes.
+ * 
+ * Business Logic:
+ * - Validates that all changes are properly documented
+ * - Determines if changes are substantive or minor
+ * - For minor changes only: checks user's auto-approve preference
+ * - For substantive changes: requires explicit customer approval
+ * - Creates appropriate notices for customer notification
+ * - Updates filing status based on change type and user preferences
+ * 
+ * @param params - Parameters for creating the approval notice
+ * @returns Result object with approval status and filing details
+ * @throws Error if changes are not properly documented
+ * 
+ * @example
+ * ```typescript
+ * const result = await createApprovalNotice({
+ *   filingId: 'filing_123',
+ *   userId: 'user_456',
+ *   changes: [{
+ *     field: 'firstName',
+ *     oldValue: 'John',
+ *     newValue: 'Jon',
+ *     changeType: 'MINOR',
+ *     reason: 'Corrected spelling per customer request',
+ *     changedBy: 'staff_789',
+ *     changedAt: new Date().toISOString()
+ *   }],
+ *   overallReason: 'Correcting customer information'
+ * });
+ * 
+ * if (result.requiresApproval) {
+ *   // Customer must approve before filing
+ * }
+ * ```
  */
 export async function createApprovalNotice({
   filingId,
@@ -176,7 +226,17 @@ export async function createApprovalNotice({
 }
 
 /**
- * Helper to format field names for display
+ * Formats field names for user-friendly display.
+ * Converts technical field names to readable labels.
+ * 
+ * @param field - Technical field name (e.g., 'user.first_name')
+ * @returns Formatted field name (e.g., 'User → First Name')
+ * 
+ * @example
+ * ```typescript
+ * formatFieldName('address.street_line_1'); // 'Address → Street Line 1'
+ * formatFieldName('firstName'); // 'Firstname'
+ * ```
  */
 export function formatFieldName(field: string): string {
   return field
@@ -187,8 +247,27 @@ export function formatFieldName(field: string): string {
 }
 
 /**
- * Helper to determine if a change is substantive
- * This is a simple heuristic - you may want to customize this
+ * Determines if a change is substantive or minor.
+ * 
+ * Substantive changes affect legal or identifying information and require customer approval.
+ * Minor changes are formatting or non-critical corrections.
+ * 
+ * Business Logic:
+ * - Checks if field is in the substantive fields list
+ * - Compares normalized values to detect formatting-only changes
+ * - Returns false if only formatting differs (e.g., 'John Smith' vs 'john smith')
+ * 
+ * @param field - The field name being changed
+ * @param oldValue - The original value
+ * @param newValue - The new value
+ * @returns True if the change is substantive, false if minor
+ * 
+ * @example
+ * ```typescript
+ * isSubstantiveChange('firstName', 'John', 'Jon'); // true (content changed)
+ * isSubstantiveChange('firstName', 'John', 'JOHN'); // false (formatting only)
+ * isSubstantiveChange('notes', 'Old note', 'New note'); // false (not substantive field)
+ * ```
  */
 export function isSubstantiveChange(field: string, oldValue: string, newValue: string): boolean {
   // Fields that are always substantive

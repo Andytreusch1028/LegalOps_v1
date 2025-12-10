@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { ServiceFactory } from '@/lib/services/service-factory';
+import { createSuccessResponse, createErrorResponse } from '@/lib/types/api';
 
 /**
  * GET /api/orders/[orderId]
@@ -11,26 +12,25 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
+  const errorHandler = ServiceFactory.getErrorHandler();
+  const orderService = ServiceFactory.getOrderService();
+
   try {
     const session = await getServerSession(authOptions);
     const { orderId } = await params;
 
-    const order = await prisma.order.findUnique({
-      where: {
-        id: orderId,
-      },
-      include: {
-        orderItems: true,
-        package: true,  // Include package information
-      },
-    });
+    // Use OrderService to get the order
+    const result = await orderService.getOrder(orderId, session?.user?.id);
 
-    if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+    if (!result.success) {
+      const response = await errorHandler.handle(result.error, {
+        orderId,
+        endpoint: '/api/orders/[orderId]'
+      });
+      return NextResponse.json(response, { status: result.error.statusCode });
     }
+
+    const order = result.data;
 
     // For guest orders, allow access without authentication
     if (order.isGuestOrder) {
@@ -39,17 +39,21 @@ export async function GET(
     } else {
       // For authenticated user orders, verify ownership
       if (!session) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
+        const response = createErrorResponse(
+          'UNAUTHORIZED',
+          'Authentication required',
+          undefined
         );
+        return NextResponse.json(response, { status: 401 });
       }
 
       if (order.userId !== session.user.id) {
-        return NextResponse.json(
-          { error: 'Forbidden' },
-          { status: 403 }
+        const response = createErrorResponse(
+          'FORBIDDEN',
+          'Not authorized to access this order',
+          undefined
         );
+        return NextResponse.json(response, { status: 403 });
       }
     }
 
@@ -66,13 +70,14 @@ export async function GET(
       })),
     };
 
-    return NextResponse.json(orderResponse);
+    const response = createSuccessResponse(orderResponse);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching order:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch order' },
-      { status: 500 }
-    );
+    const response = await errorHandler.handle(error, {
+      endpoint: '/api/orders/[orderId]',
+      method: 'GET'
+    });
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

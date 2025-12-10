@@ -35,6 +35,26 @@ import {
 // ADDRESS MAPPING
 // ============================================================================
 
+/**
+ * Maps form address data to database address record.
+ * Converts user-friendly form structure to database schema format.
+ * 
+ * @param addressData - Address data from form
+ * @param addressType - Type of address (PRINCIPAL, MAILING, REGISTERED_AGENT)
+ * @param ownerId - ID of the owning entity
+ * @param ownerType - Type of owner (client, businessEntity, or registeredAgent)
+ * @returns Database address record without generated fields
+ * 
+ * @example
+ * ```typescript
+ * const dbAddress = mapAddressFormToDatabase(
+ *   formData.principalAddress,
+ *   AddressType.PRINCIPAL,
+ *   businessEntityId,
+ *   'businessEntity'
+ * );
+ * ```
+ */
 export function mapAddressFormToDatabase(
   addressData: AddressFormData,
   addressType: AddressType,
@@ -59,14 +79,58 @@ export function mapAddressFormToDatabase(
 // LLC FORMATION MAPPING
 // ============================================================================
 
+/**
+ * Database records for LLC formation.
+ * Contains all related entities needed to create an LLC in the database.
+ */
 export interface LLCFormationDatabaseRecords {
+  /** The business entity record */
   businessEntity: Omit<BusinessEntity, 'id' | 'createdAt' | 'updatedAt'>;
+  /** All addresses (principal, mailing, agent) */
   addresses: Array<Omit<Address, 'id' | 'createdAt' | 'updatedAt'>>;
+  /** Registered agent information */
   registeredAgent: Omit<RegisteredAgent, 'id' | 'createdAt' | 'updatedAt'>;
+  /** LLC managers */
   managers: Array<Omit<ManagerOfficer, 'id' | 'createdAt' | 'updatedAt'>>;
+  /** Filing record with form data */
   filing: Omit<Filing, 'id' | 'createdAt' | 'updatedAt'>;
 }
 
+/**
+ * Maps LLC formation form data to database records.
+ * Transforms user input into normalized database entities with proper relationships.
+ * 
+ * Business Logic:
+ * - Creates business entity with PENDING status
+ * - Maps principal and optional mailing addresses
+ * - Handles LegalOps or custom registered agent
+ * - Creates manager records for member-managed or manager-managed LLCs
+ * - Stores complete form data in filing record for reference
+ * 
+ * @param formData - Complete LLC formation form data
+ * @param clientId - ID of the client creating the LLC
+ * @param businessEntityId - Pre-generated ID for the business entity
+ * @param registeredAgentId - Pre-generated ID for the registered agent
+ * @returns All database records needed for LLC creation
+ * @throws Error if SELF or EXISTING agent options are used (must be handled in service layer)
+ * 
+ * @example
+ * ```typescript
+ * const records = mapLLCFormationToDatabase(
+ *   formData,
+ *   'client_123',
+ *   'entity_456',
+ *   'agent_789'
+ * );
+ * 
+ * // Use in transaction
+ * await prisma.$transaction(async (tx) => {
+ *   await tx.businessEntity.create({ data: records.businessEntity });
+ *   await tx.address.createMany({ data: records.addresses });
+ *   // ... create other records
+ * });
+ * ```
+ */
 export function mapLLCFormationToDatabase(
   formData: LLCFormationFormData,
   clientId: string,
@@ -213,15 +277,61 @@ export function mapLLCFormationToDatabase(
 // CORPORATION FORMATION MAPPING
 // ============================================================================
 
+/**
+ * Database records for corporation formation.
+ * Contains all related entities needed to create a corporation in the database.
+ */
 export interface CorporationFormationDatabaseRecords {
+  /** The business entity record */
   businessEntity: Omit<BusinessEntity, 'id' | 'createdAt' | 'updatedAt'>;
+  /** All addresses (principal, mailing, agent) */
   addresses: Array<Omit<Address, 'id' | 'createdAt' | 'updatedAt'>>;
+  /** Registered agent information */
   registeredAgent: Omit<RegisteredAgent, 'id' | 'createdAt' | 'updatedAt'>;
+  /** Corporate officers (President, VP, Secretary, Treasurer) */
   officers: Array<Omit<ManagerOfficer, 'id' | 'createdAt' | 'updatedAt'>>;
+  /** Board of directors */
   directors: Array<Omit<ManagerOfficer, 'id' | 'createdAt' | 'updatedAt'>>;
+  /** Filing record with form data */
   filing: Omit<Filing, 'id' | 'createdAt' | 'updatedAt'>;
 }
 
+/**
+ * Maps corporation formation form data to database records.
+ * Transforms user input into normalized database entities for for-profit or nonprofit corporations.
+ * 
+ * Business Logic:
+ * - Creates business entity with appropriate type (CORPORATION or NONPROFIT_CORPORATION)
+ * - Maps principal and optional mailing addresses
+ * - Handles LegalOps or custom registered agent
+ * - Separates officers and directors into distinct records
+ * - Stores stock information and incorporator details in filing record
+ * 
+ * @param formData - Complete corporation formation form data
+ * @param clientId - ID of the client creating the corporation
+ * @param businessEntityId - Pre-generated ID for the business entity
+ * @param registeredAgentId - Pre-generated ID for the registered agent
+ * @returns All database records needed for corporation creation
+ * @throws Error if SELF or EXISTING agent options are used (must be handled in service layer)
+ * 
+ * @example
+ * ```typescript
+ * const records = mapCorporationFormationToDatabase(
+ *   formData,
+ *   'client_123',
+ *   'entity_456',
+ *   'agent_789'
+ * );
+ * 
+ * // Use in transaction
+ * await prisma.$transaction(async (tx) => {
+ *   await tx.businessEntity.create({ data: records.businessEntity });
+ *   await tx.address.createMany({ data: records.addresses });
+ *   await tx.managerOfficer.createMany({ data: [...records.officers, ...records.directors] });
+ *   // ... create other records
+ * });
+ * ```
+ */
 export function mapCorporationFormationToDatabase(
   formData: CorporationFormationFormData,
   clientId: string,
@@ -379,9 +489,38 @@ export function mapCorporationFormationToDatabase(
 // ANNUAL REPORT MAPPING
 // ============================================================================
 
+/**
+ * Maps annual report form data to a filing database record.
+ * Creates a filing record for annual report submission.
+ * 
+ * Business Logic:
+ * - Creates ANNUAL_REPORT filing type
+ * - Stores confirmation of current information
+ * - Records any changes to entity information
+ * - Maintains correspondence email for state communications
+ * 
+ * @param businessEntityId - ID of the business entity filing the report
+ * @param formData - Annual report form data
+ * @returns Filing record for the annual report
+ * 
+ * @example
+ * ```typescript
+ * const filing = mapAnnualReportToDatabase(
+ *   'entity_123',
+ *   {
+ *     businessEntityId: 'entity_123',
+ *     confirmCurrentInformation: true,
+ *     hasChanges: false,
+ *     correspondenceEmail: '[email protected]'
+ *   }
+ * );
+ * 
+ * await prisma.filing.create({ data: filing });
+ * ```
+ */
 export function mapAnnualReportToDatabase(
-  formData: AnnualReportFormData,
-  businessEntityId: string
+  businessEntityId: string,
+  formData: AnnualReportFormData
 ): Omit<Filing, 'id' | 'createdAt' | 'updatedAt'> {
   return {
     businessEntityId,

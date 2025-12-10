@@ -1,96 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { ServiceFactory } from "@/lib/services/service-factory";
+import { createSuccessResponse, createErrorResponse } from "@/lib/types/api";
+import { AppError } from "@/lib/types/result";
 
 /**
  * GET /api/orders - Get all orders for the current user
  */
 export async function GET(request: NextRequest) {
+  const errorHandler = ServiceFactory.getErrorHandler();
+  const orderService = ServiceFactory.getOrderService();
+
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+      const response = createErrorResponse(
+        'UNAUTHORIZED',
+        'Authentication required',
+        undefined
       );
+      return NextResponse.json(response, { status: 401 });
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    // Get user ID from session
+    const userId = session.user.id;
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
+    if (!userId) {
+      const response = createErrorResponse(
+        'USER_NOT_FOUND',
+        'User not found',
+        undefined
       );
+      return NextResponse.json(response, { status: 404 });
     }
 
-    // Get orders based on user role
-    let orders;
-    if (user.role === "ADMIN" || user.userType === "EMPLOYEE" || user.userType === "SITE_ADMIN") {
-      // Admins and employees can see all orders
-      orders = await prisma.order.findMany({
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
-          },
-          orderItems: {
-            select: {
-              serviceType: true,
-              description: true,
-              additionalData: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
+    // Use OrderService to get user orders
+    const result = await orderService.getUserOrders(userId);
+
+    if (!result.success) {
+      const response = await errorHandler.handle(result.error, {
+        userId,
+        endpoint: '/api/orders'
       });
-    } else {
-      // Regular users can only see their own orders
-      orders = await prisma.order.findMany({
-        where: {
-          userId: user.id,
-        },
-        include: {
-          orderItems: {
-            select: {
-              serviceType: true,
-              description: true,
-              additionalData: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+      return NextResponse.json(response, { status: result.error.statusCode });
     }
 
     // Convert Decimal fields to numbers for JSON serialization
-    const ordersResponse = orders.map(order => ({
+    const ordersResponse = result.data.map(order => ({
       ...order,
       subtotal: Number(order.subtotal),
       tax: Number(order.tax),
       total: Number(order.total),
+      orderItems: order.orderItems?.map(item => ({
+        ...item,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+      }))
     }));
 
-    return NextResponse.json({ orders: ordersResponse });
+    const response = createSuccessResponse({ orders: ordersResponse });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch orders" },
-      { status: 500 }
-    );
+    const response = await errorHandler.handle(error, {
+      endpoint: '/api/orders',
+      method: 'GET'
+    });
+    return NextResponse.json(response, { status: 500 });
   }
 }
 
@@ -99,26 +76,33 @@ export async function GET(request: NextRequest) {
  * Supports both old and new order creation patterns
  */
 export async function POST(request: NextRequest) {
+  const errorHandler = ServiceFactory.getErrorHandler();
+  const orderService = ServiceFactory.getOrderService();
+  const { prisma } = await import("@/lib/prisma");
+  let userId: string | undefined;
+
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+      const response = createErrorResponse(
+        'UNAUTHORIZED',
+        'Authentication required',
+        undefined
       );
+      return NextResponse.json(response, { status: 401 });
     }
 
-    // Get user from database
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    // Get user ID from session
+    userId = session.user.id;
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
+    if (!userId) {
+      const response = createErrorResponse(
+        'USER_NOT_FOUND',
+        'User not found',
+        undefined
       );
+      return NextResponse.json(response, { status: 404 });
     }
 
     const body = await request.json();
@@ -166,11 +150,12 @@ export async function POST(request: NextRequest) {
       console.log('[API /api/orders] Service found:', service?.name);
 
       if (!service) {
-        console.error('[API /api/orders] Service not found for ID:', serviceId);
-        return NextResponse.json(
-          { error: "Service not found" },
-          { status: 404 }
+        const response = createErrorResponse(
+          'SERVICE_NOT_FOUND',
+          'Service not found',
+          { serviceId }
         );
+        return NextResponse.json(response, { status: 404 });
       }
 
       // Fetch package if packageId is provided
@@ -300,6 +285,7 @@ export async function POST(request: NextRequest) {
           raAutoRenew: includesRA, // Default to true if RA is included
           raRenewalPrice: raRenewalPrice,
           raRenewalNotificationSent: false,
+          orderData: orderData, // Save complete form data to Order table
           orderItems: {
             create: orderItems,
           },
@@ -316,23 +302,25 @@ export async function POST(request: NextRequest) {
         total: Number(order.total),
       };
 
-      return NextResponse.json(
+      const response = createSuccessResponse(
         {
           message: "Order created successfully",
           order: orderResponse,
           orderId: order.id,
-        },
-        { status: 201 }
+        }
       );
+      return NextResponse.json(response, { status: 201 });
     }
 
     // Fallback for old pattern (if needed for backward compatibility)
     const { businessName, entityType, state } = body;
     if (!businessName || !entityType || !orderType || !state) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
+      const response = createErrorResponse(
+        'MISSING_REQUIRED_FIELDS',
+        'Missing required fields: businessName, entityType, orderType, state',
+        { provided: { businessName: !!businessName, entityType: !!entityType, orderType: !!orderType, state: !!state } }
       );
+      return NextResponse.json(response, { status: 400 });
     }
 
     // Calculate pricing based on entity type
@@ -365,28 +353,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
+    const response = createSuccessResponse(
       {
         message: "Order created successfully",
         order,
         orderId: order.id,
-      },
-      { status: 201 }
+      }
     );
+    return NextResponse.json(response, { status: 201 });
   } catch (error) {
-    console.error("[API /api/orders] Error creating order:", error);
-    console.error("[API /api/orders] Error details:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      error,
+    const response = await errorHandler.handle(error, {
+      endpoint: '/api/orders',
+      method: 'POST',
+      userId
     });
-    return NextResponse.json(
-      {
-        error: "Failed to create order",
-        details: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

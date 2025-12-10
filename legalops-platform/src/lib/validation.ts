@@ -101,12 +101,14 @@ export const formatEIN = (value: string): string => {
  * RFC 5322 compliant email validation
  */
 export const emailSchema = z.string()
-  .email('Please enter a valid email address')
-  .transform(val => val.trim().toLowerCase());
+  .transform(val => val.trim().toLowerCase())
+  .refine(val => validateEmail(val), 'Please enter a valid email address');
 
 export const validateEmail = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (trimmed.length > 254) return false; // RFC 5321 max length
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(value.trim());
+  return emailRegex.test(trimmed);
 };
 
 /**
@@ -114,8 +116,8 @@ export const validateEmail = (value: string): boolean => {
  * Validates HTTP/HTTPS URLs
  */
 export const urlSchema = z.string()
-  .url('Please enter a valid URL (must start with http:// or https://)')
-  .transform(val => val.trim());
+  .transform(val => val.trim())
+  .refine(val => validateURL(val), 'Please enter a valid URL (must start with http:// or https://)');
 
 export const validateURL = (value: string): boolean => {
   try {
@@ -150,15 +152,37 @@ export const formatDocumentNumber = (value: string): string => {
  */
 export const dateSchema = z.string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in format YYYY-MM-DD')
-  .refine(val => {
-    const date = new Date(val);
-    return !isNaN(date.getTime());
-  }, 'Please enter a valid date');
+  .refine(val => validateDate(val), 'Please enter a valid date');
 
 export const validateDate = (value: string): boolean => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(value);
-  return !isNaN(date.getTime());
+  
+  // Parse the date components
+  const [year, month, day] = value.split('-').map(Number);
+  
+  // Check if month is valid (1-12)
+  if (month < 1 || month > 12) return false;
+  
+  // Check if day is valid for the given month
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  
+  // Adjust for leap year
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  if (isLeapYear) {
+    daysInMonth[1] = 29;
+  }
+  
+  if (day < 1 || day > daysInMonth[month - 1]) return false;
+  
+  // Additional check: create date in UTC to avoid timezone issues
+  // Use Date.UTC to create timestamp, then verify components match
+  const timestamp = Date.UTC(year, month - 1, day);
+  if (isNaN(timestamp)) return false;
+  
+  const date = new Date(timestamp);
+  return date.getUTCFullYear() === year &&
+         date.getUTCMonth() + 1 === month &&
+         date.getUTCDate() === day;
 };
 
 /**
@@ -243,10 +267,10 @@ export const createConfirmPasswordSchema = (passwordField: string = 'password') 
  * Must not be empty and should not contain certain special characters
  */
 export const businessNameSchema = z.string()
-  .min(1, 'Business name is required')
-  .max(200, 'Business name must be less than 200 characters')
-  .regex(/^[a-zA-Z0-9\s\-.,&'()]+$/, 'Business name contains invalid characters')
-  .transform(val => val.trim());
+  .transform(val => val.trim())
+  .refine(val => val.length > 0, 'Business name is required')
+  .refine(val => val.length <= 200, 'Business name must be less than 200 characters')
+  .refine(val => /^[a-zA-Z0-9\s\-.,&'()]+$/.test(val), 'Business name contains invalid characters');
 
 export const validateBusinessName = (value: string): boolean => {
   return value.trim().length > 0 &&
@@ -259,10 +283,10 @@ export const validateBusinessName = (value: string): boolean => {
  * Similar to business name but with additional suffix restrictions
  */
 export const dbaNameSchema = z.string()
-  .min(1, 'DBA name is required')
-  .max(120, 'DBA name must be less than 120 characters')
-  .regex(/^[a-zA-Z0-9\s\-.,&'()]+$/, 'DBA name contains invalid characters')
-  .transform(val => val.trim());
+  .transform(val => val.trim())
+  .refine(val => val.length > 0, 'DBA name is required')
+  .refine(val => val.length <= 120, 'DBA name must be less than 120 characters')
+  .refine(val => /^[a-zA-Z0-9\s\-.,&'()]+$/.test(val), 'DBA name contains invalid characters');
 
 export const validateDBAName = (value: string): boolean => {
   return value.trim().length > 0 &&

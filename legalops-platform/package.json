@@ -7,13 +7,21 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,css,scss}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,yml,yaml,css,scss}\"",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "import-entities": "tsx scripts/import-florida-entities.ts",
     "import-dbas": "tsx scripts/import-fictitious-names.ts",
     "import-partnerships": "tsx scripts/import-general-partnerships.ts",
     "seed-services": "tsx prisma/seed-services.ts",
     "seed-test-data": "tsx scripts/seed-test-data.ts",
     "test-ai-agent": "tsx scripts/test-ai-agent.ts",
-    "create-staff": "tsx scripts/create-staff-user.ts"
+    "create-staff": "tsx scripts/create-staff-user.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.66.0",
@@ -40,14 +48,25 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5.1.2",
+    "@vitest/ui": "^4.0.15",
     "eslint": "^9",
     "eslint-config-next": "15.5.5",
+    "fast-check": "^4.3.0",
+    "husky": "^9.1.7",
+    "jsdom": "^27.3.0",
+    "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.15"
   }
 }

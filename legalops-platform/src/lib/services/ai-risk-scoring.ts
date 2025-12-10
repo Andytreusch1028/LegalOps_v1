@@ -6,6 +6,11 @@
  */
 
 import OpenAI from 'openai';
+import { z } from 'zod';
+import { Result, AppError, ok, err } from '@/lib/types/result';
+import { BaseService } from './base.service';
+import { ILogger } from '../interfaces/logger.interface';
+import { createLogger } from '../logging/console-logger';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -36,6 +41,43 @@ export interface OrderData {
   };
 }
 
+// ============================================================================
+// VALIDATION SCHEMAS
+// ============================================================================
+
+/**
+ * Validation schema for customer data.
+ * Ensures all required fields are present and valid.
+ */
+export const CustomerDataSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().optional(),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
+  ipAddress: z.string().optional(),
+  userAgent: z.string().optional(),
+  accountAge: z.number().int().min(0, 'Account age must be non-negative').optional(),
+  previousOrders: z.number().int().min(0, 'Previous orders must be non-negative').optional(),
+  previousChargebacks: z.number().int().min(0, 'Previous chargebacks must be non-negative').optional()
+});
+
+/**
+ * Validation schema for order data.
+ * Ensures all required fields are present and valid.
+ */
+export const OrderDataSchema = z.object({
+  amount: z.number().positive('Order amount must be positive'),
+  services: z.array(z.string()).min(1, 'At least one service is required'),
+  isRushOrder: z.boolean(),
+  paymentMethod: z.enum(['credit_card', 'debit_card', 'prepaid_card', 'bank_transfer', 'paypal', 'stripe']),
+  billingAddress: z.object({
+    street: z.string().min(1, 'Street is required'),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(2, 'State is required'),
+    zip: z.string().min(5, 'ZIP code is required')
+  }).optional()
+});
+
 export interface RiskFactor {
   factor: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
@@ -56,10 +98,13 @@ export interface RiskAssessment {
 // AI RISK SCORING SERVICE
 // ============================================================================
 
-export class AIRiskScoringService {
+export class AIRiskScoringService extends BaseService {
+  readonly name = 'AIRiskScoringService';
   private openai: OpenAI | null = null;
 
-  constructor() {
+  constructor(logger?: ILogger) {
+    super(logger || createLogger('AIRiskScoringService'));
+    
     // Only initialize OpenAI if API key is available
     if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({
@@ -69,29 +114,70 @@ export class AIRiskScoringService {
   }
 
   /**
-   * Assess risk for a new order
+   * Assess risk for a new order with input validation and Result type.
+   * 
+   * @param customer - Customer data to assess
+   * @param order - Order data to assess
+   * @returns Result containing RiskAssessment or AppError
    */
   async assessRisk(
     customer: CustomerData,
     order: OrderData
-  ): Promise<RiskAssessment> {
-    
-    // Step 1: Perform basic rule-based checks
-    const basicRiskFactors = this.performBasicChecks(customer, order);
-    const basicRiskScore = basicRiskFactors.reduce((sum, f) => sum + f.points, 0);
-
-    // Step 2: If OpenAI is not configured, return basic assessment
-    if (!this.openai || !process.env.OPENAI_API_KEY) {
-      return this.createBasicAssessment(basicRiskScore, basicRiskFactors);
-    }
-
-    // Step 3: Use AI for advanced pattern recognition
+  ): Promise<Result<RiskAssessment, AppError>> {
     try {
-      const aiAssessment = await this.performAIAnalysis(customer, order, basicRiskFactors);
-      return aiAssessment;
+      // Step 1: Validate input data
+      const customerValidation = CustomerDataSchema.safeParse(customer);
+      if (!customerValidation.success) {
+        return err(this.createError(
+          'Invalid customer data',
+          'INVALID_CUSTOMER_DATA',
+          400,
+          { errors: customerValidation.error.flatten() }
+        ));
+      }
+
+      const orderValidation = OrderDataSchema.safeParse(order);
+      if (!orderValidation.success) {
+        return err(this.createError(
+          'Invalid order data',
+          'INVALID_ORDER_DATA',
+          400,
+          { errors: orderValidation.error.flatten() }
+        ));
+      }
+
+      // Step 2: Perform basic rule-based checks
+      const basicRiskFactors = this.performBasicChecks(customerValidation.data, orderValidation.data);
+      const basicRiskScore = basicRiskFactors.reduce((sum, f) => sum + f.points, 0);
+
+      // Step 3: If OpenAI is not configured, return basic assessment
+      if (!this.openai || !process.env.OPENAI_API_KEY) {
+        const assessment = this.createBasicAssessment(basicRiskScore, basicRiskFactors);
+        return ok(assessment);
+      }
+
+      // Step 4: Use AI for advanced pattern recognition
+      try {
+        const aiAssessment = await this.performAIAnalysis(
+          customerValidation.data,
+          orderValidation.data,
+          basicRiskFactors
+        );
+        return ok(aiAssessment);
+      } catch (error) {
+        this.logError(error, { customer: customer.email, orderAmount: order.amount });
+        this.logWarn('AI risk assessment failed, falling back to basic assessment');
+        const assessment = this.createBasicAssessment(basicRiskScore, basicRiskFactors);
+        return ok(assessment);
+      }
     } catch (error) {
-      console.error('AI risk assessment failed, falling back to basic assessment:', error);
-      return this.createBasicAssessment(basicRiskScore, basicRiskFactors);
+      return err(this.handleError(
+        error,
+        'Failed to assess risk',
+        'RISK_ASSESSMENT_FAILED',
+        500,
+        { customer: customer.email, orderAmount: order.amount }
+      ));
     }
   }
 
@@ -290,6 +376,13 @@ Return ONLY valid JSON with this exact structure:
 
     const aiResult = JSON.parse(response.choices[0].message.content || '{}');
     
+    // Ensure AI-returned risk score is bounded 0-100
+    const rawScore = aiResult.riskScore || 0;
+    const boundedScore = Math.max(0, Math.min(100, rawScore));
+    
+    // Map score to correct risk level (don't trust AI's level mapping)
+    const riskLevel = this.mapScoreToLevel(boundedScore);
+    
     // Combine basic and AI-detected risk factors
     const allRiskFactors = [
       ...basicRiskFactors,
@@ -297,37 +390,42 @@ Return ONLY valid JSON with this exact structure:
     ];
 
     return {
-      riskScore: aiResult.riskScore || 0,
-      riskLevel: aiResult.riskLevel || 'LOW',
+      riskScore: boundedScore,
+      riskLevel,
       riskFactors: allRiskFactors,
       recommendation: aiResult.recommendation || 'APPROVE',
       reasoning: aiResult.reasoning || 'No significant risk factors detected.',
-      requiresReview: aiResult.riskScore >= 51
+      requiresReview: boundedScore >= 51
     };
   }
 
   /**
-   * Create basic assessment without AI (fallback)
+   * Create basic assessment without AI (fallback).
+   * Ensures risk scores are bounded 0-100 and risk levels are correctly mapped.
+   * 
+   * @param riskScore - Raw risk score from basic checks
+   * @param riskFactors - Array of detected risk factors
+   * @returns RiskAssessment with bounded score and correct level mapping
    */
   private createBasicAssessment(
     riskScore: number,
     riskFactors: RiskFactor[]
   ): RiskAssessment {
+    // Ensure risk score is bounded between 0 and 100
+    const boundedScore = Math.max(0, Math.min(100, riskScore));
     
-    let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+    // Map risk score to correct risk level
+    const riskLevel = this.mapScoreToLevel(boundedScore);
+    
+    // Determine recommendation based on risk level
     let recommendation: 'APPROVE' | 'REVIEW' | 'VERIFY' | 'DECLINE';
-
-    if (riskScore >= 76) {
-      riskLevel = 'CRITICAL';
+    if (riskLevel === 'CRITICAL') {
       recommendation = 'DECLINE';
-    } else if (riskScore >= 51) {
-      riskLevel = 'HIGH';
+    } else if (riskLevel === 'HIGH') {
       recommendation = 'VERIFY';
-    } else if (riskScore >= 26) {
-      riskLevel = 'MEDIUM';
+    } else if (riskLevel === 'MEDIUM') {
       recommendation = 'REVIEW';
     } else {
-      riskLevel = 'LOW';
       recommendation = 'APPROVE';
     }
 
@@ -336,16 +434,46 @@ Return ONLY valid JSON with this exact structure:
       : 'No significant risk factors detected.';
 
     return {
-      riskScore,
+      riskScore: boundedScore,
       riskLevel,
       riskFactors,
       recommendation,
       reasoning,
-      requiresReview: riskScore >= 51
+      requiresReview: boundedScore >= 51
     };
+  }
+
+  /**
+   * Maps a risk score to the correct risk level.
+   * Ensures consistent mapping across the service.
+   * 
+   * @param score - Risk score (0-100)
+   * @returns Risk level corresponding to the score
+   */
+  private mapScoreToLevel(score: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+    if (score >= 76) {
+      return 'CRITICAL';
+    } else if (score >= 51) {
+      return 'HIGH';
+    } else if (score >= 26) {
+      return 'MEDIUM';
+    } else {
+      return 'LOW';
+    }
   }
 }
 
 // Export singleton instance
 export const aiRiskScoring = new AIRiskScoringService();
+
+/**
+ * Interface for risk scoring service.
+ * Allows for dependency injection and testing.
+ */
+export interface IRiskService {
+  assessRisk(
+    customer: CustomerData,
+    order: OrderData
+  ): Promise<Result<RiskAssessment, AppError>>;
+}
 

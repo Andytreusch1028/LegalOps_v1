@@ -1,0 +1,95 @@
+/**
+ * LEGALOPS MANIFEST AGENT (LIGHT VERSION)
+ * ------------------------------------------
+ * Produces a tiny snapshot that ONLY includes:
+ * - file paths
+ * - categories (workflow, form, validator, etc.)
+ * - function names
+ * - NO large snippets
+ * 
+ * Safe for ChatGPT uploads.
+ */
+
+const fs = require("fs");
+const path = require("path");
+
+const APP_ROOT = path.join(process.cwd(), "legalops-platform");
+const OUTPUT_FILE = path.join(process.cwd(), "legalops_snapshot_light.json");
+
+const FILE_EXTENSIONS = [".ts", ".tsx", ".js", ".json", ".prisma"];
+
+function listFiles(dir) {
+  let results = [];
+  const items = fs.readdirSync(dir);
+
+  for (let item of items) {
+    const full = path.join(dir, item);
+    const stat = fs.statSync(full);
+
+    if (stat.isDirectory()) {
+      results = results.concat(listFiles(full));
+    } else {
+      if (FILE_EXTENSIONS.some(ext => full.endsWith(ext))) {
+        results.push(full);
+      }
+    }
+  }
+
+  return results;
+}
+
+function safeRead(filePath) {
+  try {
+    return fs.readFileSync(filePath, "utf8");
+  } catch {
+    return "";
+  }
+}
+
+function findFunctions(text) {
+  const regex = /(?:async\s+)?function\s+([A-Za-z0-9_]+)/g;
+  const matches = [...text.matchAll(regex)];
+  return matches.map(m => m[1]);
+}
+
+function categorize(file) {
+  const lower = file.toLowerCase();
+
+  if (lower.includes("/api/")) return "api_route";
+  if (lower.includes("/prisma/") && file.endsWith(".prisma")) return "prisma_schema";
+  if (lower.includes("/validators/")) return "validator";
+  if (lower.includes("/forms/")) return "form";
+  if (lower.includes("/components/")) return "component";
+  if (lower.includes("/services/")) return "service";
+  if (lower.includes("/hooks/")) return "hook";
+  if (lower.includes("/app/")) return "workflow_ui";
+  if (lower.includes("/lib/")) return "lib";
+
+  return "other";
+}
+
+console.log("🔍 Creating ULTRALIGHT manifest...");
+
+const allFiles = listFiles(APP_ROOT);
+
+let manifest = {
+  createdAt: new Date().toISOString(),
+  root: APP_ROOT,
+  totalFiles: allFiles.length,
+  files: []
+};
+
+for (let filePath of allFiles) {
+  const text = safeRead(filePath);
+  manifest.files.push({
+    path: filePath.replace(process.cwd(), ""),
+    category: categorize(filePath),
+    functions: findFunctions(text)
+  });
+}
+
+fs.writeFileSync(OUTPUT_FILE, JSON.stringify(manifest, null, 2));
+
+console.log("\n✅ ULTRALIGHT manifest complete!");
+console.log("📄 Output file created:");
+console.log("   ", OUTPUT_FILE);
