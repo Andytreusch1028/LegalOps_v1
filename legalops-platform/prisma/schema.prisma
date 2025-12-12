@@ -55,7 +55,19 @@ model User {
   smsRemindersConsent     Boolean   @default(false) // Opted in to SMS reminders
   smsRemindersConsentAt   DateTime? // When they opted in
 
+  // Authentication fields (Phase 8: User Authentication System)
+  emailVerified            Boolean   @default(false) // Email verification status
+  emailVerificationToken   String?   @unique // Token for email verification
+  emailVerificationExpires DateTime? // When verification token expires
+  passwordResetToken       String?   @unique // Token for password reset
+  passwordResetExpires     DateTime? // When reset token expires
+  lastLoginAt              DateTime? // Last successful login
+  loginAttempts            Int       @default(0) // Failed login attempt counter
+  lockedUntil              DateTime? // Account lockout expiration
+
   // Relationships
+  profile     UserProfile? // User profile for auto-fill data
+  authSessions AuthSession[] // Active authentication sessions
   clients       Client[]
   orders        Order[]
   notifications Notification[]
@@ -85,6 +97,9 @@ model User {
   @@index([role]) // Queried for role-based access control
   @@index([isActive]) // Queried for active user filtering
   @@index([createdAt]) // Used for user registration analytics
+  @@index([emailVerified]) // Queried for email verification status
+  @@index([lastLoginAt]) // Used for login analytics
+  @@index([lockedUntil]) // Queried for account lockout checks
   @@map("users")
 }
 
@@ -109,6 +124,85 @@ enum UserRole {
 
   // Special
   ADMIN // Full system access
+}
+
+// ============================================================================
+// USER PROFILE MANAGEMENT (Phase 8: User Authentication System)
+// ============================================================================
+
+model UserProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Personal Information (encrypted for sensitive data)
+  personalFirstName   String?
+  personalLastName    String?
+  personalMiddleName  String?
+  personalDateOfBirth DateTime?
+  personalSSN         String? // Encrypted
+  personalPhone       String?
+  personalAltPhone    String?
+
+  // Address Information (JSON for flexibility)
+  personalAddress Json? // Personal address
+  mailingAddress  Json? // Mailing address
+  businessAddress Json? // Business address
+
+  // Business Information
+  businessCompanyName String?
+  businessTitle       String?
+  businessIndustry    String?
+  businessPhone       String?
+  businessEmail       String?
+  businessFEIN        String?
+  businessType        String?
+
+  // Auto-fill preferences
+  enableAutoFill       Boolean   @default(true)
+  verifiedFields       String[] // Array of verified field names
+  lastAutoFillUpdate   DateTime  @default(now())
+
+  // Privacy preferences
+  allowDataExport      Boolean @default(true)
+  allowMarketing       Boolean @default(false)
+  allowAnalytics       Boolean @default(true)
+  dataRetentionDays    Int?    // Custom retention period
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([enableAutoFill])
+  @@index([lastAutoFillUpdate])
+  @@map("user_profiles")
+}
+
+// Authentication Sessions
+model AuthSession {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken     String   @unique
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  lastAccessedAt   DateTime @default(now())
+
+  // Session metadata
+  ipAddress        String?
+  userAgent        String?
+  deviceFingerprint String?
+
+  // Security flags
+  isActive         Boolean @default(true)
+  isSuspicious     Boolean @default(false)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([expiresAt])
+  @@index([isActive])
+  @@index([lastAccessedAt])
+  @@map("auth_sessions")
 }
 
 // Client represents a business owner/customer
@@ -1036,6 +1130,9 @@ model Feedback {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  // Phase 8: Session tracking
+  sessionId String? // Link to auth session for better tracking
+
   // Metadata
   userAgent String? // Browser info
   ipAddress String? // For spam detection
@@ -1072,6 +1169,12 @@ model FormDraft {
   lastReminderSent      DateTime?
   reminderCount         Int       @default(0)
 
+  // Phase 8: Enhanced functionality
+  autoFillSource  String?   // 'profile', 'previous-order', 'manual'
+  verifiedFields  String[]  // Array of verified field names
+  isArchived      Boolean   @default(false)
+  completedAt     DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1079,6 +1182,8 @@ model FormDraft {
   @@index([createdAt])
   @@index([updatedAt])
   @@index([emailRemindersEnabled])
+  @@index([isArchived])
+  @@index([autoFillSource])
   @@map("form_drafts")
 }
 
