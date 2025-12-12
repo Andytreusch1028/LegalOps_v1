@@ -3,22 +3,19 @@ import { z } from "zod";
 import { validateRequest } from "@/lib/middleware/validation";
 import { ServiceFactory } from "@/lib/services/service-factory";
 
-const registerSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().optional(),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters")
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/\d/, "Password must contain at least one number")
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Password must contain at least one special character"),
-  phone: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     // Validate request body
-    const validation = await validateRequest(registerSchema)(req);
+    const validation = await validateRequest(resetPasswordSchema)(req);
     if (!validation.success) {
       return NextResponse.json(
         { 
@@ -30,19 +27,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { firstName, lastName, email, password, phone } = validation.data;
+    const { token, newPassword } = validation.data;
 
     // Get authentication service
     const authService = ServiceFactory.getAuthenticationService();
 
-    // Register user
-    const result = await authService.register({
-      firstName,
-      lastName,
-      email,
-      password,
-      phone
-    });
+    // Reset password
+    const result = await authService.resetPassword({ token, newPassword });
 
     if (!result.success) {
       return NextResponse.json(
@@ -55,22 +46,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = result.data;
-
-    // Build user response without sensitive fields
-    const { passwordHash, emailVerificationToken, passwordResetToken, ...userResponse } = user;
-
     return NextResponse.json(
       { 
         success: true,
-        message: "User created successfully. Please check your email to verify your account.", 
-        user: userResponse 
+        message: "Password reset successfully. You can now log in with your new password." 
       },
-      { status: 201 }
+      { status: 200 }
     );
 
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Reset password error:", error);
     return NextResponse.json(
       { 
         success: false, 
@@ -80,4 +65,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
