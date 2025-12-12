@@ -1,40 +1,34 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
-import Footer from "@/components/Footer";
+/**
+ * Root Layout with Authentication Provider
+ * 
+ * Wraps the entire application with authentication context and session management.
+ */
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { SessionExpiryWarning } from '@/components/auth/SessionExpiryWarning';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "LegalOps v1 - Legal Operations Platform",
-  description: "Comprehensive legal operations platform for business formation, document management, and compliance services",
+  title: 'LegalOps Platform',
+  description: 'Florida Business Formation Services',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-      >
-        <Providers>
-          <div className="flex-1">
-            {children}
-          </div>
-          <Footer />
-        </Providers>
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+          <SessionExpiryWarning />
+        </AuthProvider>
       </body>
     </html>
   );

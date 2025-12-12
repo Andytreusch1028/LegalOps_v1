@@ -6,7 +6,47 @@ import { createSuccessResponse, createErrorResponse } from "@/lib/types/api";
 import { AppError } from "@/lib/types/result";
 
 /**
- * GET /api/orders - Get all orders for the current user
+ * @swagger
+ * /api/orders:
+ *   get:
+ *     summary: Get user orders
+ *     description: Retrieve all orders for the authenticated user
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
  */
 export async function GET(request: NextRequest) {
   const errorHandler = ServiceFactory.getErrorHandler();

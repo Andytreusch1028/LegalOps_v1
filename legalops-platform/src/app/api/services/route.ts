@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
+import { ServiceFactory } from '@/lib/services/service-factory';
+import { createSuccessResponse } from '@/lib/types/api';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +10,8 @@ const prisma = new PrismaClient();
  * Fetch all active services
  */
 export async function GET(request: NextRequest) {
+  const errorHandler = ServiceFactory.getErrorHandler();
+
   try {
     const services = await prisma.service.findMany({
       where: {
@@ -43,13 +47,14 @@ export async function GET(request: NextRequest) {
       stateFee: Number(service.stateFee),
     }));
 
-    return NextResponse.json(servicesResponse);
+    const response = createSuccessResponse(servicesResponse);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching services:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch services' },
-      { status: 500 }
-    );
+    const response = await errorHandler.handle(error, {
+      endpoint: '/api/services',
+      method: 'GET'
+    });
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

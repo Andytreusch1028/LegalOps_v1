@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ServiceFactory } from '@/lib/services/service-factory';
+import { createSuccessResponse } from '@/lib/types/api';
 
 /**
  * GET /api/packages - Get all active packages
  */
 export async function GET() {
+  const errorHandler = ServiceFactory.getErrorHandler();
+
   try {
     const packages = await prisma.package.findMany({
       where: {
@@ -21,13 +25,14 @@ export async function GET() {
       price: Number(pkg.price),
     }));
 
-    return NextResponse.json(packagesWithNumbers);
+    const response = createSuccessResponse(packagesWithNumbers);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching packages:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch packages' },
-      { status: 500 }
-    );
+    const response = await errorHandler.handle(error, {
+      endpoint: '/api/packages',
+      method: 'GET'
+    });
+    return NextResponse.json(response, { status: 500 });
   }
 }
 

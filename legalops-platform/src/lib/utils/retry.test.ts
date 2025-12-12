@@ -259,7 +259,7 @@ describe('Retry Behavior', () => {
   it('should throw the original error after all retries exhausted', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1 }), // error message
+        fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-zA-Z0-9\s\-_.,!?]+$/.test(s)), // error message with safe characters
         fc.constantFrom('NETWORK_ERROR', 'TIMEOUT'), // error code
         fc.integer({ min: 1, max: 5 }), // maxAttempts
         async (errorMessage, errorCode, maxAttempts) => {

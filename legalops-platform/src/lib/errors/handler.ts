@@ -38,10 +38,38 @@ export class ErrorHandler {
   ) {}
 
   /**
+   * Extract user context from request or context object for logging.
+   */
+  private extractUserContext(context?: Record<string, unknown>): Record<string, unknown> {
+    const userContext: Record<string, unknown> = {};
+    
+    if (context) {
+      // Extract common user identifiers
+      if (context.userId) userContext.userId = context.userId;
+      if (context.userEmail) userContext.userEmail = context.userEmail;
+      if (context.sessionId) userContext.sessionId = context.sessionId;
+      if (context.ipAddress) userContext.ipAddress = context.ipAddress;
+      if (context.userAgent) userContext.userAgent = context.userAgent;
+      if (context.isAuthenticated !== undefined) userContext.isAuthenticated = context.isAuthenticated;
+      
+      // Mask sensitive data for logging
+      if (context.userEmail && typeof context.userEmail === 'string') {
+        const email = context.userEmail as string;
+        const [username, domain] = email.split('@');
+        if (username && domain) {
+          userContext.userEmail = `${username.charAt(0)}***@${domain}`;
+        }
+      }
+    }
+    
+    return userContext;
+  }
+
+  /**
    * Handle any error and convert to structured API response.
    * 
    * @param error - The error to handle
-   * @param context - Additional context for logging
+   * @param context - Additional context for logging (can include user info)
    * @returns Structured API error response
    */
   async handle(
@@ -74,11 +102,15 @@ export class ErrorHandler {
     error: AppError,
     context?: Record<string, unknown>
   ): Promise<ApiResponse<never>> {
-    // Log the error
+    // Extract user context for logging
+    const userContext = this.extractUserContext(context);
+    
+    // Log the error with user context
     this.logger.error(error.message, {
       code: error.code,
       statusCode: error.statusCode,
       context: error.context,
+      userContext,
       ...context
     });
 
@@ -90,6 +122,7 @@ export class ErrorHandler {
         context: {
           code: error.code,
           errorContext: error.context,
+          userContext,
           ...context
         }
       });
@@ -110,9 +143,11 @@ export class ErrorHandler {
     context?: Record<string, unknown>
   ): ApiResponse<never> {
     const formattedErrors = this.formatZodErrors(error);
+    const userContext = this.extractUserContext(context);
 
     this.logger.warn('Validation error', {
       errors: formattedErrors,
+      userContext,
       ...context
     });
 
@@ -130,9 +165,12 @@ export class ErrorHandler {
     error: Prisma.PrismaClientKnownRequestError,
     context?: Record<string, unknown>
   ): Promise<ApiResponse<never>> {
+    const userContext = this.extractUserContext(context);
+    
     this.logger.error('Database error', {
       code: error.code,
       meta: error.meta,
+      userContext,
       ...context
     });
 
@@ -197,10 +235,13 @@ export class ErrorHandler {
     error: unknown,
     context?: Record<string, unknown>
   ): Promise<ApiResponse<never>> {
-    // Log the unknown error
+    const userContext = this.extractUserContext(context);
+    
+    // Log the unknown error with user context
     this.logger.error('Unhandled error', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      userContext,
       ...context
     });
 
@@ -212,6 +253,7 @@ export class ErrorHandler {
         context: {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
+          userContext,
           ...context
         }
       });

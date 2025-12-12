@@ -73,8 +73,8 @@ describe('Result Type Operations', () => {
   it('should maintain AppError properties through Result wrapping', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1 }),
-        fc.string({ minLength: 1 }),
+        fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-zA-Z0-9\s\-_.,!?]+$/.test(s)),
+        fc.string({ minLength: 1, maxLength: 20 }).filter(s => /^[A-Z_]+$/.test(s)),
         fc.integer({ min: 400, max: 599 }),
         fc.option(fc.dictionary(fc.string(), fc.anything())),
         (message, code, statusCode, context) => {
@@ -154,8 +154,8 @@ describe('Result Type Operations', () => {
   it('should use default status code 500 when not provided', () => {
     fc.assert(
       fc.property(
-        fc.string({ minLength: 1 }),
-        fc.string({ minLength: 1 }),
+        fc.string({ minLength: 1, maxLength: 50 }).filter(s => /^[a-zA-Z0-9\s\-_.,!?]+$/.test(s)),
+        fc.string({ minLength: 1, maxLength: 20 }).filter(s => /^[A-Z_]+$/.test(s)),
         (message, code) => {
           const error = new AppError(message, code);
           

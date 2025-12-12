@@ -10,8 +10,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fc from 'fast-check';
 import { OrderService, IOrderService, CreateOrderDTO, UpdateOrderDTO } from './order.service';
 import { ILogger } from '../interfaces/logger.interface';
-import { PaymentStatus, OrderStatus, PrismaClient } from '@/generated/prisma';
+import { PaymentStatus, OrderStatus } from '@/generated/prisma';
 import { AppError } from '../types/result';
+import { IOrderRepository, OrderWithRelations } from '../repositories/order.repository';
 
 // Mock logger
 const mockLogger: ILogger = {
@@ -21,84 +22,104 @@ const mockLogger: ILogger = {
   debug: vi.fn()
 };
 
-// Mock Prisma client
-const createMockPrisma = () => {
+// Mock OrderRepository
+const createMockOrderRepository = (): IOrderRepository => {
   const mockOrders = new Map<string, any>();
   let orderCounter = 0;
 
   return {
-    order: {
-      create: vi.fn(async ({ data, include }: any) => {
-        const id = `order_${++orderCounter}`;
-        const order = {
-          id,
-          ...data,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          orderItems: data.orderItems?.create || []
-        };
-        mockOrders.set(id, order);
-        return order;
-      }),
-      findUnique: vi.fn(async ({ where }: any) => {
-        return mockOrders.get(where.id) || null;
-      }),
-      findMany: vi.fn(async ({ where }: any) => {
-        return Array.from(mockOrders.values()).filter(order => 
-          !where || !where.userId || order.userId === where.userId
-        );
-      }),
-      update: vi.fn(async ({ where, data }: any) => {
-        const order = mockOrders.get(where.id);
-        if (!order) {
-          const error: any = new Error('Record not found');
-          error.code = 'P2025';
-          throw error;
-        }
-        const updated = { ...order, ...data, updatedAt: new Date() };
-        mockOrders.set(where.id, updated);
-        return updated;
-      })
-    },
-    $transaction: vi.fn(async (callback: any) => {
-      return await callback({
-        order: {
-          create: vi.fn(async ({ data }: any) => {
-            const id = `order_${++orderCounter}`;
-            const order = {
-              id,
-              ...data,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              orderItems: data.orderItems?.create?.map((item: any, idx: number) => ({
-                id: `item_${id}_${idx}`,
-                orderId: id,
-                ...item,
-                createdAt: new Date()
-              })) || []
-            };
-            mockOrders.set(id, order);
-            return order;
-          })
-        }
-      });
+    name: 'MockOrderRepository',
+    findById: vi.fn(async (id: string) => {
+      return mockOrders.get(id) || null;
     }),
+    findByIdWithRelations: vi.fn(async (id: string): Promise<OrderWithRelations | null> => {
+      const order = mockOrders.get(id);
+      return order ? { ...order, user: null, orderItems: [] } : null;
+    }),
+    findByUserId: vi.fn(async (userId: string) => {
+      return Array.from(mockOrders.values()).filter(order => order.userId === userId);
+    }),
+    findByStatus: vi.fn(async (status: OrderStatus) => {
+      return Array.from(mockOrders.values()).filter(order => order.orderStatus === status);
+    }),
+    findByPaymentStatus: vi.fn(async (paymentStatus: PaymentStatus) => {
+      return Array.from(mockOrders.values()).filter(order => order.paymentStatus === paymentStatus);
+    }),
+    findByOrderNumber: vi.fn(async (orderNumber: string) => {
+      return Array.from(mockOrders.values()).find(order => order.orderNumber === orderNumber) || null;
+    }),
+    findRequiringReview: vi.fn(async () => {
+      return Array.from(mockOrders.values()).filter(order => order.requiresReview);
+    }),
+    create: vi.fn(async (data: any) => {
+      const id = `order_${++orderCounter}`;
+      const order = {
+        id,
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        // Convert orderItems.create to actual orderItems array
+        orderItems: data.orderItems?.create?.map((item: any, idx: number) => ({
+          id: `item_${id}_${idx}`,
+          orderId: id,
+          ...item,
+          createdAt: new Date()
+        })) || []
+      };
+      // Remove the create structure
+      if (order.orderItems && (order as any).orderItems.create) {
+        delete (order as any).orderItems.create;
+      }
+      mockOrders.set(id, order);
+      return order;
+    }),
+    update: vi.fn(async (id: string, data: any) => {
+      const existing = mockOrders.get(id);
+      if (!existing) throw new Error('Order not found');
+      const updated = { ...existing, ...data, updatedAt: new Date() };
+      mockOrders.set(id, updated);
+      return updated;
+    }),
+    updateStatus: vi.fn(async (id: string, status: OrderStatus) => {
+      const existing = mockOrders.get(id);
+      if (!existing) throw new Error('Order not found');
+      const updated = { ...existing, orderStatus: status, updatedAt: new Date() };
+      mockOrders.set(id, updated);
+      return updated;
+    }),
+    updatePaymentStatus: vi.fn(async (id: string, paymentStatus: PaymentStatus, paidAt?: Date) => {
+      const existing = mockOrders.get(id);
+      if (!existing) throw new Error('Order not found');
+      const updated = { ...existing, paymentStatus, paidAt, updatedAt: new Date() };
+      mockOrders.set(id, updated);
+      return updated;
+    }),
+    countByUserId: vi.fn(async (userId: string) => {
+      return Array.from(mockOrders.values()).filter(order => order.userId === userId).length;
+    }),
+    delete: vi.fn(async (id: string) => {
+      mockOrders.delete(id);
+    }),
+    findMany: vi.fn(),
+    findOne: vi.fn(),
+    count: vi.fn(),
+    exists: vi.fn(),
     _mockOrders: mockOrders,
     _reset: () => {
       mockOrders.clear();
       orderCounter = 0;
     }
-  } as any;
+  };
 };
 
 describe('OrderService', () => {
   let orderService: IOrderService;
-  let mockPrisma: any;
+  let mockOrderRepository: IOrderRepository;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPrisma = createMockPrisma();
-    orderService = new OrderService(mockLogger, mockPrisma);
+    mockOrderRepository = createMockOrderRepository();
+    orderService = new OrderService(mockLogger, mockOrderRepository);
   });
 
   describe('Property 11: Payment State Transitions', () => {
@@ -135,7 +156,7 @@ describe('OrderService', () => {
           fc.integer({ min: 1, max: 1000 }),
           async (transition, userId, total) => {
             // Reset mock state
-            mockPrisma._reset();
+            (mockOrderRepository as any)._reset();
 
             // Create an order with initial payment status
             const createData: CreateOrderDTO = {
@@ -228,7 +249,7 @@ describe('OrderService', () => {
           ),
           async (userId, total, statusSequence) => {
             // Reset mock state
-            mockPrisma._reset();
+            (mockOrderRepository as any)._reset();
 
             // Create an order
             const createData: CreateOrderDTO = {
@@ -303,7 +324,7 @@ describe('OrderService', () => {
           ),
           async (userId, total, initialStatus) => {
             // Reset mock state
-            mockPrisma._reset();
+            (mockOrderRepository as any)._reset();
 
             // Create an order
             const createData: CreateOrderDTO = {
@@ -362,7 +383,7 @@ describe('OrderService', () => {
           ),
           async (userId, total, targetStatus) => {
             // Reset mock state
-            mockPrisma._reset();
+            (mockOrderRepository as any)._reset();
 
             // Create an order and move it to REFUNDED state
             const createData: CreateOrderDTO = {
@@ -439,7 +460,7 @@ describe('OrderService', () => {
             { minLength: 1, maxLength: 5 }
           ),
           async (userId, subtotal, items) => {
-            mockPrisma._reset();
+            (mockOrderRepository as any)._reset();
 
             const itemsWithTotal = items.map(item => ({
               ...item,

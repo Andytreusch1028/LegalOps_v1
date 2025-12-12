@@ -1,38 +1,58 @@
 {
-  "timestamp": "2025-11-15T04:04:09.897Z",
+  "timestamp": "2025-12-10T01:21:38.113Z",
   "sections": [
     {
       "name": "TypeScript Errors",
-      "count": 1,
+      "count": 283,
       "issues": [
-        ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r"
+        ".next/types/validator.ts(810,31): error TS2344: Type 'typeof import(\"C:/Users/imali/Documents/augment-projects/LegalOps_v1/legalops-platform/src/app/api/dba/get-draft/[token]/route\")' does not satisfy the constraint 'RouteHandlerConfig<\"/api/dba/get-draft/[token]\">'.\r",
+        "prisma/seed-notices.ts(112,7): error TS2322: Type 'Record<string, unknown>' is not assignable to type '(Without<NoticeCreateInput, NoticeUncheckedCreateInput> & NoticeUncheckedCreateInput) | (Without<...> & NoticeCreateInput)'.\r",
+        "src/app/admin/orders/[id]/page.tsx(505,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(506,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(517,23): error TS2322: Type '{}' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(525,23): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(532,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(533,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(539,44): error TS2339: Property 'street' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(540,44): error TS2339: Property 'city' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(540,76): error TS2339: Property 'state' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(540,108): error TS2339: Property 'zipCode' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(545,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(546,69): error TS2339: Property 'length' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(551,44): error TS2339: Property 'map' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(551,49): error TS7006: Parameter 'owner' implicitly has an 'any' type.\r",
+        "src/app/admin/orders/[id]/page.tsx(565,13): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.\r",
+        "src/app/admin/orders/[id]/page.tsx(566,77): error TS2339: Property 'length' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(571,48): error TS2339: Property 'map' does not exist on type '{}'.\r",
+        "src/app/admin/orders/[id]/page.tsx(571,53): error TS7006: Parameter 'owner' implicitly has an 'any' type.\r"
       ]
     },
     {
       "name": "ESLint Issues",
-      "errors": 345,
-      "warnings": 122
+      "errors": 597,
+      "warnings": 1190
     },
     {
       "name": "Security Vulnerabilities",
-      "critical": 0,
+      "critical": 1,
       "high": 0,
       "moderate": 3,
       "low": 2
     }
   ],
   "criticalIssues": [
-    "Found 1 TypeScript type errors",
-    "Found 345 ESLint errors"
+    "Found 283 TypeScript type errors",
+    "Found 597 ESLint errors",
+    "Found 1 critical and 0 high severity vulnerabilities"
   ],
   "warnings": [
-    "Found 122 ESLint warnings"
+    "Found 1190 ESLint warnings"
   ],
   "suggestions": [
-    "23 packages have updates available"
+    "28 packages have updates available"
   ],
   "summary": {
-    "totalCriticalIssues": 2,
+    "totalCriticalIssues": 3,
     "totalWarnings": 1,
     "totalSuggestions": 1,
     "overallHealth": "FAIR"

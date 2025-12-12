@@ -11,6 +11,8 @@ import { Result, AppError, ok, err } from '@/lib/types/result';
 import { BaseService } from './base.service';
 import { ILogger } from '../interfaces/logger.interface';
 import { createLogger } from '../logging/console-logger';
+import { IUserRepository } from '../interfaces/user-repository.interface';
+import { IOrderRepository } from '../repositories/order.repository';
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -18,6 +20,7 @@ import { createLogger } from '../logging/console-logger';
 
 export interface CustomerData {
   id?: string;
+  userId?: string; // User ID for authenticated users
   name?: string;
   email: string;
   phone?: string;
@@ -26,6 +29,7 @@ export interface CustomerData {
   accountAge?: number; // days since account created
   previousOrders?: number;
   previousChargebacks?: number;
+  isAuthenticated?: boolean; // Whether this is an authenticated user
 }
 
 export interface OrderData {
@@ -51,6 +55,7 @@ export interface OrderData {
  */
 export const CustomerDataSchema = z.object({
   id: z.string().optional(),
+  userId: z.string().optional(),
   name: z.string().optional(),
   email: z.string().email('Invalid email address'),
   phone: z.string().optional(),
@@ -58,7 +63,8 @@ export const CustomerDataSchema = z.object({
   userAgent: z.string().optional(),
   accountAge: z.number().int().min(0, 'Account age must be non-negative').optional(),
   previousOrders: z.number().int().min(0, 'Previous orders must be non-negative').optional(),
-  previousChargebacks: z.number().int().min(0, 'Previous chargebacks must be non-negative').optional()
+  previousChargebacks: z.number().int().min(0, 'Previous chargebacks must be non-negative').optional(),
+  isAuthenticated: z.boolean().optional()
 });
 
 /**
@@ -102,7 +108,11 @@ export class AIRiskScoringService extends BaseService {
   readonly name = 'AIRiskScoringService';
   private openai: OpenAI | null = null;
 
-  constructor(logger?: ILogger) {
+  constructor(
+    logger?: ILogger,
+    private readonly userRepository?: IUserRepository,
+    private readonly orderRepository?: IOrderRepository
+  ) {
     super(logger || createLogger('AIRiskScoringService'));
     
     // Only initialize OpenAI if API key is available
@@ -146,20 +156,23 @@ export class AIRiskScoringService extends BaseService {
         ));
       }
 
-      // Step 2: Perform basic rule-based checks
-      const basicRiskFactors = this.performBasicChecks(customerValidation.data, orderValidation.data);
+      // Step 2: Enhance customer data with user context
+      const enhancedCustomer = await this.enhanceCustomerData(customerValidation.data);
+
+      // Step 3: Perform basic rule-based checks
+      const basicRiskFactors = this.performBasicChecks(enhancedCustomer, orderValidation.data);
       const basicRiskScore = basicRiskFactors.reduce((sum, f) => sum + f.points, 0);
 
-      // Step 3: If OpenAI is not configured, return basic assessment
+      // Step 4: If OpenAI is not configured, return basic assessment
       if (!this.openai || !process.env.OPENAI_API_KEY) {
         const assessment = this.createBasicAssessment(basicRiskScore, basicRiskFactors);
         return ok(assessment);
       }
 
-      // Step 4: Use AI for advanced pattern recognition
+      // Step 5: Use AI for advanced pattern recognition
       try {
         const aiAssessment = await this.performAIAnalysis(
-          customerValidation.data,
+          enhancedCustomer,
           orderValidation.data,
           basicRiskFactors
         );
@@ -178,6 +191,73 @@ export class AIRiskScoringService extends BaseService {
         500,
         { customer: customer.email, orderAmount: order.amount }
       ));
+    }
+  }
+
+  /**
+   * Enhance customer data with user context from database
+   */
+  private async enhanceCustomerData(customer: CustomerData): Promise<CustomerData> {
+    try {
+      // If we have a userId and user repository, fetch additional user data
+      if (customer.userId && this.userRepository) {
+        const userResult = await this.userRepository.findById(customer.userId);
+        if (userResult.isSuccess() && userResult.value) {
+          const user = userResult.value;
+          
+          // Calculate account age
+          const accountAge = user.createdAt 
+            ? Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+            : 0;
+
+          // Get order history if order repository is available
+          let previousOrders = 0;
+          let previousChargebacks = 0;
+          
+          if (this.orderRepository) {
+            const ordersResult = await this.orderRepository.findByUserId(customer.userId);
+            if (ordersResult.isSuccess()) {
+              previousOrders = ordersResult.value.length;
+              // Count chargebacks/refunds
+              previousChargebacks = ordersResult.value.filter(
+                order => order.paymentStatus === 'REFUNDED'
+              ).length;
+            }
+          }
+
+          return {
+            ...customer,
+            name: customer.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+            phone: customer.phone || user.phone || undefined,
+            accountAge,
+            previousOrders,
+            previousChargebacks,
+            isAuthenticated: true
+          };
+        }
+      }
+
+      // If no userId or user not found, mark as guest
+      return {
+        ...customer,
+        accountAge: 0,
+        previousOrders: 0,
+        previousChargebacks: 0,
+        isAuthenticated: false
+      };
+    } catch (error) {
+      this.logWarn('Failed to enhance customer data, using provided data', { 
+        userId: customer.userId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      return {
+        ...customer,
+        accountAge: customer.accountAge || 0,
+        previousOrders: customer.previousOrders || 0,
+        previousChargebacks: customer.previousChargebacks || 0,
+        isAuthenticated: !!customer.userId
+      };
     }
   }
 
@@ -276,6 +356,36 @@ export class AIRiskScoringService extends BaseService {
       });
     }
 
+    // Check 9: Guest user with large order (higher risk)
+    if (!customer.isAuthenticated && order.amount > 200) {
+      factors.push({
+        factor: 'guest_large_order',
+        severity: 'high',
+        description: `Guest user placing large order (${order.amount}) without account`,
+        points: 25
+      });
+    }
+
+    // Check 10: Authenticated user with good history (lower risk)
+    if (customer.isAuthenticated && customer.previousOrders && customer.previousOrders > 3 && customer.previousChargebacks === 0) {
+      factors.push({
+        factor: 'trusted_customer',
+        severity: 'low',
+        description: `Trusted customer with ${customer.previousOrders} successful orders and no chargebacks`,
+        points: -10 // Negative points reduce risk
+      });
+    }
+
+    // Check 11: New authenticated user (medium risk)
+    if (customer.isAuthenticated && (!customer.accountAge || customer.accountAge < 7)) {
+      factors.push({
+        factor: 'new_authenticated_user',
+        severity: 'medium',
+        description: `New authenticated user (account age: ${customer.accountAge || 0} days)`,
+        points: 10
+      });
+    }
+
     return factors;
   }
 
@@ -321,7 +431,13 @@ FRAUD PATTERNS TO CHECK:
    - Requesting rush on everything = possible fraud
    - Generic business names = possible fraud
 
-4. CHARGEBACK RISK:
+4. USER AUTHENTICATION PATTERNS:
+   - Guest users with large orders = higher risk
+   - New authenticated users = medium risk
+   - Established users with good history = lower risk
+   - Users with previous chargebacks = critical risk
+
+5. CHARGEBACK RISK:
    - Previous chargebacks = critical risk
    - Aggressive communication = medium risk
    - Unrealistic expectations = medium risk

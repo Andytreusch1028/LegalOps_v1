@@ -9,7 +9,7 @@ import { BaseService } from './base.service';
 import { ILogger } from '../interfaces/logger.interface';
 import { Result, ok, err, AppError } from '../types/result';
 import { Order, OrderStatus, PaymentStatus, Prisma } from '@/generated/prisma';
-import { PrismaClient } from '@/generated/prisma';
+import { IOrderRepository, OrderWithRelations } from '../repositories/order.repository';
 
 /**
  * Order creation data transfer object.
@@ -108,13 +108,13 @@ export class OrderService extends BaseService implements IOrderService {
    * Creates a new OrderService with injected dependencies.
    * 
    * @param logger - Logger instance
-   * @param prisma - Prisma client instance
+   * @param orderRepository - Order repository instance
    * @param riskService - Risk assessment service (optional)
    * @param paymentService - Payment processing service (optional)
    */
   constructor(
     logger: ILogger,
-    private readonly prisma: PrismaClient,
+    private readonly orderRepository: IOrderRepository,
     private readonly riskService?: IRiskService,
     private readonly paymentService?: IPaymentService
   ) {
@@ -174,13 +174,27 @@ export class OrderService extends BaseService implements IOrderService {
       let requiresReview = false;
 
       if (this.riskService) {
-        const riskResult = await this.riskService.assessOrderRisk({
+        // Prepare customer data for risk assessment
+        const customerData = {
           userId: data.userId,
           email: data.guestEmail || '',
-          total: data.total,
+          name: data.isGuestOrder 
+            ? `${data.guestFirstName || ''} ${data.guestLastName || ''}`.trim()
+            : undefined,
+          phone: data.guestPhone,
           ipAddress: data.ipAddress,
-          isRushOrder: data.isRushOrder || false
-        });
+          userAgent: data.userAgent,
+          isAuthenticated: !data.isGuestOrder
+        };
+
+        const orderData = {
+          amount: data.total,
+          services: data.items.map(item => item.serviceType),
+          isRushOrder: data.isRushOrder || false,
+          paymentMethod: 'credit_card' as const // Default, will be updated when payment is processed
+        };
+
+        const riskResult = await this.riskService.assessRisk(customerData, orderData);
 
         if (riskResult.success) {
           riskScore = riskResult.data.riskScore;
@@ -191,59 +205,53 @@ export class OrderService extends BaseService implements IOrderService {
             this.logWarn('Order requires manual review', {
               orderNumber: data.orderNumber,
               riskScore,
-              riskLevel
+              riskLevel,
+              userId: data.userId,
+              isGuestOrder: data.isGuestOrder
             });
           }
         } else {
           // Log risk assessment failure but don't block order creation
           this.logWarn('Risk assessment failed, proceeding without risk data', {
             orderNumber: data.orderNumber,
-            error: riskResult.error.message
+            error: riskResult.error.message,
+            userId: data.userId,
+            isGuestOrder: data.isGuestOrder
           });
         }
       }
 
-      // Create order with items in a transaction
-      const order = await this.prisma.$transaction(async (tx) => {
-        // Create the order
-        const newOrder = await tx.order.create({
-          data: {
-            userId: data.userId,
-            isGuestOrder: data.isGuestOrder || false,
-            guestEmail: data.guestEmail,
-            guestFirstName: data.guestFirstName,
-            guestLastName: data.guestLastName,
-            guestPhone: data.guestPhone,
-            orderNumber: data.orderNumber,
-            orderStatus: OrderStatus.PENDING,
-            subtotal: data.subtotal,
-            tax: data.tax,
-            total: data.total,
-            paymentStatus: PaymentStatus.PENDING,
-            packageId: data.packageId,
-            riskScore,
-            riskLevel,
-            requiresReview,
-            ipAddress: data.ipAddress,
-            userAgent: data.userAgent,
-            isRushOrder: data.isRushOrder || false,
-            orderItems: {
-              create: data.items.map(item => ({
-                serviceType: item.serviceType as any,
-                description: item.description,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                totalPrice: item.totalPrice
-              }))
-            }
-          },
-          include: {
-            orderItems: true
-          }
-        });
-
-        return newOrder;
-      });
+      // Create order with items using repository
+      const order = await this.orderRepository.create({
+        userId: data.userId,
+        isGuestOrder: data.isGuestOrder || false,
+        guestEmail: data.guestEmail,
+        guestFirstName: data.guestFirstName,
+        guestLastName: data.guestLastName,
+        guestPhone: data.guestPhone,
+        orderNumber: data.orderNumber,
+        orderStatus: OrderStatus.PENDING,
+        subtotal: data.subtotal,
+        tax: data.tax,
+        total: data.total,
+        paymentStatus: PaymentStatus.PENDING,
+        packageId: data.packageId,
+        riskScore,
+        riskLevel,
+        requiresReview,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+        isRushOrder: data.isRushOrder || false,
+        orderItems: {
+          create: data.items.map(item => ({
+            serviceType: item.serviceType as any,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice
+          }))
+        }
+      } as any);
 
       this.logInfo('Order created successfully', { 
         orderId: order.id,
@@ -271,24 +279,11 @@ export class OrderService extends BaseService implements IOrderService {
    * @param userId - User ID (for authorization, optional for guest orders)
    * @returns Result with order or error
    */
-  async getOrder(id: string, userId?: string): Promise<Result<Order, AppError>> {
+  async getOrder(id: string, userId?: string): Promise<Result<OrderWithRelations, AppError>> {
     try {
       this.logDebug('Fetching order', { orderId: id, userId });
 
-      const order = await this.prisma.order.findUnique({
-        where: { id },
-        include: {
-          orderItems: true,
-          user: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true
-            }
-          }
-        }
-      });
+      const order = await this.orderRepository.findByIdWithRelations(id);
 
       if (!order) {
         return err(this.createError(
@@ -330,15 +325,7 @@ export class OrderService extends BaseService implements IOrderService {
     try {
       this.logDebug('Fetching user orders', { userId });
 
-      const orders = await this.prisma.order.findMany({
-        where: { userId },
-        include: {
-          orderItems: true
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
+      const orders = await this.orderRepository.findByUserId(userId);
 
       return ok(orders);
     } catch (error) {
@@ -366,10 +353,7 @@ export class OrderService extends BaseService implements IOrderService {
 
       // Validate state transitions
       if (data.orderStatus || data.paymentStatus) {
-        const currentOrder = await this.prisma.order.findUnique({
-          where: { id },
-          select: { orderStatus: true, paymentStatus: true }
-        });
+        const currentOrder = await this.orderRepository.findById(id);
 
         if (!currentOrder) {
           return err(this.createError(
@@ -400,16 +384,19 @@ export class OrderService extends BaseService implements IOrderService {
         }
       }
 
-      const order = await this.prisma.order.update({
-        where: { id },
-        data: {
+      // Use specific repository methods for status updates to leverage caching
+      let order: Order;
+      if (data.orderStatus && !data.paymentStatus) {
+        order = await this.orderRepository.updateStatus(id, data.orderStatus);
+      } else if (data.paymentStatus && !data.orderStatus) {
+        order = await this.orderRepository.updatePaymentStatus(id, data.paymentStatus, data.paidAt);
+      } else {
+        // For other updates, use the generic update method
+        order = await this.orderRepository.update(id, {
           ...data,
           updatedAt: new Date()
-        },
-        include: {
-          orderItems: true
-        }
-      });
+        } as any);
+      }
 
       this.logInfo('Order updated successfully', { orderId: id });
 
@@ -599,18 +586,36 @@ export class OrderService extends BaseService implements IOrderService {
 }
 
 /**
- * Risk service interface (placeholder).
+ * Risk service interface.
  */
 export interface IRiskService {
-  assessOrderRisk(data: {
-    userId?: string;
-    email: string;
-    total: number;
-    ipAddress?: string;
-    isRushOrder: boolean;
-  }): Promise<Result<{
+  assessRisk(
+    customer: {
+      userId?: string;
+      email: string;
+      name?: string;
+      phone?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      isAuthenticated?: boolean;
+    },
+    order: {
+      amount: number;
+      services: string[];
+      isRushOrder: boolean;
+      paymentMethod: string;
+    }
+  ): Promise<Result<{
     riskScore: number;
     riskLevel: string;
+    riskFactors: Array<{
+      factor: string;
+      severity: string;
+      description: string;
+      points: number;
+    }>;
+    recommendation: string;
+    reasoning: string;
     requiresReview: boolean;
   }, AppError>>;
 }

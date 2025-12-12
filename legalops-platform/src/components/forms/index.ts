@@ -1,27 +1,15 @@
 /**
- * LegalOps Form Components
+ * Smart Forms Components
+ * Phase 7: Smart + Safe Experience Overhaul
  * 
- * Standardized form components that follow design guidelines from:
- * - DESIGN_BRIEF_FOR_CHATGPT.md
- * - DESIGN_BRIEF_TECHNICAL_DETAILS.md
- * - docs/legalops-ui-guide.md
- * - docs/FORM_DESIGN_STANDARDS.md
- * 
- * All forms MUST use these components to ensure consistency.
+ * Export all Smart Forms components with authentication integration
  */
 
-export {
-  FormWizard,
-  FormInput,
-  FormTextArea,
-  FormSection,
-  FormSelect,
-  FormCheckbox,
-  type FormWizardProps,
-  type FormInputProps,
-  type FormTextAreaProps,
-  type FormSectionProps,
-  type FormSelectProps,
-  type FormCheckboxProps,
-  type WizardStep,
-} from './FormWizard';
+export { AuthenticatedSmartFormInput } from './AuthenticatedSmartFormInput';
+export type { AuthenticatedSmartFormInputProps } from './AuthenticatedSmartFormInput';
+
+export { ProfileUpdatePrompt } from './ProfileUpdatePrompt';
+export type { ProfileUpdatePromptProps, ProfileUpdateSuggestion } from './ProfileUpdatePrompt';
+
+export { SmartFormExample } from './SmartFormExample';
+export type { SmartFormExampleProps } from './SmartFormExample';

@@ -8,6 +8,11 @@
  * API Endpoint: https://api.usps.com/addresses/v3/address
  */
 
+import { BaseService } from './base.service';
+import { ILogger } from '../interfaces/logger.interface';
+import { Result, success, failure } from '../types/result';
+import { AppError } from '../errors/app-error';
+
 // Types
 export interface AddressInput {
   firmName?: string;
@@ -50,53 +55,12 @@ export interface USPSMetadata {
   business?: 'Y' | 'N';
   centralDeliveryPoint?: 'Y' | 'N';
   vacant?: 'Y' | 'N';
-  footnotes?: string;
-  returnText?: string;
 }
 
-// USPS API v3 Response Types
-interface USPSCorrection {
-  text?: string;
-}
-
-interface USPSAPIResponse {
-  error?: {
-    message?: string;
-  };
-  errors?: Array<{
-    message?: string;
-  }>;
-  firm?: string;
-  address?: {
-    secondaryAddress?: string;
-    streetAddress?: string;
-    city?: string;
-    state?: string;
-    ZIPCode?: string;
-    ZIPPlus4?: string;
-    urbanization?: string;
-  };
-  additionalInfo?: {
-    deliveryPoint?: string;
-    carrierRoute?: string;
-    DPVConfirmation?: 'Y' | 'D' | 'S' | 'N';
-    DPVCMRA?: 'Y' | 'N';
-    business?: 'Y' | 'N';
-    centralDeliveryPoint?: 'Y' | 'N';
-    vacant?: 'Y' | 'N';
-  };
-  corrections?: USPSCorrection[];
-  matches?: unknown[];
-}
-
-/**
- * Address Validation Disclaimer Acceptance Record
- * CRITICAL: Must be preserved in customer data file for legal protection
- */
-export interface AddressDisclaimerAcceptance {
-  /** Timestamp when disclaimer was accepted (ISO 8601 format) */
-  timestamp: string;
-  /** Type of address issue that required disclaimer */
+export interface DisclaimerAcceptance {
+  /** Timestamp when disclaimer was accepted */
+  acceptedAt: Date;
+  /** Type of address issue that triggered disclaimer */
   issueType: 'UNVERIFIED' | 'MISSING_SECONDARY' | 'CORRECTED_BY_USPS';
   /** The address the user chose to use */
   addressUsed: AddressInput;
@@ -121,38 +85,53 @@ export interface AddressDisclaimerAcceptance {
 }
 
 /**
- * USPS Address Validation Service (v3.0 REST API)
+ * USPS Address Validation Service interface.
  */
-export class USPSAddressValidationService {
+export interface IUSPSAddressValidationService {
+  validateAddress(address: AddressInput): Promise<Result<AddressValidationResult>>;
+  validateMultipleAddresses(addresses: AddressInput[]): Promise<Result<AddressValidationResult[]>>;
+  logDisclaimerAcceptance(acceptance: DisclaimerAcceptance): Promise<Result<void>>;
+}
+
+/**
+ * USPS Address Validation Service (v3.0 REST API)
+ * Extends BaseService for consistent error handling and logging.
+ */
+export class USPSAddressValidationService extends BaseService implements IUSPSAddressValidationService {
+  readonly name = 'USPSAddressValidationService';
+
   private clientId: string;
   private clientSecret: string;
   private apiUrl: string;
   private accessToken: string | null = null;
   private tokenExpiry: number = 0;
 
-  constructor() {
+  constructor(logger: ILogger) {
+    super(logger);
+    
     this.clientId = process.env.USPS_CLIENT_ID || '';
     this.clientSecret = process.env.USPS_CLIENT_SECRET || '';
     this.apiUrl = 'https://apis.usps.com';
 
     if (!this.clientId || !this.clientSecret) {
-      console.warn('USPS API credentials not configured. Address validation will not work.');
-      console.warn('Please set USPS_CLIENT_ID and USPS_CLIENT_SECRET environment variables.');
+      this.logger.warn(`[${this.name}] USPS API credentials not configured. Address validation will not work.`);
+      this.logger.warn(`[${this.name}] Please set USPS_CLIENT_ID and USPS_CLIENT_SECRET environment variables.`);
     }
   }
 
   /**
    * Get OAuth 2.0 access token
    */
-  private async getAccessToken(): Promise<string> {
+  private async getAccessToken(): Promise<Result<string>> {
     // Return cached token if still valid
     if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return this.accessToken;
+      return success(this.accessToken);
     }
 
     try {
+      this.logger.debug(`[${this.name}] Requesting new USPS access token`);
+
       // USPS OAuth 2.0 Client Credentials flow
-      // Per USPS documentation: pass Consumer Key and Secret as client_id and client_secret
       const response = await fetch(`${this.apiUrl}/oauth2/v3/token`, {
         method: 'POST',
         headers: {
@@ -167,7 +146,19 @@ export class USPSAddressValidationService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to get access token: ${response.status} ${response.statusText} - ${errorText}`);
+        this.logger.error(`[${this.name}] Failed to get access token`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+
+        return failure(
+          new AppError(
+            'USPS_AUTH_FAILED',
+            `Failed to authenticate with USPS API: ${response.status} ${response.statusText}`,
+            { errorText }
+          )
+        );
       }
 
       const data = await response.json();
@@ -176,189 +167,247 @@ export class USPSAddressValidationService {
       this.tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
 
       if (!this.accessToken) {
-        throw new Error('No access token received from USPS API');
+        return failure(
+          new AppError(
+            'USPS_AUTH_FAILED',
+            'No access token received from USPS API'
+          )
+        );
       }
 
-      return this.accessToken;
+      this.logger.debug(`[${this.name}] Successfully obtained USPS access token`);
+      return success(this.accessToken);
+
     } catch (error) {
-      console.error('Error getting USPS access token:', error);
-      throw new Error('Failed to authenticate with USPS API');
+      this.logger.error(`[${this.name}] Error getting USPS access token`, { error });
+      
+      return failure(
+        new AppError(
+          'USPS_AUTH_ERROR',
+          'Failed to authenticate with USPS API',
+          { originalError: error }
+        )
+      );
     }
   }
 
   /**
    * Validate a single address using USPS v3 API
    */
-  async validateAddress(address: AddressInput): Promise<AddressValidationResult> {
+  async validateAddress(address: AddressInput): Promise<Result<AddressValidationResult>> {
+    this.logger.debug(`[${this.name}] Validating address`, {
+      city: address.city,
+      state: address.state,
+      zip: address.zip5
+    });
+
     try {
       // Validate input
       if (!address.address2) {
-        return {
+        return success({
           success: false,
           validated: false,
           original: address,
           error: 'Street address (address2) is required'
-        };
+        });
       }
 
+      // Check if credentials are configured
       if (!this.clientId || !this.clientSecret) {
-        return {
-          success: false,
+        this.logger.warn(`[${this.name}] USPS credentials not configured, returning unvalidated address`);
+        
+        return success({
+          success: true,
           validated: false,
           original: address,
-          error: 'USPS API not configured. Please set USPS_CLIENT_ID and USPS_CLIENT_SECRET environment variables.'
-        };
+          warnings: ['USPS validation not available - credentials not configured']
+        });
       }
 
       // Get access token
-      const token = await this.getAccessToken();
+      const tokenResult = await this.getAccessToken();
+      if (!tokenResult.success) {
+        return failure(tokenResult.error);
+      }
 
-      // Build query parameters (USPS Address API uses GET with query params)
-      const params = new URLSearchParams();
-      params.append('streetAddress', address.address2);
-      if (address.address1) params.append('secondaryAddress', address.address1);
-      if (address.city) params.append('city', address.city);
-      if (address.state) params.append('state', address.state);
-      if (address.zip5) params.append('ZIPCode', address.zip5);
-      if (address.zip4) params.append('ZIPPlus4', address.zip4);
-      if (address.firmName) params.append('firm', address.firmName);
+      // Prepare request body
+      const requestBody = {
+        streetAddress: address.address2,
+        secondaryAddress: address.address1 || '',
+        cityName: address.city || '',
+        state: address.state || '',
+        ZIPCode: address.zip5 || '',
+        ZIPPlus4: address.zip4 || ''
+      };
 
-      // Call USPS API (GET request)
-      const response = await fetch(`${this.apiUrl}/addresses/v3/address?${params.toString()}`, {
-        method: 'GET',
+      // Make API request
+      const response = await fetch(`${this.apiUrl}/addresses/v3/address`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokenResult.data}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify(requestBody),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('USPS API Error:', errorText);
-        return {
+        this.logger.error(`[${this.name}] USPS API error`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: responseData
+        });
+
+        return success({
           success: false,
           validated: false,
           original: address,
-          error: `USPS API request failed: ${response.status} ${response.statusText}`
-        };
+          error: `USPS API error: ${response.status} ${response.statusText}`
+        });
       }
 
-      const data = await response.json();
+      // Process successful response
+      const result = this.processUSPSResponse(address, responseData);
+      
+      this.logger.debug(`[${this.name}] Address validation completed`, {
+        validated: result.validated,
+        hasStandardized: !!result.standardized
+      });
 
-      // Parse response
-      const result = this.parseAPIResponse(data, address);
-
-      return result;
+      return success(result);
 
     } catch (error) {
-      console.error('USPS Address Validation Error:', error);
-      return {
+      this.logger.error(`[${this.name}] Error validating address`, { error });
+      
+      return success({
         success: false,
         validated: false,
         original: address,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
-      };
+        error: 'Address validation service temporarily unavailable'
+      });
     }
   }
 
   /**
-   * Validate multiple addresses (one at a time for v3 API)
+   * Validate multiple addresses in batch
    */
-  async validateAddresses(addresses: AddressInput[]): Promise<AddressValidationResult[]> {
-    if (addresses.length === 0) {
-      return [];
-    }
+  async validateMultipleAddresses(addresses: AddressInput[]): Promise<Result<AddressValidationResult[]>> {
+    this.logger.debug(`[${this.name}] Validating ${addresses.length} addresses`);
 
-    // v3 API doesn't support batch requests, so validate one at a time
     const results: AddressValidationResult[] = [];
 
+    // Process addresses sequentially to avoid rate limiting
     for (const address of addresses) {
       const result = await this.validateAddress(address);
-      results.push(result);
+      if (result.success) {
+        results.push(result.data);
+      } else {
+        // If individual validation fails, add error result
+        results.push({
+          success: false,
+          validated: false,
+          original: address,
+          error: result.error.message
+        });
+      }
     }
 
-    return results;
+    return success(results);
   }
 
   /**
-   * Parse USPS v3 API response
+   * Log disclaimer acceptance for audit trail
    */
-  private parseAPIResponse(data: USPSAPIResponse, original: AddressInput): AddressValidationResult {
+  async logDisclaimerAcceptance(acceptance: DisclaimerAcceptance): Promise<Result<void>> {
+    this.logger.info(`[${this.name}] Logging disclaimer acceptance`, {
+      issueType: acceptance.issueType,
+      customerId: acceptance.customerId,
+      acknowledgedRisk: acceptance.acknowledgedRisk,
+      confirmedProceed: acceptance.confirmedProceed
+    });
+
     try {
-      // Check for error in response
-      if (data.error || data.errors) {
+      // In a real implementation, this would save to database
+      // For now, we just log it
+      this.logger.info(`[${this.name}] Disclaimer acceptance logged`, {
+        acceptedAt: acceptance.acceptedAt,
+        issueType: acceptance.issueType,
+        addressUsed: acceptance.addressUsed,
+        ipAddress: acceptance.ipAddress
+      });
+
+      return success(undefined);
+
+    } catch (error) {
+      this.logger.error(`[${this.name}] Error logging disclaimer acceptance`, { error });
+      
+      return failure(
+        new AppError(
+          'DISCLAIMER_LOG_FAILED',
+          'Failed to log disclaimer acceptance',
+          { originalError: error }
+        )
+      );
+    }
+  }
+
+  /**
+   * Process USPS API response into our standard format
+   */
+  private processUSPSResponse(original: AddressInput, responseData: any): AddressValidationResult {
+    try {
+      const address = responseData.address;
+      
+      if (!address) {
         return {
           success: false,
           validated: false,
           original,
-          error: data.error?.message || data.errors?.[0]?.message || 'Address validation failed'
+          error: 'No address data in USPS response'
         };
       }
 
-      // USPS v3 API response structure has nested objects
-      const addressData = data.address || {};
-      const additionalInfo = data.additionalInfo || {};
-      const corrections = data.corrections || [];
-      const matches = data.matches || [];
-
-      // Extract standardized address from response
+      // Check if address was validated
+      const isValidated = address.deliveryPoint && address.deliveryPoint !== '';
+      
       const standardized: StandardizedAddress = {
-        firmName: data.firm || original.firmName,
-        address1: addressData.secondaryAddress || original.address1,
-        address2: addressData.streetAddress || original.address2,
-        city: addressData.city || original.city,
-        state: addressData.state || original.state,
-        zip5: addressData.ZIPCode || original.zip5,
-        zip4: addressData.ZIPPlus4 || original.zip4,
-        urbanization: addressData.urbanization,
-        deliveryPoint: additionalInfo.deliveryPoint,
-        carrierRoute: additionalInfo.carrierRoute
+        firmName: address.firmName || original.firmName,
+        address1: address.secondaryAddress || original.address1,
+        address2: address.streetAddress || original.address2,
+        city: address.cityName || original.city || '',
+        state: address.state || original.state || '',
+        zip5: address.ZIPCode || original.zip5 || '',
+        zip4: address.ZIPPlus4 || original.zip4,
+        deliveryPoint: address.deliveryPoint,
+        carrierRoute: address.carrierRoute
       };
 
-      // Extract metadata
       const metadata: USPSMetadata = {
-        dpvConfirmation: additionalInfo.DPVConfirmation,
-        dpvCMRA: additionalInfo.DPVCMRA,
-        dpvFootnotes: undefined,
-        business: additionalInfo.business,
-        centralDeliveryPoint: additionalInfo.centralDeliveryPoint,
-        vacant: additionalInfo.vacant,
-        footnotes: undefined,
-        returnText: corrections.map((c) => c.text).filter(Boolean).join(' ')
+        dpvConfirmation: address.dpvConfirmation,
+        dpvCMRA: address.dpvCMRA,
+        dpvFootnotes: address.dpvFootnotes,
+        business: address.business,
+        centralDeliveryPoint: address.centralDeliveryPoint,
+        vacant: address.vacant
       };
 
-      // Determine validation status based on DPV confirmation and match codes
-      // Y = fully validated, D = primary validated (missing secondary), S = primary validated (secondary not confirmed)
-      const dpv = additionalInfo.DPVConfirmation;
-      const validated = dpv === 'Y';
-      const partiallyValidated = dpv === 'D' || dpv === 'S';
-
-      // Collect warnings and corrections
       const warnings: string[] = [];
-
-      // Add correction messages
-      corrections.forEach((correction) => {
-        if (correction.text) {
-          warnings.push(correction.text);
-        }
-      });
-
-      // Add DPV-based warnings
-      if (dpv === 'D') {
-        warnings.push('Address confirmed for primary number only. Secondary number (apt/suite) may be missing.');
-      } else if (dpv === 'S') {
-        warnings.push('Address confirmed for primary number only. Secondary number not confirmed.');
-      } else if (dpv === 'N') {
-        warnings.push('Address could not be confirmed by USPS.');
+      
+      // Add warnings based on USPS response
+      if (address.dpvConfirmation === 'N') {
+        warnings.push('Address not found in USPS database');
       }
-
-      // Add other warnings
-      if (additionalInfo.vacant === 'Y') {
-        warnings.push('This address appears to be vacant.');
+      if (address.dpvConfirmation === 'D') {
+        warnings.push('Address missing secondary information (apt, suite, etc.)');
+      }
+      if (address.vacant === 'Y') {
+        warnings.push('Address appears to be vacant');
       }
 
       return {
         success: true,
-        validated: validated || partiallyValidated,
+        validated: isValidated,
         original,
         standardized,
         metadata,
@@ -366,17 +415,12 @@ export class USPSAddressValidationService {
       };
 
     } catch (error) {
-      console.error('Error parsing USPS response:', error);
       return {
         success: false,
         validated: false,
         original,
-        error: 'Failed to parse USPS response'
+        error: 'Error processing USPS response'
       };
     }
   }
 }
-
-// Export singleton instance
-export const uspsAddressValidation = new USPSAddressValidationService();
-
